@@ -1,0 +1,7 @@
+/* App.css — supplementary layout tweaks */
+
+.left-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
