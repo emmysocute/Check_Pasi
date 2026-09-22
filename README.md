@@ -260,58 +260,14 @@ docker-compose up -d
 
 ---
 
-## 🧪 Testing
-
-```bash
-# Frontend tests
-npm run test
-
-# Backend tests
-cd server && npm run test
-
-# E2E tests
-npm run test:e2e
-```
-
----
-
 ## 📈 Features
 
 ✅ **ปัจจุบัน**
-- คำนวณภาษีตามกฎหมายไทย 2568
+- คำนวณภาษี
 - ระบบสมัครสมาชิก/เข้าสู่ระบบ
 - บันทึกประวัติการคำนวณ
 - UI/UX ที่ใช้งานง่าย
 - Responsive design
-
-🚧 **กำลังพัฒนา**
-- ระบบแจ้งเตือน tax deadlines
-- Export ผลการคำนวณเป็น PDF
-- API integration กับ Revenue Department
-- Multi-language support
-
----
-
-## 👥 Contributing
-
-1. Fork repository
-2. สร้าง feature branch
-3. Commit การเปลี่ยนแปลง
-4. Push และสร้าง Pull Request
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License.
-
----
-
-## 📞 Support
-
-สำหรับคำถามหรือปัญหา กรุณาติดต่อ:
-- Email: support@checkpasi.com
-- GitHub Issues: [Create Issue](https://github.com/your-repo/issues)
 
 ---
 
