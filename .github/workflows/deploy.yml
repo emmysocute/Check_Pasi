@@ -5,6 +5,10 @@ on:
     branches:
       - master  # หรือ master ตามชื่อ branch หลักของคุณ
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
