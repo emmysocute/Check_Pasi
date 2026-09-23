@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   frontend:
-    image: ghcr.io/emmysocute/Check_Pasi-frontend:latest
+    image: ghcr.io/emmysocute/taxme-frontend:latest
     ports:
       - "80:80"
     depends_on:
@@ -10,7 +10,7 @@ services:
     restart: always
 
   backend:
-    image: ghcr.io/emmysocute/Check_Pasi-backend:latest
+    image: ghcr.io/emmysocute/taxme-backend:latest
     ports:
       - "3001:3001"
     environment:
