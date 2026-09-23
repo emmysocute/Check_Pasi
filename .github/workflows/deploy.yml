@@ -1,0 +1,67 @@
+name: Build and Deploy to AWS Elastic Beanstalk
+
+on:
+  push:
+    branches:
+      - master  # หรือ master ตามชื่อ branch หลักของคุณ
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 1. Log in เข้า GHCR
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # 2. Build & Push Frontend Image ขึ้น GHCR
+      - name: Build & Push Frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/taxme-frontend:latest
+          build-args: |
+            VITE_API_URL=/api
+
+      # 3. Build & Push Backend Image ขึ้น GHCR
+      - name: Build & Push Backend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./server
+          file: ./server/Dockerfile
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/taxme-backend:latest
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 4. เตรียมไฟล์ docker-compose สำหรับส่งไปให้ Elastic Beanstalk
+      - name: Prepare Deployment Package
+        run: |
+          cp docker-compose.prod.yml docker-compose.yml
+          zip -r deploy.zip docker-compose.yml
+
+      # 5. สั่ง Deploy ไปที่ Elastic Beanstalk
+      - name: Deploy to Elastic Beanstalk
+        uses: einaregilsson/beanstalk-deploy@v21
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          application_name: 'Checkpasi' # ⚠️ แก้เป็นชื่อ App ของคุณ
+          environment_name: 'Checkpasi-env' # ⚠️ แก้เป็นชื่อ Environment ของคุณ
+          version_label: "deploy-${{ github.sha }}"
+          region: 'ap-southeast-1'                        # ⚠️ แก้ให้ตรงกับ Region ของคุณ
+          deployment_package: 'deploy.zip'
+          

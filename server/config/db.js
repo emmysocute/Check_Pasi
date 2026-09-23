@@ -5,7 +5,7 @@ require('dotenv').config({ path: path.join(__dirname, '../.env') });
 // Create pool with individual connection parameters instead of connectionString
 const pool = new Pool({
   host: process.env.DB_HOST || 'localhost',
-  port: process.env.DB_POR,
+  port: process.env.DB_PORT,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
@@ -29,7 +29,7 @@ const testConnection = async () => {
       host: process.env.DB_HOST || 'localhost',
       port: process.env.DB_PORT,
       database: process.env.DB_NAME,
-      user: process.env.DB_USER'
+      user: process.env.DB_USER
     });
   }
 };
