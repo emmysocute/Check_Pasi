@@ -63,9 +63,9 @@ jobs:
         with:
           aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          application_name: 'Checkpasi' # ⚠️ แก้เป็นชื่อ App ของคุณ
-          environment_name: 'Checkpasi-env' # ⚠️ แก้เป็นชื่อ Environment ของคุณ
+          application_name: 'Checkpasi'
+          environment_name: 'Checkpasi-env' 
           version_label: "deploy-${{ github.sha }}"
-          region: 'ap-southeast-1'                        # ⚠️ แก้ให้ตรงกับ Region ของคุณ
+          region: 'ap-southeast-1'                   
           deployment_package: 'deploy.zip'
           
