@@ -32,6 +32,8 @@ CREATE TABLE tax_records (
 CREATE TABLE user_profiles (
     id SERIAL PRIMARY KEY,
     user_id INTEGER UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+    first_name VARCHAR(100),
+    last_name VARCHAR(100),
     phone VARCHAR(20),
     address TEXT,
     tax_id VARCHAR(20),

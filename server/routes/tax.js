@@ -64,7 +64,7 @@ router.delete('/history/:id', auth, async (req, res) => {
     res.json({ message: 'Record deleted' });
   } catch (err) {
     console.error(err.message);
-    res.status(500).send('Server error');api.post
+    res.status(500).send('Server error');
   }
 });
 

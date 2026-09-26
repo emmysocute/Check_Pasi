@@ -7,7 +7,7 @@ function Sidebar() {
   
   const navItems = [
     { icon: '🏠', label: 'หน้าหลัก', path: '/' },
-    { icon: '🧮', label: 'คำนวณภาษี', path: '/calculator' },,
+    { icon: '🧮', label: 'คำนวณภาษี', path: '/calculator' },
     { icon: '📋', label: 'ประวัติการคำนวณ', path: '/history', protected: true },
     { icon: '👤', label: 'โปรไฟล์', path: '/profile', protected: true },
     { icon: '⚙️', label: 'ตั้งค่า', path: '/' },
