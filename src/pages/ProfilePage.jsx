@@ -29,6 +29,19 @@ function ProfilePage() {
   const [passwordMessage, setPasswordMessage] = useState({ type: '', text: '' });
   const [isSubmittingPassword, setIsSubmittingPassword] = useState(false);
 
+  const formatPhoneNumber = (val) => {
+    if (!val) return '';
+    const digits = val.replace(/\D/g, '').slice(0, 10);
+    if (digits.startsWith('02')) {
+      if (digits.length <= 2) return digits;
+      if (digits.length <= 5) return `${digits.slice(0, 2)}-${digits.slice(2)}`;
+      return `${digits.slice(0, 2)}-${digits.slice(2, 5)}-${digits.slice(5, 9)}`;
+    }
+    if (digits.length <= 3) return digits;
+    if (digits.length <= 6) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+    return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6, 10)}`;
+  };
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -38,9 +51,9 @@ function ProfilePage() {
             displayName: res.data.display_name || '',
             firstName: res.data.first_name || '',
             lastName: res.data.last_name || '',
-            phone: res.data.phone || '',
+            phone: formatPhoneNumber(res.data.phone || ''),
             address: res.data.address || '',
-            taxId: res.data.tax_id || ''
+            taxId: (res.data.tax_id || '').replace(/\D/g, '').slice(0, 13)
           });
         }
       } catch (err) {
@@ -52,9 +65,19 @@ function ProfilePage() {
 
   const handleProfileChange = (e) => {
     const { name, value } = e.target;
-    setProfile({ ...profile, [name]: value });
+    let nextVal = value;
+
+    if (name === 'phone') {
+      nextVal = formatPhoneNumber(value);
+    } else if (name === 'taxId') {
+      nextVal = value.replace(/\D/g, '').slice(0, 13);
+    } else if (name === 'address') {
+      nextVal = value.slice(0, 500);
+    }
+
+    setProfile(prev => ({ ...prev, [name]: nextVal }));
     if (profileErrors[name]) {
-      setProfileErrors({ ...profileErrors, [name]: '' });
+      setProfileErrors(prev => ({ ...prev, [name]: '' }));
     }
   };
 
@@ -75,6 +98,31 @@ function ProfilePage() {
     if (!profile.displayName.trim()) {
       errors.displayName = 'กรุณาระบุชื่อที่แสดง';
     }
+
+    if (profile.phone) {
+      const phoneDigits = profile.phone.replace(/\D/g, '');
+      if (phoneDigits.startsWith('02')) {
+        if (phoneDigits.length !== 9) {
+          errors.phone = 'เบอร์โทรศัพท์บ้านต้องมี 9 หลัก (เช่น 02-XXX-XXXX)';
+        }
+      } else {
+        if (phoneDigits.length !== 10 || !phoneDigits.startsWith('0')) {
+          errors.phone = 'เบอร์โทรศัพท์ต้องเป็นตัวเลข 10 หลักขึ้นต้นด้วย 0 (เช่น 08X-XXX-XXXX)';
+        }
+      }
+    }
+
+    if (profile.taxId) {
+      const taxDigits = profile.taxId.replace(/\D/g, '');
+      if (taxDigits.length !== 13) {
+        errors.taxId = 'เลขประจำตัวผู้เสียภาษีต้องมี 13 หลัก';
+      }
+    }
+
+    if (profile.address && profile.address.length > 500) {
+      errors.address = 'ที่อยู่ต้องไม่เกิน 500 ตัวอักษร';
+    }
+
     if (Object.keys(errors).length > 0) {
       setProfileErrors(errors);
       return;
@@ -216,19 +264,23 @@ function ProfilePage() {
             <div className="form-grid-2" style={{ marginBottom: '16px' }}>
               <div className="form-group">
                 <label className="form-label">เบอร์โทรศัพท์</label>
-                <div className="input-wrapper">
+                <div className={`input-wrapper ${profileErrors.phone ? 'has-error' : ''}`}>
                   <input
                     type="tel"
                     name="phone"
                     value={profile.phone}
                     onChange={handleProfileChange}
                     placeholder="08X-XXX-XXXX"
+                    maxLength={12}
                   />
                 </div>
+                {profileErrors.phone && (
+                  <span className="field-error-msg">⚠️ {profileErrors.phone}</span>
+                )}
               </div>
               <div className="form-group">
                 <label className="form-label">เลขประจำตัวผู้เสียภาษี (Tax ID)</label>
-                <div className="input-wrapper">
+                <div className={`input-wrapper ${profileErrors.taxId ? 'has-error' : ''}`}>
                   <input
                     type="text"
                     name="taxId"
@@ -238,17 +290,26 @@ function ProfilePage() {
                     maxLength={13}
                   />
                 </div>
+                {profileErrors.taxId && (
+                  <span className="field-error-msg">⚠️ {profileErrors.taxId}</span>
+                )}
               </div>
             </div>
 
             <div className="form-group" style={{ marginBottom: '24px' }}>
-              <label className="form-label">ที่อยู่สำหรับออกเอกสาร</label>
-              <div className="input-wrapper" style={{ height: 'auto', padding: '10px 14px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <label className="form-label" style={{ marginBottom: 0 }}>ที่อยู่สำหรับออกเอกสาร</label>
+                <span style={{ fontSize: '12px', color: '#64748b' }}>
+                  {profile.address.length}/500 ตัวอักษร
+                </span>
+              </div>
+              <div className={`input-wrapper ${profileErrors.address ? 'has-error' : ''}`} style={{ height: 'auto', padding: '10px 14px' }}>
                 <textarea
                   name="address"
                   value={profile.address}
                   onChange={handleProfileChange}
                   rows="3"
+                  maxLength={500}
                   placeholder="ที่อยู่ บ้านเลขที่ ซอย ถนน ตำบล อำเภอ จังหวัด รหัสไปรษณีย์"
                   style={{
                     width: '100%',
@@ -261,6 +322,9 @@ function ProfilePage() {
                   }}
                 />
               </div>
+              {profileErrors.address && (
+                <span className="field-error-msg">⚠️ {profileErrors.address}</span>
+              )}
             </div>
 
             <button

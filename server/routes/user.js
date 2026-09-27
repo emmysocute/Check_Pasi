@@ -25,8 +25,19 @@ router.get('/profile', auth, async (req, res) => {
 // @route   PUT /api/user/profile
 // @desc    Update user profile
 router.put('/profile', auth, async (req, res) => {
-  const { displayName, firstName, lastName, phone, address, taxId } = req.body;
+  let { displayName, firstName, lastName, phone, address, taxId } = req.body;
   try {
+    displayName = (displayName || '').trim().slice(0, 100);
+    firstName = (firstName || '').trim().slice(0, 100);
+    lastName = (lastName || '').trim().slice(0, 100);
+    phone = (phone || '').replace(/[^\d-]/g, '').slice(0, 20);
+    address = (address || '').trim().slice(0, 500);
+    taxId = (taxId || '').replace(/\D/g, '').slice(0, 20);
+
+    if (!displayName) {
+      return res.status(400).json({ message: 'กรุณาระบุชื่อที่แสดง' });
+    }
+
     await db.query('UPDATE users SET display_name = $1, updated_at = NOW() WHERE id = $2', [displayName, req.user.id]);
     
     // Check if profile exists, if not, create it
@@ -34,12 +45,12 @@ router.put('/profile', auth, async (req, res) => {
     if (profileCheck.rows.length === 0) {
       await db.query(
         'INSERT INTO user_profiles (user_id, first_name, last_name, phone, address, tax_id) VALUES ($1, $2, $3, $4, $5, $6)',
-        [req.user.id, firstName || '', lastName || '', phone || '', address || '', taxId || '']
+        [req.user.id, firstName, lastName, phone, address, taxId]
       );
     } else {
       await db.query(
         'UPDATE user_profiles SET first_name = $1, last_name = $2, phone = $3, address = $4, tax_id = $5, updated_at = NOW() WHERE user_id = $6',
-        [firstName || '', lastName || '', phone || '', address || '', taxId || '', req.user.id]
+        [firstName, lastName, phone, address, taxId, req.user.id]
       );
     }
 
