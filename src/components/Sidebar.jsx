@@ -1,9 +1,30 @@
+import { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 function Sidebar({ isOpen = false, onClose = () => {} }) {
   const location = useLocation();
   const { user } = useAuth();
+
+  // Accessibility (Escape key) & Body Scroll Lock
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, onClose]);
   
   const navItems = [
     { icon: '🏠', label: 'หน้าหลัก', path: '/' },

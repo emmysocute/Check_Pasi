@@ -1578,6 +1578,10 @@ body {
     gap: 16px;
   }
 
+  .content-area.has-floating-bar {
+    padding-bottom: 84px;
+  }
+
   .form-card {
     padding: 20px 16px;
   }

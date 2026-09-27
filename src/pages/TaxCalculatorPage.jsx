@@ -176,7 +176,7 @@ function TaxCalculatorPage() {
   };
 
   return (
-    <div className="content-area">
+    <div className="content-area has-floating-bar">
       <div className="left-content">
         <WelcomeBanner />
         <div className="form-card animate-in-delay-1">
