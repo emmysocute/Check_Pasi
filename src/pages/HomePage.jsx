@@ -33,7 +33,7 @@ function HomePage() {
 
   if (!user) {
     return (
-      <div className="content-area" style={{ display: 'block', maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
+      <div className="home-container" style={{ textAlign: 'center' }}>
         <div className="welcome-banner animate-in">
           <div className="welcome-text" style={{ width: '100%' }}>
             <h2>ยินดีต้อนรับสู่ TaxMe</h2>
@@ -48,7 +48,7 @@ function HomePage() {
 
   if (history.length === 0) {
     return (
-      <div className="content-area" style={{ display: 'block', maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
+      <div className="home-container" style={{ textAlign: 'center' }}>
         <div className="welcome-banner animate-in">
           <div className="welcome-text" style={{ width: '100%' }}>
             <h2>ยินดีต้อนรับ, {user.display_name || user.email}</h2>
@@ -69,7 +69,7 @@ function HomePage() {
   ];
 
   return (
-    <div style={{ padding: '24px', maxWidth: '1000px', margin: '0 auto', width: '100%' }}>
+    <div className="home-container">
       <div className="welcome-banner animate-in" style={{ marginBottom: '24px' }}>
         <div className="welcome-text">
           <h2>สถิติภาษีล่าสุดของคุณ</h2>
@@ -81,7 +81,7 @@ function HomePage() {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+      <div className="dashboard-grid">
         {/* สถิติสรุป */}
         <div className="form-card animate-in-delay-1" style={{ padding: '24px' }}>
           <h3 style={{ fontSize: '16px', fontWeight: '700', marginBottom: '16px' }}>ข้อมูลการคำนวณล่าสุด</h3>
@@ -122,18 +122,18 @@ function HomePage() {
         </div>
 
         {/* กราฟวงกลม */}
-        <div className="form-card animate-in-delay-2" style={{ padding: '24px', display: 'flex', flexDirection: 'column' }}>
+        <div className="form-card animate-in-delay-2 home-chart-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column' }}>
           <h3 style={{ fontSize: '16px', fontWeight: '700', marginBottom: '16px' }}>สัดส่วนรายได้และภาษี</h3>
           
-          <div style={{ flex: 1, minHeight: '300px' }}>
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="chart-container-wrapper" style={{ flex: 1, minHeight: '280px' }}>
+            <ResponsiveContainer width="100%" height={280}>
               <PieChart>
                 <Pie
                   data={chartData}
                   cx="50%"
                   cy="50%"
-                  innerRadius={60}
-                  outerRadius={100}
+                  innerRadius={55}
+                  outerRadius={90}
                   paddingAngle={5}
                   dataKey="value"
                 >

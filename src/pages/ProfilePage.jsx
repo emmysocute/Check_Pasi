@@ -154,7 +154,7 @@ function ProfilePage() {
   };
 
   return (
-    <div style={{ maxWidth: '680px', margin: '0 auto', paddingTop: '24px', paddingBottom: '48px' }}>
+    <div className="profile-page-container">
       {/* ส่วนที่ 1: ข้อมูลส่วนตัว */}
       <div className="form-card" style={{ marginBottom: '24px' }}>
         <div className="section-header">

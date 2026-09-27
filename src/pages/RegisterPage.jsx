@@ -72,8 +72,8 @@ function RegisterPage() {
   };
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: 'var(--bg-body)', padding: '20px' }}>
-      <div className="form-card" style={{ width: '100%', maxWidth: '420px', padding: '36px 32px' }}>
+    <div className="auth-container">
+      <div className="form-card auth-card">
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
           <div className="logo-icon" style={{ margin: '0 auto 16px', width: '52px', height: '52px', fontSize: '26px' }}>📝</div>
           <h2 style={{ fontSize: '22px', fontWeight: '700', color: 'var(--gray-800)', marginBottom: '6px' }}>สมัครสมาชิก TaxMe</h2>

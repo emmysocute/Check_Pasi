@@ -37,9 +37,9 @@ function HistoryPage() {
   if (loading) return <div style={{ padding: '24px' }}>กำลังโหลดข้อมูล...</div>;
 
   return (
-    <div style={{ padding: '24px', maxWidth: '1000px', margin: '0 auto' }}>
+    <div className="history-page-container">
       <div className="section-header" style={{ marginBottom: '24px', padding: '0' }}>
-        <h3 className="section-title">ประวัติการคำนวณภาษี</h3>
+        <h3 className="section-title">📋 ประวัติการคำนวณภาษี</h3>
       </div>
       
       {history.length === 0 ? (
@@ -47,37 +47,79 @@ function HistoryPage() {
           ไม่มีประวัติการคำนวณภาษี
         </div>
       ) : (
-        <div className="form-card" style={{ overflow: 'hidden' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
-            <thead>
-              <tr style={{ background: 'var(--gray-50)', borderBottom: '1px solid var(--gray-200)', textAlign: 'left' }}>
-                <th style={{ padding: '16px 24px', fontWeight: '600', color: 'var(--gray-700)' }}>วันที่คำนวณ</th>
-                <th style={{ padding: '16px 24px', fontWeight: '600', color: 'var(--gray-700)' }}>รายได้ทั้งปี</th>
-                <th style={{ padding: '16px 24px', fontWeight: '600', color: 'var(--gray-700)' }}>หักลดหย่อน</th>
-                <th style={{ padding: '16px 24px', fontWeight: '600', color: 'var(--gray-700)' }}>ภาษีที่ต้องชำระ</th>
-                <th style={{ padding: '16px 24px', fontWeight: '600', color: 'var(--gray-700)' }}>จัดการ</th>
-              </tr>
-            </thead>
-            <tbody>
-              {history.map((record) => (
-                <tr key={record.id} style={{ borderBottom: '1px solid var(--gray-100)' }}>
-                  <td style={{ padding: '16px 24px', color: 'var(--gray-600)' }}>{formatDate(record.calculated_at)}</td>
-                  <td style={{ padding: '16px 24px', fontWeight: '500' }}>{fmt(record.annual_income)} ฿</td>
-                  <td style={{ padding: '16px 24px' }}>{fmt(record.total_deduction)} ฿</td>
-                  <td style={{ padding: '16px 24px', fontWeight: '700', color: 'var(--primary-600)' }}>{fmt(record.tax_amount)} ฿</td>
-                  <td style={{ padding: '16px 24px' }}>
-                    <button 
-                      onClick={() => handleDelete(record.id)}
-                      style={{ background: 'none', border: 'none', color: 'var(--red-500)', cursor: 'pointer' }}
-                    >
-                      ลบ
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <>
+          {/* มุมมองตารางสำหรับ Tablet & Desktop (≥ 768px) */}
+          <div className="form-card history-desktop-view">
+            <div className="table-responsive-wrapper">
+              <table className="history-table">
+                <thead>
+                  <tr>
+                    <th>วันที่คำนวณ</th>
+                    <th>รายได้ทั้งปี</th>
+                    <th>หักค่าใช้จ่าย & ลดหย่อน</th>
+                    <th>ภาษีที่ต้องชำระ</th>
+                    <th style={{ textAlign: 'center' }}>จัดการ</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {history.map((record) => (
+                    <tr key={record.id}>
+                      <td className="history-date-cell">{formatDate(record.calculated_at)}</td>
+                      <td className="history-num-cell">{fmt(record.annual_income)} ฿</td>
+                      <td className="history-num-cell">{fmt(Number(record.total_deduction) + Number(record.expense_deduction || 0))} ฿</td>
+                      <td className="history-tax-cell">{fmt(record.tax_amount)} ฿</td>
+                      <td style={{ textAlign: 'center' }}>
+                        <button 
+                          onClick={() => handleDelete(record.id)}
+                          className="history-action-delete"
+                          title="ลบรายการนี้"
+                        >
+                          ลบ
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* มุมมอง Adaptive Card View สำหรับจอมือถือ (< 768px) */}
+          <div className="history-mobile-cards">
+            {history.map((record) => (
+              <div key={record.id} className="history-card-item form-card animate-in">
+                <div className="history-card-top">
+                  <div className="history-card-date">
+                    <span className="date-icon">🗓️</span>
+                    <span>{formatDate(record.calculated_at)}</span>
+                  </div>
+                  <button 
+                    onClick={() => handleDelete(record.id)}
+                    className="history-card-delete-btn"
+                    title="ลบรายการ"
+                  >
+                    ลบ
+                  </button>
+                </div>
+
+                <div className="history-card-details">
+                  <div className="history-card-row">
+                    <span className="label">รายได้ทั้งปี:</span>
+                    <span className="value">{fmt(record.annual_income)} บาท</span>
+                  </div>
+                  <div className="history-card-row">
+                    <span className="label">หักค่าใช้จ่าย & ลดหย่อน:</span>
+                    <span className="value">{fmt(Number(record.total_deduction) + Number(record.expense_deduction || 0))} บาท</span>
+                  </div>
+                  <div className="history-card-row highlight-row">
+                    <span className="label">ภาษีที่ต้องชำระ:</span>
+                    <span className="value-tax">{fmt(record.tax_amount)} บาท</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );

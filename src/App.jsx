@@ -1,4 +1,5 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Sidebar from './components/Sidebar';
 import Topbar from './components/Topbar';
@@ -17,19 +18,37 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-// Layout wrapper
+// Layout wrapper with responsive Mobile Drawer support
 const AppLayout = ({ children }) => {
-  const { user } = useAuth();
-  
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const location = useLocation();
+  const [prevPath, setPrevPath] = useState(location.pathname);
+
+  // ปิด Drawer อัตโนมัติเมื่อมีการเปลี่ยนเส้นทาง (Route Change) ตามแบบแผน React 19
+  if (prevPath !== location.pathname) {
+    setPrevPath(location.pathname);
+    setIsSidebarOpen(false);
+  }
+
   return (
     <div className="app-layout">
-      <Sidebar />
+      <Sidebar 
+        isOpen={isSidebarOpen} 
+        onClose={() => setIsSidebarOpen(false)} 
+      />
       <div className="main-content">
-        <Topbar />
-        {children}
+        <Topbar 
+          onToggleMenu={() => setIsSidebarOpen(prev => !prev)} 
+          isMenuOpen={isSidebarOpen} 
+        />
+        <main className="page-body">
+          {children}
+        </main>
         <footer className="app-footer">
-          TaxMe • คำนวณภาษีง่าย ๆ วางแผนการเงินได้ดีกว่าเดิม
-          <span style={{ float: 'right' }}>อัปเดตล่าสุด: 2569</span>
+          <div className="footer-content">
+            <span>TaxMe • คำนวณภาษีง่าย ๆ วางแผนการเงินได้ดีกว่าเดิม</span>
+            <span className="footer-update">อัปเดตล่าสุด: 2569</span>
+          </div>
         </footer>
       </div>
     </div>

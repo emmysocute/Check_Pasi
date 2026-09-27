@@ -204,7 +204,29 @@ function TaxCalculatorPage() {
           </div>
         </div>
       </div>
-      <ResultPanel result={taxResult} visible={hasCalculated} onSave={handleSave} user={user} />
+
+      <div id="tax-result-section" className="result-panel-wrapper">
+        <ResultPanel result={taxResult} visible={hasCalculated} onSave={handleSave} user={user} />
+      </div>
+
+      {/* Floating Quick Jump Bar สำหรับมือถือ */}
+      <div className="mobile-quick-jump-container">
+        <button 
+          type="button"
+          className="floating-quick-jump"
+          onClick={() => {
+            const el = document.getElementById('tax-result-section');
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+          }}
+          aria-label="ดูผลลัพธ์การคำนวณภาษี"
+        >
+          <span className="jump-icon">📊</span>
+          <span className="jump-text">
+            ภาษีที่ต้องจ่าย: <strong>{Number(taxResult.tax).toLocaleString('th-TH')} ฿</strong>
+          </span>
+          <span className="jump-arrow">↓ ดูสรุปผล</span>
+        </button>
+      </div>
     </div>
   );
 }
