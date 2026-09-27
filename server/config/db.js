@@ -18,6 +18,78 @@ const pool = new Pool({
   ssl: useSSL ? { rejectUnauthorized: false } : false
 });
 
+// Run non-destructive automatic database migrations
+const runMigrations = async () => {
+  const migrations = [
+    // 1. ตาราง users
+    `CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      email VARCHAR(255) UNIQUE NOT NULL,
+      password_hash VARCHAR(255) NOT NULL,
+      display_name VARCHAR(100),
+      created_at TIMESTAMP DEFAULT NOW(),
+      updated_at TIMESTAMP DEFAULT NOW()
+    )`,
+    // 2. ตาราง tax_records
+    `CREATE TABLE IF NOT EXISTS tax_records (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+      monthly_income DECIMAL(12,2),
+      freelance_income DECIMAL(12,2) DEFAULT 0,
+      employment_type VARCHAR(50),
+      personal_allowance DECIMAL(12,2) DEFAULT 0,
+      spouse_allowance DECIMAL(12,2) DEFAULT 0,
+      child_allowance DECIMAL(12,2) DEFAULT 0,
+      insurance DECIMAL(12,2) DEFAULT 0,
+      social_security DECIMAL(12,2) DEFAULT 0,
+      investment_fund DECIMAL(12,2) DEFAULT 0,
+      annual_income DECIMAL(12,2),
+      total_deduction DECIMAL(12,2),
+      net_income DECIMAL(12,2),
+      tax_amount DECIMAL(12,2),
+      calculated_at TIMESTAMP DEFAULT NOW()
+    )`,
+    // 3. ตาราง user_profiles
+    `CREATE TABLE IF NOT EXISTS user_profiles (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+      first_name VARCHAR(100),
+      last_name VARCHAR(100),
+      phone VARCHAR(20),
+      address TEXT,
+      tax_id VARCHAR(20),
+      updated_at TIMESTAMP DEFAULT NOW()
+    )`,
+    // 4. เพิ่มคอลัมน์ใน user_profiles กรณีตารางถูกสร้างไว้ก่อนหน้านี้แล้วยังไม่มีคอลัมน์ใหม่
+    `ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS first_name VARCHAR(100)`,
+    `ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS last_name VARCHAR(100)`,
+    `ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS phone VARCHAR(20)`,
+    `ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS address TEXT`,
+    `ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS tax_id VARCHAR(20)`,
+    `ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT NOW()`,
+    // 5. ป้องกันกรณี users หรือ tax_records ขาดคอลัมน์
+    `ALTER TABLE users ADD COLUMN IF NOT EXISTS display_name VARCHAR(100)`,
+    `ALTER TABLE users ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT NOW()`,
+    `ALTER TABLE tax_records ADD COLUMN IF NOT EXISTS freelance_income DECIMAL(12,2) DEFAULT 0`,
+    `ALTER TABLE tax_records ADD COLUMN IF NOT EXISTS personal_allowance DECIMAL(12,2) DEFAULT 0`,
+    `ALTER TABLE tax_records ADD COLUMN IF NOT EXISTS spouse_allowance DECIMAL(12,2) DEFAULT 0`,
+    `ALTER TABLE tax_records ADD COLUMN IF NOT EXISTS child_allowance DECIMAL(12,2) DEFAULT 0`,
+    `ALTER TABLE tax_records ADD COLUMN IF NOT EXISTS insurance DECIMAL(12,2) DEFAULT 0`,
+    `ALTER TABLE tax_records ADD COLUMN IF NOT EXISTS social_security DECIMAL(12,2) DEFAULT 0`,
+    `ALTER TABLE tax_records ADD COLUMN IF NOT EXISTS investment_fund DECIMAL(12,2) DEFAULT 0`
+  ];
+
+  try {
+    console.log('🔄 Checking and running database migrations...');
+    for (const sql of migrations) {
+      await pool.query(sql);
+    }
+    console.log('✅ Database schema verified and up-to-date');
+  } catch (err) {
+    console.error('⚠️ Database migration error:', err.message);
+  }
+};
+
 // Test connection with better error handling
 const testConnection = async () => {
   try {
@@ -30,6 +102,7 @@ const testConnection = async () => {
       user: process.env.DB_USER
     });
     client.release();
+    await runMigrations();
   } catch (err) {
     console.error('❌ Database connection error:', err.message);
     console.error('🔍 Connection config:', {

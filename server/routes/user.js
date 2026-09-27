@@ -15,10 +15,10 @@ router.get('/profile', auth, async (req, res) => {
        WHERE u.id = $1`, 
       [req.user.id]
     );
-    res.json(profile.rows[0]);
+    res.json(profile.rows[0] || {});
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
+    console.error('Fetch profile error:', err.message);
+    res.status(500).json({ message: 'เกิดข้อผิดพลาดในการดึงข้อมูลโปรไฟล์', error: err.message });
   }
 });
 
@@ -30,8 +30,8 @@ router.put('/profile', auth, async (req, res) => {
     await db.query('UPDATE users SET display_name = $1, updated_at = NOW() WHERE id = $2', [displayName, req.user.id]);
     
     // Check if profile exists, if not, create it
-    const profileCheck = await db.query('SELECT * FROM user_profiles WHERE user_id = $1', [req.user.id]);
-    if(profileCheck.rows.length === 0) {
+    const profileCheck = await db.query('SELECT id FROM user_profiles WHERE user_id = $1', [req.user.id]);
+    if (profileCheck.rows.length === 0) {
       await db.query(
         'INSERT INTO user_profiles (user_id, first_name, last_name, phone, address, tax_id) VALUES ($1, $2, $3, $4, $5, $6)',
         [req.user.id, firstName || '', lastName || '', phone || '', address || '', taxId || '']
@@ -45,8 +45,8 @@ router.put('/profile', auth, async (req, res) => {
 
     res.json({ message: 'Profile updated' });
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
+    console.error('Update profile error:', err.message);
+    res.status(500).json({ message: 'เกิดข้อผิดพลาดในการบันทึกข้อมูล', error: err.message });
   }
 });
 
