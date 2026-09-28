@@ -6,8 +6,16 @@ const db = require('./config/db'); // Import database connection
 const app = express();
 
 // Middleware
+const allowedOrigins = (process.env.CORS_ORIGINS || 'http://localhost:5173,http://127.0.0.1:5173')
+  .split(',')
+  .map(origin => origin.trim())
+  .filter(Boolean);
+
 app.use(cors({
-  origin: true,
+  origin: (origin, callback) => {
+    // Requests without an Origin header (for example, server-to-server calls) are allowed.
+    callback(null, !origin || allowedOrigins.includes(origin));
+  },
   credentials: true
 }));
 app.use(express.json());
@@ -15,7 +23,6 @@ app.use(express.json());
 // Add logging middleware
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} ${req.method} ${req.path}`);
-  console.log('Body:', req.body);
   next();
 });
 

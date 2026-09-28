@@ -11,7 +11,6 @@ router.post('/calculate', auth, async (req, res) => {
     childAllowance, insurance, socialSecurity, investmentFund,
     annualIncome, totalDeduction, netIncome, taxAmount
   } = req.body;
-  console.log(req.body)
   try {
     const result = await db.query(
       `INSERT INTO tax_records (
@@ -25,7 +24,6 @@ router.post('/calculate', auth, async (req, res) => {
         investmentFund, annualIncome, totalDeduction, netIncome, taxAmount
       ]
     );
-    console.log("result", result.rows[0])
     res.json(result.rows[0]);
     
   } catch (err) {
@@ -43,7 +41,6 @@ router.get('/history', auth, async (req, res) => {
       [req.user.id]
     );
     res.json(records.rows);
-    console.log(records.rows)
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');
