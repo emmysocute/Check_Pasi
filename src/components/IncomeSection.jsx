@@ -51,10 +51,13 @@ function IncomeSection({
               />
               <span className="input-suffix">บาท</span>
             </div>
+            <div style={{ fontSize: '11.5px', color: 'var(--gray-500)', marginTop: '4px' }}>
+              สำหรับเงินเดือนประจำ (ระบบจะนำไปคำนวณ x12 เดือนให้อัตโนมัติ)
+            </div>
           </div>
           <div className="form-group">
             <label className="form-label">
-              รายได้ (ฟรีแลนซ์/อื่นๆ) {formatPreview(freelanceIncome) && <span style={{ fontSize: '11px', color: 'var(--primary-600)', fontWeight: 500 }}>{formatPreview(freelanceIncome)}</span>}
+              รายได้ทั้งปี (ฟรีแลนซ์ / ยอดสะสมรายเดือน) {formatPreview(freelanceIncome) && <span style={{ fontSize: '11px', color: 'var(--primary-600)', fontWeight: 500 }}>{formatPreview(freelanceIncome)}</span>}
             </label>
             <div className="input-wrapper">
               <span className="input-prefix">฿</span>
@@ -69,6 +72,9 @@ function IncomeSection({
                 step="any"
               />
               <span className="input-suffix">บาท</span>
+            </div>
+            <div style={{ fontSize: '11.5px', color: 'var(--gray-500)', marginTop: '4px' }}>
+              ยอดรวมทั้งปี (ไม่ต้องคูณ 12) เช่น รายได้ฟรีแลนซ์ หรือยอดจากระบบบันทึกรายเดือน
             </div>
           </div>
         </div>
@@ -99,7 +105,7 @@ function IncomeSection({
         </div>
 
         <div className="info-note">
-          <span>หมายเหตุ: รายได้ต่อเดือนจะถูกคำนวณเป็นรายปี (x12 เดือน)</span>
+          <span>หมายเหตุ: รายได้ต่อเดือนจะถูกคำนวณเป็นรายปี (x12 เดือน) รวมกับรายได้ทั้งปี/ฟรีแลนซ์</span>
         </div>
       </div>
     </>

@@ -1,3 +1,4 @@
+/* oxlint-disable react/set-state-in-effect */
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import WelcomeBanner from '../components/WelcomeBanner';
@@ -10,15 +11,15 @@ import { useAuth } from '../contexts/AuthContext';
 import { calculateTaxFromFormData } from '../utils/taxEngine';
 
 const DEFAULT_STATE = {
-  monthlyIncome: 15000,
+  monthlyIncome: 0,
   freelanceIncome: 0,
   withholdingTax: 0,
   employmentType: 'salary',
   personalAllowance: { enabled: true, amount: 60000 },
-  spouseAllowance: { enabled: false, amount: 60000 },
+  spouseAllowance: { enabled: false, amount: 0 },
   childAllowance: { enabled: false, amount: 0 },
   insurance: { enabled: false, amount: 0 },
-  socialSecurity: { enabled: true, amount: 9000 },
+  socialSecurity: { enabled: false, amount: 0 },
   investmentFund: { enabled: false, amount: 0 },
   homeLoanInterest: { enabled: false, amount: 0 },
   parentAllowance: { 
@@ -79,15 +80,26 @@ function TaxCalculatorPage() {
         ...DEFAULT_STATE,
         employmentType: 'freelance',
         monthlyIncome: 0,
-        freelanceIncome: p.freelanceIncome || 0,
-        withholdingTax: p.withholdingTax || 0,
+        freelanceIncome: Number(p.freelanceIncome) || 0,
+        withholdingTax: Number(p.withholdingTax) || 0,
         socialSecurity: {
-          enabled: Boolean(p.socialSecurity > 0),
-          amount: p.socialSecurity || 0,
+          enabled: Boolean(Number(p.socialSecurity) > 0),
+          amount: Number(p.socialSecurity) || 0,
         },
       };
     }
     return DEFAULT_STATE;
+  });
+  const [trackerImportInfo, setTrackerImportInfo] = useState(() => {
+    if (location.state?.fromTracker && location.state?.prefill) {
+      return {
+        taxYear: location.state.taxYear,
+        income: Number(location.state.prefill.freelanceIncome) || 0,
+        withholdingTax: Number(location.state.prefill.withholdingTax) || 0,
+        socialSecurity: Number(location.state.prefill.socialSecurity) || 0,
+      };
+    }
+    return null;
   });
   const [hasCalculated, setHasCalculated] = useState(true);
   const [showResetModal, setShowResetModal] = useState(false);
@@ -108,49 +120,62 @@ function TaxCalculatorPage() {
 
   useEffect(() => {
     if (location.state?.loadRecord) {
-      setTimeout(() => {
-        showToast('โหลดข้อมูลจากประวัติเรียบร้อยแล้ว', 'success');
-      }, 0);
-      navigate(location.pathname, { replace: true, state: {} });
+      setFormData(mapRecordToFormData(location.state.loadRecord));
+      setTrackerImportInfo(null);
+      setHasCalculated(true);
+      showToast('โหลดข้อมูลจากประวัติเรียบร้อยแล้ว', 'success');
+      navigate(location.pathname, { replace: true, state: null });
       return;
     }
 
-    if (location.state?.fromTracker) {
+    if (location.state?.fromTracker && location.state?.prefill) {
+      const p = location.state.prefill;
       const year = location.state.taxYear || '';
-      setTimeout(() => {
-        showToast(`🎉 นำเข้ายอดสะสม 12 เดือน ${year ? `ปี ${year}` : ''} เข้าสู่ระบบคำนวณภาษีเรียบร้อยแล้ว`, 'success');
-      }, 0);
-      navigate(location.pathname, { replace: true, state: {} });
-      return;
+      setTrackerImportInfo({
+        taxYear: year,
+        income: Number(p.freelanceIncome) || 0,
+        withholdingTax: Number(p.withholdingTax) || 0,
+        socialSecurity: Number(p.socialSecurity) || 0,
+      });
+      setFormData({
+        ...DEFAULT_STATE,
+        employmentType: 'freelance',
+        monthlyIncome: 0,
+        freelanceIncome: Number(p.freelanceIncome) || 0,
+        withholdingTax: Number(p.withholdingTax) || 0,
+        socialSecurity: {
+          enabled: Boolean(Number(p.socialSecurity) > 0),
+          amount: Number(p.socialSecurity) || 0,
+        },
+      });
+      setHasCalculated(true);
+      showToast(`🎉 นำเข้ายอดสะสม 12 เดือน ${year ? `ปี ${year}` : ''} เรียบร้อยแล้ว`, 'success');
+      navigate(location.pathname, { replace: true, state: null });
     }
-
-    if (!user) return;
-
-    let isMounted = true;
-    const fetchLatest = async () => {
-      try {
-        const res = await api.get('/tax/history');
-        if (isMounted && res.data && res.data.length > 0) {
-          setFormData(prev => ({ ...prev, ...mapRecordToFormData(res.data[0]) }));
-        }
-      } catch (err) {
-        console.error('Failed to fetch latest calculation', err);
-      }
-    };
-    fetchLatest();
-
-    return () => { isMounted = false; };
-  }, [user, location.state, showToast, navigate, location.pathname]);
+  }, [location.state, location.pathname, navigate, showToast]);
 
   const updateField = useCallback((field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   }, []);
 
   const updateDeduction = useCallback((field, key, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: { ...prev[field], [key]: value }
-    }));
+    setFormData(prev => {
+      const current = prev[field] || {};
+      const updated = { ...current, [key]: value };
+
+      if (key === 'enabled' && value === true && (!current.amount || current.amount === 0)) {
+        if (field === 'spouseAllowance') {
+          updated.amount = 60000;
+        } else if (field === 'socialSecurity') {
+          updated.amount = 9000;
+        }
+      }
+
+      return {
+        ...prev,
+        [field]: updated
+      };
+    });
   }, []);
 
   const updateParentAllowance = useCallback((personKey, checked) => {
@@ -173,7 +198,8 @@ function TaxCalculatorPage() {
 
   const executeClearForm = useCallback(() => {
     setFormData(DEFAULT_STATE);
-    setHasCalculated(false);
+    setTrackerImportInfo(null);
+    setHasCalculated(true);
     setShowResetModal(false);
     showToast('ล้างข้อมูลเรียบร้อยแล้ว', 'info');
   }, [showToast]);
@@ -232,6 +258,56 @@ function TaxCalculatorPage() {
 
       <div className="left-content">
         <WelcomeBanner />
+
+        {trackerImportInfo && (
+          <div className="imported-tracker-banner" style={{
+            margin: '0 0 16px 0',
+            padding: '16px 20px',
+            background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(6, 148, 162, 0.08))',
+            border: '1px solid rgba(16, 185, 129, 0.35)',
+            borderRadius: 'var(--radius-lg)',
+            display: 'flex',
+            alignItems: 'flex-start',
+            justifyContent: 'space-between',
+            gap: '14px',
+            boxShadow: '0 4px 16px rgba(16, 185, 129, 0.08)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+              <span style={{ fontSize: '24px', lineHeight: 1 }}>📥</span>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: '15px', color: '#065f46', marginBottom: '4px' }}>
+                  นำเข้ายอดสะสม 12 เดือน {trackerImportInfo.taxYear ? `(ปีภาษี ${trackerImportInfo.taxYear})` : ''} เรียบร้อยแล้ว
+                </div>
+                <div style={{ fontSize: '13px', color: '#047857', display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
+                  <span>รายได้รวมทั้งปี: <strong>฿{trackerImportInfo.income.toLocaleString('th-TH')}</strong></span>
+                  {trackerImportInfo.withholdingTax > 0 && (
+                    <span>• ภาษีหัก ณ ที่จ่ายสะสม: <strong>฿{trackerImportInfo.withholdingTax.toLocaleString('th-TH')}</strong></span>
+                  )}
+                  {trackerImportInfo.socialSecurity > 0 && (
+                    <span>• ประกันสังคม: <strong>฿{trackerImportInfo.socialSecurity.toLocaleString('th-TH')}</strong></span>
+                  )}
+                </div>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setTrackerImportInfo(null)}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: '#065f46',
+                cursor: 'pointer',
+                fontSize: '18px',
+                lineHeight: 1,
+                padding: '2px 6px'
+              }}
+              title="ปิดการแจ้งเตือน"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
         <div className="form-card animate-in-delay-1">
           <IncomeSection
             monthlyIncome={formData.monthlyIncome}
