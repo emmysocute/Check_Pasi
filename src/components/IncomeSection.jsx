@@ -1,4 +1,30 @@
-function IncomeSection({ monthlyIncome, freelanceIncome, employmentType, onIncomeChange, onFreelanceChange, onTypeChange }) {
+function IncomeSection({ monthlyIncome, freelanceIncome, onIncomeChange, onFreelanceChange }) {
+  const blockInvalidChars = (e) => {
+    if (['-', '+', 'e', 'E'].includes(e.key)) {
+      e.preventDefault();
+    }
+  };
+
+  const handleIncomeChange = (e) => {
+    const val = e.target.value;
+    if (val === '') {
+      onIncomeChange(0);
+      return;
+    }
+    const num = Math.max(0, Math.min(Number(val) || 0, 999999999));
+    onIncomeChange(num);
+  };
+
+  const handleFreelanceChange = (e) => {
+    const val = e.target.value;
+    if (val === '') {
+      onFreelanceChange(0);
+      return;
+    }
+    const num = Math.max(0, Math.min(Number(val) || 0, 999999999));
+    onFreelanceChange(num);
+  };
+
   return (
     <>
       <div className="section-header">
@@ -14,30 +40,33 @@ function IncomeSection({ monthlyIncome, freelanceIncome, employmentType, onIncom
             <div className="input-wrapper">
               <span className="input-prefix">฿</span>
               <input
-                type=""
+                type="number"
                 id="monthly-income"
-                value={monthlyIncome}
-                onChange={e => onIncomeChange(Number(e.target.value) || 0)}
+                value={monthlyIncome === 0 ? '' : monthlyIncome}
+                onChange={handleIncomeChange}
+                onKeyDown={blockInvalidChars}
                 placeholder="0"
                 min="0"
+                step="any"
               />
               <span className="input-suffix">บาท</span>
             </div>
           </div>
           <div className="form-group">
             <label className="form-label">
-              รายได้(ฟรีแลนซ์/อื่นๆ)
-              
+              รายได้ (ฟรีแลนซ์/อื่นๆ)
             </label>
             <div className="input-wrapper">
               <span className="input-prefix">฿</span>
               <input
-                type=""
+                type="number"
                 id="freelance-income"
-                value={freelanceIncome}
-                onChange={e => onFreelanceChange(Number(e.target.value) || 0)}
+                value={freelanceIncome === 0 ? '' : freelanceIncome}
+                onChange={handleFreelanceChange}
+                onKeyDown={blockInvalidChars}
                 placeholder="0"
                 min="0"
+                step="any"
               />
               <span className="input-suffix">บาท</span>
             </div>

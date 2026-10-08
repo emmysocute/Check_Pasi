@@ -1,4 +1,19 @@
 function DeductionSection({ formData, onToggle, onAmountChange }) {
+  const blockInvalidChars = (e) => {
+    if (['-', '+', 'e', 'E'].includes(e.key)) {
+      e.preventDefault();
+    }
+  };
+
+  const handleAmountChange = (key, val) => {
+    if (val === '') {
+      onAmountChange(key, 0);
+      return;
+    }
+    const num = Math.max(0, Math.min(Number(val) || 0, 999999999));
+    onAmountChange(key, num);
+  };
+
   const deductions = [
     {
       key: 'personalAllowance',
@@ -19,16 +34,26 @@ function DeductionSection({ formData, onToggle, onAmountChange }) {
     {
       key: 'insurance',
       label: 'ประกันชีวิต / ประกันสุขภาพ',
+      hint: [
+        'ประกันชีวิตทั่วไป + สุขภาพตนเอง: รวมกันลดหย่อนได้ตามจริงไม่เกิน 100,000 บาท',
+        '(ประกันสุขภาพตนเอง หักได้ไม่เกิน 25,000 บาท)',
+      ],
     },
     {
       key: 'socialSecurity',
       label: 'ประกันสังคม',
+      hint: [
+        'ผู้ประกันตน ม.33: หักตามจริงสูงสุดไม่เกิน 9,000 บาท/ปี',
+      ],
     },
     {
       key: 'investmentFund',
       label: 'กองทุนสำรองเลี้ยงชีพ / RMF',
+      hint: [
+        'ลดหย่อนได้สูงสุดไม่เกิน 30% ของเงินได้พึงประเมิน และไม่เกิน 500,000 บาท',
+      ],
     },
-  ]
+  ];
 
   return (
     <>
@@ -56,13 +81,15 @@ function DeductionSection({ formData, onToggle, onAmountChange }) {
               </div>
               <div className="input-wrapper">
                 <input
-                  type=""
+                  type="number"
                   id={`amount-${d.key}`}
-                  value={formData[d.key].amount}
-                  onChange={e => onAmountChange(d.key, Number(e.target.value) || 0)}
+                  value={formData[d.key].amount === 0 ? '' : formData[d.key].amount}
+                  onChange={e => handleAmountChange(d.key, e.target.value)}
+                  onKeyDown={blockInvalidChars}
                   disabled={!formData[d.key].enabled}
                   placeholder="0"
                   min="0"
+                  step="any"
                   style={{
                     opacity: formData[d.key].enabled ? 1 : 0.5,
                   }}
@@ -81,7 +108,7 @@ function DeductionSection({ formData, onToggle, onAmountChange }) {
         </div>
       </div>
     </>
-  )
+  );
 }
 
 export default DeductionSection

@@ -62,10 +62,14 @@ function HomePage() {
 
   const latest = history[0];
   
+  const expenseAndDeduction = Number(latest.total_deduction) + Number(latest.expense_deduction || 0);
+  const taxAmount = Number(latest.tax_amount);
+  const takeHomeIncome = Math.max(0, Number(latest.annual_income) - expenseAndDeduction - taxAmount);
+
   const chartData = [
-    { name: 'เงินได้สุทธิ', value: Number(latest.net_income), color: '#1a6ae0' },
-    { name: 'ค่าลดหย่อนรวม', value: Number(latest.total_deduction) + Number(latest.expense_deduction || 0), color: '#12b76a' },
-    { name: 'ภาษีที่ต้องจ่าย', value: Number(latest.tax_amount), color: '#f04438' }
+    { name: 'เงินได้สุทธิหลังหักภาษี', value: takeHomeIncome, color: '#1a6ae0' },
+    { name: 'หักค่าใช้จ่าย & ลดหย่อน', value: expenseAndDeduction, color: '#12b76a' },
+    { name: 'ภาษีที่ต้องจ่าย', value: taxAmount, color: '#f04438' }
   ];
 
   return (

@@ -22,6 +22,7 @@ CREATE TABLE tax_records (
     social_security DECIMAL(12,2) DEFAULT 0,
     investment_fund DECIMAL(12,2) DEFAULT 0,
     annual_income DECIMAL(12,2),
+    expense_deduction DECIMAL(12,2) DEFAULT 0,
     total_deduction DECIMAL(12,2),
     net_income DECIMAL(12,2),
     tax_amount DECIMAL(12,2),

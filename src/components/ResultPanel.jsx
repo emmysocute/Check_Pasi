@@ -1,4 +1,4 @@
-function ResultPanel({ result, visible, onSave, user, ...props }) {
+function ResultPanel({ result, visible }) {
   const fmt = (n) => n.toLocaleString('th-TH')
 
   return (

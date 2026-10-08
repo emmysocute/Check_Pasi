@@ -3,31 +3,53 @@ const router = express.Router();
 const db = require('../config/db');
 const auth = require('../middleware/auth');
 
+const toNonNegative = (val, max = 999999999.99) => {
+  const num = Number(val);
+  if (isNaN(num) || num < 0) return 0;
+  return Math.min(num, max);
+};
+
 // @route   POST /api/tax/calculate
 // @desc    Save tax calculation
 router.post('/calculate', auth, async (req, res) => {
   const {
     monthlyIncome, freelanceIncome, employmentType, personalAllowance, spouseAllowance, 
     childAllowance, insurance, socialSecurity, investmentFund,
-    annualIncome, totalDeduction, netIncome, taxAmount
+    annualIncome, expenseDeduction, totalDeduction, netIncome, taxAmount
   } = req.body;
+
   try {
+    const cleanMonthly = toNonNegative(monthlyIncome);
+    const cleanFreelance = toNonNegative(freelanceIncome);
+    const cleanEmployment = String(employmentType || 'salary').slice(0, 50);
+    const cleanPersonal = toNonNegative(personalAllowance, 60000);
+    const cleanSpouse = toNonNegative(spouseAllowance, 60000);
+    const cleanChild = toNonNegative(childAllowance);
+    const cleanInsurance = toNonNegative(insurance, 100000); // กฎหมายสรรพากร cap ไม่เกิน 100,000 บ.
+    const cleanSocialSecurity = toNonNegative(socialSecurity, 9000); // ปกติ ม.33 cap ไม่เกิน 9,000 บ.
+    const cleanInvestment = toNonNegative(investmentFund, 500000);
+    const cleanAnnual = toNonNegative(annualIncome);
+    const cleanExpense = toNonNegative(expenseDeduction, 100000);
+    const cleanTotalDeduction = toNonNegative(totalDeduction);
+    const cleanNet = toNonNegative(netIncome);
+    const cleanTax = toNonNegative(taxAmount);
+
     const result = await db.query(
       `INSERT INTO tax_records (
         user_id, monthly_income, freelance_income, employment_type, personal_allowance, 
         spouse_allowance, child_allowance, insurance, social_security, 
-        investment_fund, annual_income, total_deduction, net_income, tax_amount
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *`,
+        investment_fund, annual_income, expense_deduction, total_deduction, net_income, tax_amount
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *`,
       [
-        req.user.id, monthlyIncome, freelanceIncome, employmentType, personalAllowance,
-        spouseAllowance, childAllowance, insurance, socialSecurity,
-        investmentFund, annualIncome, totalDeduction, netIncome, taxAmount
+        req.user.id, cleanMonthly, cleanFreelance, cleanEmployment, cleanPersonal,
+        cleanSpouse, cleanChild, cleanInsurance, cleanSocialSecurity,
+        cleanInvestment, cleanAnnual, cleanExpense, cleanTotalDeduction, cleanNet, cleanTax
       ]
     );
     res.json(result.rows[0]);
     
   } catch (err) {
-    console.error(err.message);
+    console.error('Save tax error:', err.message);
     res.status(500).send('Server error');
   }
 });
