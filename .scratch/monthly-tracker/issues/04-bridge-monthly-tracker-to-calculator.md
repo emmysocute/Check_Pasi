@@ -4,10 +4,10 @@
 
 **Blocked by:** 01: Donation 10% Ceiling Indicator & Soft Warning, 03: 12-Month Part-time Income Tracker Page & Interactive UI
 
-**Status:** ready-for-agent
+**Status:** completed
 
-- [ ] Sticky summary section on `/monthly-tracker` includes a prominent call-to-action button: `🚀 ส่งยอดไปคำนวณภาษีประจำปี`
-- [ ] Clicking the button packages annual sums into navigation state (`location.state.prefill`) and redirects to `/calculator`
-- [ ] Tax Calculator page checks for incoming prefill state on mount and populates corresponding income (salary / freelance), withholding tax, and social security fields
-- [ ] Real-time tax calculation immediately executes with the prefilled values, displaying accurate net taxable income, progressive brackets, and refund or payable amounts
-- [ ] Users can edit or add additional deductions (such as insurance or donations) in `/calculator` normally after handover
+- [x] Sticky summary section on `/monthly-tracker` includes a prominent call-to-action button: `🚀 ส่งยอดไปคำนวณภาษีประจำปี`
+- [x] Clicking the button packages annual sums into navigation state (`location.state.prefill`) and redirects to `/calculator`
+- [x] Tax Calculator page checks for incoming prefill state on mount and populates corresponding income (salary / freelance), withholding tax, and social security fields
+- [x] Real-time tax calculation immediately executes with the prefilled values, displaying accurate net taxable income, progressive brackets, and refund or payable amounts
+- [x] Users can edit or add additional deductions (such as insurance or donations) in `/calculator` normally after handover

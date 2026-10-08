@@ -73,6 +73,20 @@ function TaxCalculatorPage() {
     if (location.state?.loadRecord) {
       return mapRecordToFormData(location.state.loadRecord);
     }
+    if (location.state?.fromTracker && location.state?.prefill) {
+      const p = location.state.prefill;
+      return {
+        ...DEFAULT_STATE,
+        employmentType: 'freelance',
+        monthlyIncome: 0,
+        freelanceIncome: p.freelanceIncome || 0,
+        withholdingTax: p.withholdingTax || 0,
+        socialSecurity: {
+          enabled: Boolean(p.socialSecurity > 0),
+          amount: p.socialSecurity || 0,
+        },
+      };
+    }
     return DEFAULT_STATE;
   });
   const [hasCalculated, setHasCalculated] = useState(true);
@@ -96,6 +110,15 @@ function TaxCalculatorPage() {
     if (location.state?.loadRecord) {
       setTimeout(() => {
         showToast('โหลดข้อมูลจากประวัติเรียบร้อยแล้ว', 'success');
+      }, 0);
+      navigate(location.pathname, { replace: true, state: {} });
+      return;
+    }
+
+    if (location.state?.fromTracker) {
+      const year = location.state.taxYear || '';
+      setTimeout(() => {
+        showToast(`🎉 นำเข้ายอดสะสม 12 เดือน ${year ? `ปี ${year}` : ''} เข้าสู่ระบบคำนวณภาษีเรียบร้อยแล้ว`, 'success');
       }, 0);
       navigate(location.pathname, { replace: true, state: {} });
       return;
