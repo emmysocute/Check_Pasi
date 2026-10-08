@@ -51,3 +51,29 @@ CREATE TABLE user_profiles (
     tax_id VARCHAR(20),
     updated_at TIMESTAMP DEFAULT NOW()
 );
+
+-- ตาราง monthly_income_records (บันทึกรายได้ 12 เดือน)
+CREATE TABLE monthly_income_records (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    tax_year INTEGER NOT NULL,
+    month INTEGER NOT NULL CHECK (month BETWEEN 1 AND 12),
+    income DECIMAL(12,2) DEFAULT 0,
+    withholding_tax DECIMAL(12,2) DEFAULT 0,
+    social_security DECIMAL(12,2) DEFAULT 0,
+    note TEXT DEFAULT '',
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+    UNIQUE(user_id, tax_year, month)
+);
+
+-- ตาราง monthly_tracker_settings (การตั้งค่าการแสดงผลคอลัมน์)
+CREATE TABLE monthly_tracker_settings (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+    show_withholding BOOLEAN DEFAULT true,
+    show_social_security BOOLEAN DEFAULT false,
+    show_note BOOLEAN DEFAULT false,
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+

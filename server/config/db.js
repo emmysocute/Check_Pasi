@@ -97,10 +97,32 @@ const runMigrations = async () => {
     `ALTER TABLE tax_records ADD COLUMN IF NOT EXISTS parent_own_mother BOOLEAN DEFAULT false`,
     `ALTER TABLE tax_records ADD COLUMN IF NOT EXISTS parent_spouse_father BOOLEAN DEFAULT false`,
     `ALTER TABLE tax_records ADD COLUMN IF NOT EXISTS parent_spouse_mother BOOLEAN DEFAULT false`,
-    `ALTER TABLE tax_records ADD COLUMN IF NOT EXISTS donation DECIMAL(12,2) DEFAULT 0`,
     `ALTER TABLE tax_records ADD COLUMN IF NOT EXISTS donation_education DECIMAL(12,2) DEFAULT 0`,
     `ALTER TABLE tax_records ADD COLUMN IF NOT EXISTS donation_general DECIMAL(12,2) DEFAULT 0`,
-    `ALTER TABLE tax_records ADD COLUMN IF NOT EXISTS tax_method VARCHAR(20) DEFAULT 'bracket'`
+    `ALTER TABLE tax_records ADD COLUMN IF NOT EXISTS tax_method VARCHAR(20) DEFAULT 'bracket'`,
+    // 6. ตาราง monthly_income_records (บันทึกรายได้ 12 เดือน)
+    `CREATE TABLE IF NOT EXISTS monthly_income_records (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+      tax_year INTEGER NOT NULL,
+      month INTEGER NOT NULL CHECK (month BETWEEN 1 AND 12),
+      income DECIMAL(12,2) DEFAULT 0,
+      withholding_tax DECIMAL(12,2) DEFAULT 0,
+      social_security DECIMAL(12,2) DEFAULT 0,
+      note TEXT DEFAULT '',
+      created_at TIMESTAMP DEFAULT NOW(),
+      updated_at TIMESTAMP DEFAULT NOW(),
+      UNIQUE(user_id, tax_year, month)
+    )`,
+    // 7. ตาราง monthly_tracker_settings (การตั้งค่าแสดงผลคอลัมน์)
+    `CREATE TABLE IF NOT EXISTS monthly_tracker_settings (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+      show_withholding BOOLEAN DEFAULT true,
+      show_social_security BOOLEAN DEFAULT false,
+      show_note BOOLEAN DEFAULT false,
+      updated_at TIMESTAMP DEFAULT NOW()
+    )`
   ];
 
   try {

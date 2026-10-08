@@ -35,6 +35,7 @@ app.get('/test', (req, res) => {
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/user', require('./routes/user'));
 app.use('/api/tax', require('./routes/tax'));
+app.use('/api/monthly-tracker', require('./routes/monthlyTracker'));
 
 const PORT = process.env.PORT || 3001;
 
