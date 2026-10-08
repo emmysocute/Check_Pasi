@@ -9,6 +9,7 @@ import RegisterPage from './pages/RegisterPage';
 import ProfilePage from './pages/ProfilePage';
 import HistoryPage from './pages/HistoryPage';
 import HomePage from './pages/HomePage';
+import MonthlyTrackerPage from './pages/MonthlyTrackerPage';
 import './App.css';
 
 // Protected Route Component
@@ -72,6 +73,12 @@ function App() {
           <Route path="/calculator" element={
             <AppLayout>
               <TaxCalculatorPage />
+            </AppLayout>
+          } />
+
+          <Route path="/monthly-tracker" element={
+            <AppLayout>
+              <MonthlyTrackerPage />
             </AppLayout>
           } />
           

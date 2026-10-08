@@ -29,6 +29,7 @@ function Sidebar({ isOpen = false, onClose = () => {} }) {
   const navItems = [
     { icon: '🏠', label: 'หน้าหลัก', path: '/' },
     { icon: '🧮', label: 'คำนวณภาษี', path: '/calculator' },
+    { icon: '📅', label: 'บันทึกรายได้ 12 เดือน', path: '/monthly-tracker' },
     { icon: '📋', label: 'ประวัติการคำนวณ', path: '/history', protected: true },
     { icon: '👤', label: 'โปรไฟล์', path: '/profile', protected: true },
   ];
