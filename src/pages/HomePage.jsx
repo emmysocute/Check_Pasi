@@ -123,24 +123,26 @@ function HomePage() {
 
           {/* สรุปสถานะภาษีสุทธิ */}
           {withholdingTax > 0 && netBalance < 0 ? (
-            <div style={{ marginTop: '20px', padding: '16px', background: '#ecfdf5', borderRadius: 'var(--radius-md)', border: '1px solid #a7f3d0' }}>
-              <div style={{ fontSize: '13px', color: '#047857', fontWeight: 600, marginBottom: '4px' }}>🎉 ได้รับเงินคืนภาษีสุทธิ (Refund)</div>
-              <div style={{ fontSize: '32px', fontWeight: '800', color: '#059669', lineHeight: '1' }}>
-                +{fmt(Math.abs(netBalance))} <span style={{ fontSize: '16px' }}>บาท</span>
+            <div className="home-refund-card">
+              <div className="home-refund-badge">🎉 ได้รับเงินคืนภาษีสุทธิ (Tax Refund)</div>
+              <div className="home-refund-label">ยอดเงินที่คุณจะได้รับคืนจากกรมสรรพากร</div>
+              <div className="home-refund-amount">
+                +{fmt(Math.abs(netBalance))} <span className="home-refund-unit">บาท</span>
               </div>
             </div>
           ) : withholdingTax > 0 && netBalance > 0 ? (
-            <div style={{ marginTop: '20px', padding: '16px', background: 'var(--red-50)', borderRadius: 'var(--radius-md)', border: '1px solid #fecaca' }}>
-              <div style={{ fontSize: '13px', color: 'var(--red-500)', fontWeight: 600, marginBottom: '4px' }}>⚠️ ภาษีที่ต้องชำระเพิ่มเติม</div>
-              <div style={{ fontSize: '32px', fontWeight: '800', color: 'var(--red-500)', lineHeight: '1' }}>
-                {fmt(netBalance)} <span style={{ fontSize: '16px' }}>บาท</span>
+            <div className="home-payable-card">
+              <div className="home-payable-badge">⚠️ ภาษีที่ต้องชำระเพิ่มเติม</div>
+              <div className="home-payable-label">ยอดภาษีที่ต้องนำส่งเพิ่มหลังหัก ณ ที่จ่าย</div>
+              <div className="home-payable-amount">
+                {fmt(netBalance)} <span className="home-payable-unit">บาท</span>
               </div>
             </div>
           ) : (
-            <div style={{ marginTop: '20px', padding: '16px', background: 'var(--red-50)', borderRadius: 'var(--radius-md)', border: '1px solid #fecaca' }}>
-              <div style={{ fontSize: '13px', color: 'var(--red-500)', marginBottom: '4px' }}>ภาษีที่ต้องชำระ (ประมาณการ)</div>
-              <div style={{ fontSize: '32px', fontWeight: '800', color: 'var(--red-500)', lineHeight: '1' }}>
-                {fmt(latest.tax_amount)} <span style={{ fontSize: '16px' }}>บาท</span>
+            <div className="home-default-tax-card">
+              <div className="home-default-tax-label">ภาษีที่ต้องชำระ (ประมาณการ)</div>
+              <div className="home-default-tax-amount">
+                {fmt(latest.tax_amount)} <span className="home-default-tax-unit">บาท</span>
               </div>
             </div>
           )}
