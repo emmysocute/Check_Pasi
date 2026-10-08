@@ -37,6 +37,11 @@
 5. **Database Persistence:**
    - PostgreSQL table `monthly_income_records` storing 12 rows per user per tax year with non-destructive auto-migrations.
    - Full API support: `GET /api/monthly-tracker?year=YYYY` and `POST /api/monthly-tracker`.
+6. **Donation 10% Ceiling Indicator & Soft Warning:**
+   - Expose `maxDonationCap` in `taxEngine.js` result calculation (`remainingBeforeDonation * 0.10`).
+   - Display a real-time info badge in `DeductionSection.jsx` showing the active annual 10% donation ceiling: *"ℹ️ สิทธิลดหย่อนเงินบริจาคสูงสุดของคุณในปีนี้: ไม่เกิน XX,XXX บาท (10% ของเงินได้หลังหักค่าใช้จ่ายและค่าลดหย่อนอื่น)"*.
+   - When the user's entered donation amount (education/sports/hospital × 2 + general) exceeds `maxDonationCap`, display a non-blocking soft warning badge: *"⚠️ ยอดบริจาคที่คุณกรอกเกินสิทธิสูงสุด (ระบบจะนำไปลดหย่อนให้ตามเพดานจริงที่ XX,XXX บาท)"*.
+   - Do NOT restrict or lock numeric input typing; allow users to type arbitrary figures from their receipts freely.
 
 ---
 
@@ -49,6 +54,7 @@
 5. As a user whose entire monthly income is subject to 3% tax, I want a quick shortcut button to calculate 3% in one tap.
 6. As a taxpayer who has recorded 12 months of income, I want to see my annual total and estimated tax refund, and click a button to send these totals directly into the tax calculator.
 7. As a registered user, I want my 12-month records saved in the database, so that I can return and update my figures at the end of every month throughout the year.
+8. As a taxpayer donating to charities, I want to see my actual 10% legal deduction ceiling in real-time, and get a friendly warning if my entered donation exceeds the legal limit, so that I understand why the deduction is capped without being blocked from entering my actual receipts.
 
 ---
 
@@ -90,8 +96,20 @@ CREATE TABLE IF NOT EXISTS monthly_tracker_settings (
   - Body: `{ year: number, records: Array<MonthlyRecord>, settings: Settings }`
   - Bulk upserts 12 rows using `ON CONFLICT (user_id, tax_year, month) DO UPDATE`.
 
+### Tax Engine & Donation Ceiling Integration
+- Pure calculation in `taxEngine.js`:
+  ```js
+  const remainingBeforeDonation = Math.max(0, sumIncome - expenseDeduction - preDonationDeduction);
+  const maxDonationCap = remainingBeforeDonation * 0.10;
+  const rawDonationClaim = (donationEducation * 2) + donationGeneral;
+  const actualDonationDeduction = Math.min(rawDonationClaim, maxDonationCap);
+  ```
+- Expose `maxDonationCap` and `rawDonationClaim` in the engine return object.
+- `DeductionSection.jsx` reads `maxDonationCap` and displays the live indicator badge and soft warning banner when `rawDonationClaim > maxDonationCap`.
+
 ---
 
 ## 5. Out of Scope
 - Direct bank transaction OCR or bank statement parsing.
 - Automated tax filing submission to Revenue Department APIs.
+
