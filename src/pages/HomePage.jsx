@@ -73,7 +73,7 @@ function HomePage() {
       <div className="welcome-banner animate-in" style={{ marginBottom: '24px' }}>
         <div className="welcome-text">
           <h2>สถิติภาษีล่าสุดของคุณ</h2>
-          <p>สรุปข้อมูลจากการคำนวณครั้งล่าสุด (ปีภาษี 2568)</p>
+          <p>สรุปข้อมูลจากการคำนวณครั้งล่าสุด (ปีภาษี 2569)</p>
         </div>
         <div className="welcome-badge">
           <div className="welcome-badge-icon">📊</div>

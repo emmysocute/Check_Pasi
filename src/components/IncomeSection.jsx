@@ -9,7 +9,7 @@ function IncomeSection({ monthlyIncome, freelanceIncome, employmentType, onIncom
         <div className="form-row">
           <div className="form-group">
             <label className="form-label">
-              รายได้ต่อเดือน ()
+              รายได้ต่อเดือน
             </label>
             <div className="input-wrapper">
               <span className="input-prefix">฿</span>
@@ -27,6 +27,7 @@ function IncomeSection({ monthlyIncome, freelanceIncome, employmentType, onIncom
           <div className="form-group">
             <label className="form-label">
               รายได้(ฟรีแลนซ์/อื่นๆ)
+              
             </label>
             <div className="input-wrapper">
               <span className="input-prefix">฿</span>

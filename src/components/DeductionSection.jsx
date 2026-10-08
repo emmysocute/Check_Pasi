@@ -11,6 +11,10 @@ function DeductionSection({ formData, onToggle, onAmountChange }) {
     {
       key: 'childAllowance',
       label: 'บุตร',
+      hint: [
+        'บุตรคนแรก / บุตรบุญธรรม: คนละ 30,000 บาท (บุตรบุญธรรมไม่เกิน 3 คน)',
+        'บุตรคนที่ 2 ขึ้นไป (เกิดปี 2561 เป็นต้นไป): คนละ 60,000 บาท',
+      ],
     },
     {
       key: 'insurance',
@@ -22,9 +26,8 @@ function DeductionSection({ formData, onToggle, onAmountChange }) {
     },
     {
       key: 'investmentFund',
-      label: 'กองทุนสำรองเลี้ยงชีพ / RMF / SSF',
+      label: 'กองทุนสำรองเลี้ยงชีพ / RMF',
     },
-
   ]
 
   return (
@@ -66,6 +69,13 @@ function DeductionSection({ formData, onToggle, onAmountChange }) {
                 />
                 <span className="input-suffix">บาท</span>
               </div>
+              {d.hint && formData[d.key].enabled && (
+                <div className="deduction-hint">
+                  {d.hint.map((text, idx) => (
+                    <div key={idx} className="deduction-hint-item">• {text}</div>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
         </div>

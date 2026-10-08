@@ -12,7 +12,7 @@ const DEFAULT_STATE = {
   employmentType: 'salary',
   personalAllowance: { enabled: true, amount: 60000 },
   spouseAllowance: { enabled: false, amount: 60000 },
-  childAllowance: {enabled: false, amount: 0 },
+  childAllowance: { enabled: false, amount: 0 },
   insurance: { enabled: false, amount: 0 },
   socialSecurity: { enabled: true, amount: 7200 },
   investmentFund: { enabled: false, amount: 0 },
@@ -24,7 +24,7 @@ function TaxCalculatorPage() {
   const { user } = useAuth();
   useEffect(() => {
     if (!user) return;
-    
+
     const fetchLatest = async () => {
       try {
         const res = await api.get('/tax/history');
@@ -38,6 +38,7 @@ function TaxCalculatorPage() {
             employmentType: latest.employment_type || 'salary',
             personalAllowance: { enabled: Number(latest.personal_allowance) > 0, amount: Number(latest.personal_allowance) || 60000 },
             spouseAllowance: { enabled: Number(latest.spouse_allowance) > 0, amount: Number(latest.spouse_allowance) || 60000 },
+            childAllowance: { enabled: Number(latest.child_allowance) > 0, amount: Number(latest.child_allowance) || 0 },
             insurance: { enabled: Number(latest.insurance) > 0, amount: Number(latest.insurance) || 0 },
             socialSecurity: { enabled: Number(latest.social_security) > 0, amount: Number(latest.social_security) || 7200 },
             investmentFund: { enabled: Number(latest.investment_fund) > 0, amount: Number(latest.investment_fund) || 0 },
@@ -78,8 +79,16 @@ function TaxCalculatorPage() {
     if (formData.spouseAllowance.enabled) totalDeduction += formData.spouseAllowance.amount;
     if (formData.insurance.enabled) totalDeduction += formData.insurance.amount;
     if (formData.socialSecurity.enabled) totalDeduction += formData.socialSecurity.amount;
-    if (formData.investmentFund.enabled) totalDeduction += formData.investmentFund.amount;
     if (formData.childAllowance.enabled) totalDeduction += formData.childAllowance.amount;
+    if (formData.investmentFund.enabled) {
+      // 1. คำนวณสิทธิสูงสุดที่ซื้อได้ (30% ของรายได้ และ ไม่เกิน 500,000 บาท)
+      let maxAllowed = Math.min(sumIncome * 0.3, 500000);
+
+      // 2. นำจำนวนเงินที่ซื้อจริง มาเทียบกับสิทธิสูงสุดที่ได้
+      let actualDeduction = Math.min(formData.investmentFund.amount, maxAllowed);
+
+      totalDeduction += actualDeduction;
+    }
 
     const netIncome = Math.max(0, sumIncome - expenseDeduction - totalDeduction);
 
@@ -105,7 +114,7 @@ function TaxCalculatorPage() {
     }
 
     return {
-      annualIncome,
+      annualIncome: sumIncome,
       expenseDeduction,
       totalDeduction,
       netIncome,
@@ -115,7 +124,7 @@ function TaxCalculatorPage() {
 
   const handleCalculateAndSave = useCallback(async () => {
     setHasCalculated(true);
-    
+
     // Auto save if user is logged in
     if (user) {
       try {
@@ -125,18 +134,12 @@ function TaxCalculatorPage() {
           employmentType: formData.employmentType,
           personalAllowance: formData.personalAllowance.enabled ? formData.personalAllowance.amount : 0,
           spouseAllowance: formData.spouseAllowance.enabled ? formData.spouseAllowance.amount : 0,
-          childAllowance: 0,
+          childAllowance: formData.childAllowance.enabled ? formData.childAllowance.amount : 0,
           insurance: formData.insurance.enabled ? formData.insurance.amount : 0,
           socialSecurity: formData.socialSecurity.enabled ? formData.socialSecurity.amount : 0,
           investmentFund: formData.investmentFund.enabled ? formData.investmentFund.amount : 0,
-          annualIncome: (formData.monthlyIncome * 12) + formData.freelanceIncome,
-          totalDeduction: [
-            formData.personalAllowance.enabled ? formData.personalAllowance.amount : 0,
-            formData.spouseAllowance.enabled ? formData.spouseAllowance.amount : 0,
-            formData.insurance.enabled ? formData.insurance.amount : 0,
-            formData.socialSecurity.enabled ? formData.socialSecurity.amount : 0,
-            formData.investmentFund.enabled ? formData.investmentFund.amount : 0,
-          ].reduce((a, b) => a + b, 0),
+          annualIncome: taxResult.annualIncome,
+          totalDeduction: taxResult.totalDeduction,
           netIncome: taxResult.netIncome,
           taxAmount: taxResult.tax
         });
@@ -150,7 +153,7 @@ function TaxCalculatorPage() {
 
   const handleSave = async () => {
     if (!user) return alert('กรุณาเข้าสู่ระบบก่อนบันทึกข้อมูล');
-    
+
     try {
       await api.post('/tax/calculate', {
         monthlyIncome: formData.monthlyIncome,
@@ -158,7 +161,7 @@ function TaxCalculatorPage() {
         employmentType: formData.employmentType,
         personalAllowance: formData.personalAllowance.enabled ? formData.personalAllowance.amount : 0,
         spouseAllowance: formData.spouseAllowance.enabled ? formData.spouseAllowance.amount : 0,
-        childAllowance: 0,
+        childAllowance: formData.childAllowance.enabled ? formData.childAllowance.amount : 0,
         insurance: formData.insurance.enabled ? formData.insurance.amount : 0,
         socialSecurity: formData.socialSecurity.enabled ? formData.socialSecurity.amount : 0,
         investmentFund: formData.investmentFund.enabled ? formData.investmentFund.amount : 0,
@@ -211,7 +214,7 @@ function TaxCalculatorPage() {
 
       {/* Floating Quick Jump Bar สำหรับมือถือ */}
       <div className="mobile-quick-jump-container">
-        <button 
+        <button
           type="button"
           className="floating-quick-jump"
           onClick={() => {
