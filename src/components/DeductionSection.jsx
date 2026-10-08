@@ -53,6 +53,34 @@ function DeductionSection({ formData, onToggle, onAmountChange }) {
         'ลดหย่อนได้สูงสุดไม่เกิน 30% ของเงินได้พึงประเมิน และไม่เกิน 500,000 บาท',
       ],
     },
+    {
+      key: 'homeLoanInterest',
+      label: 'ดอกเบี้ยเงินกู้ยืมเพื่อซื้อที่อยู่อาศัย (บ้าน/คอนโด)',
+      hint: [
+        'ลดหย่อนได้ตามจำนวนที่จ่ายจริง สูงสุดไม่เกิน 100,000 บาท',
+      ],
+    },
+    {
+      key: 'parentAllowance',
+      label: 'ค่าอุปการะเลี้ยงดูบิดามารดา',
+      hint: [
+        'ลดหย่อนคนละ 30,000 บาท (บิดามารดาอายุ 60 ปีขึ้นไป และรายได้ไม่เกิน 30,000 บาท/ปี)',
+      ],
+    },
+    {
+      key: 'donationEducation',
+      label: 'เงินบริจาคเพื่อการศึกษา / กีฬา / รพ.รัฐ',
+      hint: [
+        'ลดหย่อนได้ 2 เท่าของยอดจ่ายจริง (รวมบริจาคทุกประเภทไม่เกิน 10% ของเงินได้หลังหักลดหย่อน)',
+      ],
+    },
+    {
+      key: 'donationGeneral',
+      label: 'เงินบริจาคทั่วไป / สาธารณกุศล',
+      hint: [
+        'ลดหย่อนได้ตามจำนวนที่จ่ายจริง (รวมบริจาคทุกประเภทไม่เกิน 10% ของเงินได้หลังหักลดหย่อน)',
+      ],
+    },
   ];
 
   return (
@@ -63,48 +91,51 @@ function DeductionSection({ formData, onToggle, onAmountChange }) {
       </div>
       <div className="section-body">
         <div className="deduction-grid">
-          {deductions.map(d => (
-            <div className="deduction-item" key={d.key}>
-              <div className="deduction-header">
-                <span className="deduction-label">
-                  {d.label}
-                </span>
-                <label className="toggle-switch">
-                  <input
-                    type="checkbox"
-                    id={`toggle-${d.key}`}
-                    checked={formData[d.key].enabled}
-                    onChange={e => onToggle(d.key, e.target.checked)}
-                  />
-                  <span className="toggle-slider" />
-                </label>
-              </div>
-              <div className="input-wrapper">
-                <input
-                  type="number"
-                  id={`amount-${d.key}`}
-                  value={formData[d.key].amount === 0 ? '' : formData[d.key].amount}
-                  onChange={e => handleAmountChange(d.key, e.target.value)}
-                  onKeyDown={blockInvalidChars}
-                  disabled={!formData[d.key].enabled}
-                  placeholder="0"
-                  min="0"
-                  step="any"
-                  style={{
-                    opacity: formData[d.key].enabled ? 1 : 0.5,
-                  }}
-                />
-                <span className="input-suffix">บาท</span>
-              </div>
-              {d.hint && formData[d.key].enabled && (
-                <div className="deduction-hint">
-                  {d.hint.map((text, idx) => (
-                    <div key={idx} className="deduction-hint-item">• {text}</div>
-                  ))}
+          {deductions.map(d => {
+            const item = formData[d.key] || { enabled: false, amount: 0 };
+            return (
+              <div className="deduction-item" key={d.key}>
+                <div className="deduction-header">
+                  <span className="deduction-label">
+                    {d.label}
+                  </span>
+                  <label className="toggle-switch">
+                    <input
+                      type="checkbox"
+                      id={`toggle-${d.key}`}
+                      checked={Boolean(item.enabled)}
+                      onChange={e => onToggle(d.key, e.target.checked)}
+                    />
+                    <span className="toggle-slider" />
+                  </label>
                 </div>
-              )}
-            </div>
-          ))}
+                <div className="input-wrapper">
+                  <input
+                    type="number"
+                    id={`amount-${d.key}`}
+                    value={item.amount === 0 ? '' : item.amount}
+                    onChange={e => handleAmountChange(d.key, e.target.value)}
+                    onKeyDown={blockInvalidChars}
+                    disabled={!item.enabled}
+                    placeholder="0"
+                    min="0"
+                    step="any"
+                    style={{
+                      opacity: item.enabled ? 1 : 0.5,
+                    }}
+                  />
+                  <span className="input-suffix">บาท</span>
+                </div>
+                {d.hint && item.enabled && (
+                  <div className="deduction-hint">
+                    {d.hint.map((text, idx) => (
+                      <div key={idx} className="deduction-hint-item">• {text}</div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     </>

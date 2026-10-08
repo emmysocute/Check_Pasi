@@ -15,6 +15,7 @@ router.post('/calculate', auth, async (req, res) => {
   const {
     monthlyIncome, freelanceIncome, withholdingTax, employmentType, personalAllowance, spouseAllowance, 
     childAllowance, insurance, socialSecurity, investmentFund,
+    homeLoanInterest, parentAllowance, donation,
     annualIncome, expenseDeduction, totalDeduction, netIncome, taxAmount
   } = req.body;
 
@@ -29,6 +30,9 @@ router.post('/calculate', auth, async (req, res) => {
     const cleanInsurance = toNonNegative(insurance, 100000); // กฎหมายสรรพากร cap ไม่เกิน 100,000 บ.
     const cleanSocialSecurity = toNonNegative(socialSecurity, 9000); // ปกติ ม.33 cap ไม่เกิน 9,000 บ.
     const cleanInvestment = toNonNegative(investmentFund, 500000);
+    const cleanHomeLoan = toNonNegative(homeLoanInterest, 100000);
+    const cleanParent = toNonNegative(parentAllowance, 120000);
+    const cleanDonation = toNonNegative(donation);
     const cleanAnnual = toNonNegative(annualIncome);
     const cleanExpense = toNonNegative(expenseDeduction, 100000);
     const cleanTotalDeduction = toNonNegative(totalDeduction);
@@ -39,12 +43,14 @@ router.post('/calculate', auth, async (req, res) => {
       `INSERT INTO tax_records (
         user_id, monthly_income, freelance_income, withholding_tax, employment_type, personal_allowance, 
         spouse_allowance, child_allowance, insurance, social_security, 
-        investment_fund, annual_income, expense_deduction, total_deduction, net_income, tax_amount
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING *`,
+        investment_fund, home_loan_interest, parent_allowance, donation,
+        annual_income, expense_deduction, total_deduction, net_income, tax_amount
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19) RETURNING *`,
       [
         req.user.id, cleanMonthly, cleanFreelance, cleanWithholding, cleanEmployment, cleanPersonal,
         cleanSpouse, cleanChild, cleanInsurance, cleanSocialSecurity,
-        cleanInvestment, cleanAnnual, cleanExpense, cleanTotalDeduction, cleanNet, cleanTax
+        cleanInvestment, cleanHomeLoan, cleanParent, cleanDonation,
+        cleanAnnual, cleanExpense, cleanTotalDeduction, cleanNet, cleanTax
       ]
     );
     res.json(result.rows[0]);

@@ -49,6 +49,9 @@ const runMigrations = async () => {
       net_income DECIMAL(12,2),
       tax_amount DECIMAL(12,2),
       withholding_tax DECIMAL(12,2) DEFAULT 0,
+      home_loan_interest DECIMAL(12,2) DEFAULT 0,
+      parent_allowance DECIMAL(12,2) DEFAULT 0,
+      donation DECIMAL(12,2) DEFAULT 0,
       calculated_at TIMESTAMP DEFAULT NOW()
     )`,
     // 3. ตาราง user_profiles
@@ -80,7 +83,10 @@ const runMigrations = async () => {
     `ALTER TABLE tax_records ADD COLUMN IF NOT EXISTS social_security DECIMAL(12,2) DEFAULT 0`,
     `ALTER TABLE tax_records ADD COLUMN IF NOT EXISTS investment_fund DECIMAL(12,2) DEFAULT 0`,
     `ALTER TABLE tax_records ADD COLUMN IF NOT EXISTS expense_deduction DECIMAL(12,2) DEFAULT 0`,
-    `ALTER TABLE tax_records ADD COLUMN IF NOT EXISTS withholding_tax DECIMAL(12,2) DEFAULT 0`
+    `ALTER TABLE tax_records ADD COLUMN IF NOT EXISTS withholding_tax DECIMAL(12,2) DEFAULT 0`,
+    `ALTER TABLE tax_records ADD COLUMN IF NOT EXISTS home_loan_interest DECIMAL(12,2) DEFAULT 0`,
+    `ALTER TABLE tax_records ADD COLUMN IF NOT EXISTS parent_allowance DECIMAL(12,2) DEFAULT 0`,
+    `ALTER TABLE tax_records ADD COLUMN IF NOT EXISTS donation DECIMAL(12,2) DEFAULT 0`
   ];
 
   try {

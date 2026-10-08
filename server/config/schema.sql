@@ -27,6 +27,9 @@ CREATE TABLE tax_records (
     net_income DECIMAL(12,2),
     tax_amount DECIMAL(12,2),
     withholding_tax DECIMAL(12,2) DEFAULT 0,
+    home_loan_interest DECIMAL(12,2) DEFAULT 0,
+    parent_allowance DECIMAL(12,2) DEFAULT 0,
+    donation DECIMAL(12,2) DEFAULT 0,
     calculated_at TIMESTAMP DEFAULT NOW()
 );
 

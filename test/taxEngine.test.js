@@ -104,3 +104,23 @@ test('Scenario 5: Withholding Tax and Tax Refund vs Payable', () => {
   assert.equal(payableResult.refundAmount, 0);
   assert.equal(payableResult.payableAmount, 5600);
 });
+
+test('Scenario 6: Extended deductions (Home loan cap, parents, donations)', () => {
+  const result = calculateTax({
+    monthlyIncome: 80000, // 960,000/yr. Expense = 100,000.
+    personalAllowance: 60000,
+    socialSecurity: 9000,
+    homeLoanInterest: 140000, // should cap at 100,000
+    parentAllowance: 60000, // 2 parents = 60,000
+    donationEducation: 10000, // 10,000 * 2 = 20,000
+    donationGeneral: 5000, // 5,000 -> Total eligible donation = 25,000
+  });
+
+  assert.equal(result.itemizedDeductions.homeLoanInterest, 100000);
+  assert.equal(result.itemizedDeductions.parentAllowance, 60000);
+  assert.equal(result.itemizedDeductions.donation, 25000);
+  // Total deduction = 60,000 + 9,000 + 100,000 + 60,000 + 25,000 = 254,000
+  assert.equal(result.totalDeduction, 254000);
+  // Net income = 960,000 - 100,000 - 254,000 = 606,000
+  assert.equal(result.netIncome, 606000);
+});

@@ -19,6 +19,10 @@ const DEFAULT_STATE = {
   insurance: { enabled: false, amount: 0 },
   socialSecurity: { enabled: true, amount: 9000 },
   investmentFund: { enabled: false, amount: 0 },
+  homeLoanInterest: { enabled: false, amount: 0 },
+  parentAllowance: { enabled: false, amount: 0 },
+  donationEducation: { enabled: false, amount: 0 },
+  donationGeneral: { enabled: false, amount: 0 },
 };
 
 function TaxCalculatorPage() {
@@ -59,6 +63,10 @@ function TaxCalculatorPage() {
             insurance: { enabled: Number(latest.insurance) > 0, amount: Math.min(Number(latest.insurance) || 0, 100000) },
             socialSecurity: { enabled: Number(latest.social_security) > 0, amount: Math.min(Number(latest.social_security) || 0, 9000) },
             investmentFund: { enabled: Number(latest.investment_fund) > 0, amount: Number(latest.investment_fund) || 0 },
+            homeLoanInterest: { enabled: Number(latest.home_loan_interest) > 0, amount: Math.min(Number(latest.home_loan_interest) || 0, 100000) },
+            parentAllowance: { enabled: Number(latest.parent_allowance) > 0, amount: Number(latest.parent_allowance) || 0 },
+            donationEducation: { enabled: false, amount: 0 },
+            donationGeneral: { enabled: Number(latest.donation) > 0, amount: Number(latest.donation) || 0 },
           }));
         }
       } catch (err) {
@@ -110,6 +118,9 @@ function TaxCalculatorPage() {
         insurance: formData.insurance.enabled ? Math.min(Math.max(0, Number(formData.insurance.amount) || 0), 100000) : 0,
         socialSecurity: formData.socialSecurity.enabled ? Math.min(Math.max(0, Number(formData.socialSecurity.amount) || 0), 9000) : 0,
         investmentFund: formData.investmentFund.enabled ? Math.max(0, Number(formData.investmentFund.amount) || 0) : 0,
+        homeLoanInterest: formData.homeLoanInterest.enabled ? Math.min(Math.max(0, Number(formData.homeLoanInterest.amount) || 0), 100000) : 0,
+        parentAllowance: formData.parentAllowance.enabled ? Math.max(0, Number(formData.parentAllowance.amount) || 0) : 0,
+        donation: taxResult.itemizedDeductions?.donation || 0,
         annualIncome: taxResult.annualIncome,
         expenseDeduction: taxResult.expenseDeduction,
         totalDeduction: taxResult.totalDeduction,
