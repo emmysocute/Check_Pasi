@@ -1,17 +1,8 @@
-function DeductionSection({ formData, onToggle, onAmountChange }) {
-  const blockInvalidChars = (e) => {
-    if (['-', '+', 'e', 'E'].includes(e.key)) {
-      e.preventDefault();
-    }
-  };
+import { blockInvalidChars, sanitizeNumericInput } from '../utils/numberInput';
 
+function DeductionSection({ formData, onToggle, onAmountChange }) {
   const handleAmountChange = (key, val) => {
-    if (val === '') {
-      onAmountChange(key, 0);
-      return;
-    }
-    const num = Math.max(0, Math.min(Number(val) || 0, 999999999));
-    onAmountChange(key, num);
+    onAmountChange(key, sanitizeNumericInput(val));
   };
 
   const deductions = [

@@ -1,3 +1,5 @@
+import { blockInvalidChars, sanitizeNumericInput } from '../utils/numberInput';
+
 function IncomeSection({ 
   monthlyIncome, 
   freelanceIncome, 
@@ -6,40 +8,16 @@ function IncomeSection({
   onFreelanceChange,
   onWithholdingChange 
 }) {
-  const blockInvalidChars = (e) => {
-    if (['-', '+', 'e', 'E'].includes(e.key)) {
-      e.preventDefault();
-    }
-  };
-
   const handleIncomeChange = (e) => {
-    const val = e.target.value;
-    if (val === '') {
-      onIncomeChange(0);
-      return;
-    }
-    const num = Math.max(0, Math.min(Number(val) || 0, 999999999));
-    onIncomeChange(num);
+    onIncomeChange(sanitizeNumericInput(e.target.value));
   };
 
   const handleFreelanceChange = (e) => {
-    const val = e.target.value;
-    if (val === '') {
-      onFreelanceChange(0);
-      return;
-    }
-    const num = Math.max(0, Math.min(Number(val) || 0, 999999999));
-    onFreelanceChange(num);
+    onFreelanceChange(sanitizeNumericInput(e.target.value));
   };
 
   const handleWithholdingChange = (e) => {
-    const val = e.target.value;
-    if (val === '') {
-      onWithholdingChange(0);
-      return;
-    }
-    const num = Math.max(0, Math.min(Number(val) || 0, 999999999));
-    onWithholdingChange(num);
+    onWithholdingChange(sanitizeNumericInput(e.target.value));
   };
 
   const formatPreview = (num) => {
