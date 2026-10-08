@@ -80,10 +80,13 @@ router.get('/', auth, async (req, res) => {
 // @desc    Bulk save/upsert 12-month records and column settings
 router.post('/', auth, async (req, res) => {
   const { year, records, settings } = req.body;
+  const client = await db.pool.connect();
 
   try {
     const rawYear = parseInt(year, 10);
     const taxYear = !isNaN(rawYear) && rawYear > 1900 ? rawYear : new Date().getFullYear();
+
+    await client.query('BEGIN');
 
     // 1. Upsert column settings if provided
     let updatedSettings = {
@@ -97,7 +100,7 @@ router.post('/', auth, async (req, res) => {
       const showSocialSecurity = Boolean(settings.showSocialSecurity);
       const showNote = Boolean(settings.showNote);
 
-      await db.query(
+      await client.query(
         `INSERT INTO monthly_tracker_settings (user_id, show_withholding, show_social_security, show_note, updated_at)
          VALUES ($1, $2, $3, $4, NOW())
          ON CONFLICT (user_id) DO UPDATE SET
@@ -125,7 +128,7 @@ router.post('/', auth, async (req, res) => {
           const socialSecurity = sanitizeNum(item.socialSecurity);
           const note = String(item.note || '').slice(0, 500);
 
-          await db.query(
+          await client.query(
             `INSERT INTO monthly_income_records (user_id, tax_year, month, income, withholding_tax, social_security, note, updated_at)
              VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
              ON CONFLICT (user_id, tax_year, month) DO UPDATE SET
@@ -141,10 +144,12 @@ router.post('/', auth, async (req, res) => {
     }
 
     // 3. Return canonical updated state
-    const recordsRes = await db.query(
+    const recordsRes = await client.query(
       'SELECT month, income, withholding_tax, social_security, note FROM monthly_income_records WHERE user_id = $1 AND tax_year = $2 ORDER BY month ASC',
       [req.user.id, taxYear]
     );
+
+    await client.query('COMMIT');
 
     const recordMap = {};
     recordsRes.rows.forEach(r => {
@@ -175,8 +180,11 @@ router.post('/', auth, async (req, res) => {
       settings: updatedSettings
     });
   } catch (err) {
+    await client.query('ROLLBACK');
     console.error('Save monthly tracker error:', err);
     res.status(500).json({ message: 'เกิดข้อผิดพลาดในการบันทึกข้อมูลรายเดือน' });
+  } finally {
+    client.release();
   }
 });
 

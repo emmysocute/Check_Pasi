@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../utils/api';
 import Toast from '../components/Toast';
+import useToast from '../hooks/useToast';
 import { blockInvalidChars, sanitizeNumericInput } from '../utils/numberInput';
 import {
   MONTH_NAMES_TH,
@@ -22,6 +23,7 @@ const TAX_YEARS = [
 function MonthlyTrackerPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { toasts, showToast, dismissToast } = useToast();
 
   const [selectedYear, setSelectedYear] = useState(2026);
   const [records, setRecords] = useState(createDefaultMonthlyRecords());
@@ -32,19 +34,6 @@ function MonthlyTrackerPage() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [toasts, setToasts] = useState([]);
-
-  const showToast = useCallback((message, type = 'success') => {
-    const id = Date.now() + Math.random();
-    setToasts(prev => [...prev, { id, message, type }]);
-    setTimeout(() => {
-      setToasts(prev => prev.filter(t => t.id !== id));
-    }, 3800);
-  }, []);
-
-  const dismissToast = useCallback((id) => {
-    setToasts(prev => prev.filter(t => t.id !== id));
-  }, []);
 
   // Fetch data from backend when year changes or user logs in
   useEffect(() => {
@@ -178,6 +167,17 @@ function MonthlyTrackerPage() {
 
   // Bridge to Calculator Page
   const handleSendToCalculator = useCallback(() => {
+    // If logged in, perform silent background auto-save so user never loses their monthly entries
+    if (user) {
+      api.post('/monthly-tracker', {
+        year: selectedYear,
+        records,
+        settings,
+      }).catch(err => {
+        console.error('Silent auto-save monthly tracker error:', err);
+      });
+    }
+
     navigate('/calculator', {
       state: {
         fromTracker: true,
@@ -189,7 +189,7 @@ function MonthlyTrackerPage() {
         },
       },
     });
-  }, [navigate, selectedYear, totals]);
+  }, [navigate, selectedYear, totals, user, records, settings]);
 
   return (
     <div className="tracker-page-container has-floating-bar animate-fade-in">

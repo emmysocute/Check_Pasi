@@ -3196,6 +3196,71 @@ body {
   color: var(--gray-500);
 }
 
+/* ===== Imported 12-Month Tracker Banner in Tax Calculator ===== */
+.imported-tracker-banner {
+  margin: 0 0 16px 0;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(6, 148, 162, 0.08));
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.08);
+  animation: fadeIn 0.2s ease-out;
+}
+
+.imported-tracker-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.imported-tracker-icon {
+  font-size: 24px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.imported-tracker-title {
+  font-weight: 700;
+  font-size: 15px;
+  color: #065f46;
+  margin-bottom: 4px;
+}
+
+.imported-tracker-stats {
+  font-size: 13px;
+  color: #047857;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.imported-tracker-stats strong {
+  font-weight: 750;
+  color: #064e3b;
+}
+
+.imported-tracker-close {
+  background: transparent;
+  border: none;
+  color: #065f46;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.imported-tracker-close:hover {
+  background: rgba(16, 185, 129, 0.2);
+  color: #047857;
+}
+
 
 
 

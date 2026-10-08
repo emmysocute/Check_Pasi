@@ -6,6 +6,7 @@ import IncomeSection from '../components/IncomeSection';
 import DeductionSection from '../components/DeductionSection';
 import ResultPanel from '../components/ResultPanel';
 import Toast from '../components/Toast';
+import useToast from '../hooks/useToast';
 import api from '../utils/api';
 import { useAuth } from '../contexts/AuthContext';
 import { calculateTaxFromFormData } from '../utils/taxEngine';
@@ -103,20 +104,8 @@ function TaxCalculatorPage() {
   });
   const [hasCalculated, setHasCalculated] = useState(true);
   const [showResetModal, setShowResetModal] = useState(false);
-  const [toasts, setToasts] = useState([]);
+  const { toasts, showToast, dismissToast } = useToast();
   const { user } = useAuth();
-
-  const showToast = useCallback((message, type = 'success') => {
-    const id = Date.now() + Math.random();
-    setToasts(prev => [...prev, { id, message, type }]);
-    setTimeout(() => {
-      setToasts(prev => prev.filter(t => t.id !== id));
-    }, 3800);
-  }, []);
-
-  const dismissToast = useCallback((id) => {
-    setToasts(prev => prev.filter(t => t.id !== id));
-  }, []);
 
   useEffect(() => {
     if (location.state?.loadRecord) {
@@ -260,25 +249,14 @@ function TaxCalculatorPage() {
         <WelcomeBanner />
 
         {trackerImportInfo && (
-          <div className="imported-tracker-banner" style={{
-            margin: '0 0 16px 0',
-            padding: '16px 20px',
-            background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(6, 148, 162, 0.08))',
-            border: '1px solid rgba(16, 185, 129, 0.35)',
-            borderRadius: 'var(--radius-lg)',
-            display: 'flex',
-            alignItems: 'flex-start',
-            justifyContent: 'space-between',
-            gap: '14px',
-            boxShadow: '0 4px 16px rgba(16, 185, 129, 0.08)'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-              <span style={{ fontSize: '24px', lineHeight: 1 }}>📥</span>
+          <div className="imported-tracker-banner">
+            <div className="imported-tracker-left">
+              <span className="imported-tracker-icon">📥</span>
               <div>
-                <div style={{ fontWeight: 700, fontSize: '15px', color: '#065f46', marginBottom: '4px' }}>
+                <div className="imported-tracker-title">
                   นำเข้ายอดสะสม 12 เดือน {trackerImportInfo.taxYear ? `(ปีภาษี ${trackerImportInfo.taxYear})` : ''} เรียบร้อยแล้ว
                 </div>
-                <div style={{ fontSize: '13px', color: '#047857', display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
+                <div className="imported-tracker-stats">
                   <span>รายได้รวมทั้งปี: <strong>฿{trackerImportInfo.income.toLocaleString('th-TH')}</strong></span>
                   {trackerImportInfo.withholdingTax > 0 && (
                     <span>• ภาษีหัก ณ ที่จ่ายสะสม: <strong>฿{trackerImportInfo.withholdingTax.toLocaleString('th-TH')}</strong></span>
@@ -291,16 +269,8 @@ function TaxCalculatorPage() {
             </div>
             <button
               type="button"
+              className="imported-tracker-close"
               onClick={() => setTrackerImportInfo(null)}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: '#065f46',
-                cursor: 'pointer',
-                fontSize: '18px',
-                lineHeight: 1,
-                padding: '2px 6px'
-              }}
               title="ปิดการแจ้งเตือน"
             >
               ✕

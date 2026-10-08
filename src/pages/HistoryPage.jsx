@@ -1,30 +1,19 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import Toast from '../components/Toast';
+import useToast from '../hooks/useToast';
 
 function HistoryPage() {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [toasts, setToasts] = useState([]);
   const [deleteCandidate, setDeleteCandidate] = useState(null);
+  const { toasts, showToast, dismissToast } = useToast();
   const navigate = useNavigate();
 
   const handleLoadRecord = (record) => {
     navigate('/calculator', { state: { loadRecord: record } });
   };
-
-  const showToast = useCallback((message, type = 'success') => {
-    const id = Date.now() + Math.random();
-    setToasts(prev => [...prev, { id, message, type }]);
-    setTimeout(() => {
-      setToasts(prev => prev.filter(t => t.id !== id));
-    }, 3800);
-  }, []);
-
-  const dismissToast = useCallback((id) => {
-    setToasts(prev => prev.filter(t => t.id !== id));
-  }, []);
 
   useEffect(() => {
     let isMounted = true;
