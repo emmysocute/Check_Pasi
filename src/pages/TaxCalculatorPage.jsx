@@ -5,16 +5,18 @@ import DeductionSection from '../components/DeductionSection';
 import ResultPanel from '../components/ResultPanel';
 import api from '../utils/api';
 import { useAuth } from '../contexts/AuthContext';
+import { calculateTaxFromFormData } from '../utils/taxEngine';
 
 const DEFAULT_STATE = {
   monthlyIncome: 15000,
   freelanceIncome: 0,
+  withholdingTax: 0,
   employmentType: 'salary',
   personalAllowance: { enabled: true, amount: 60000 },
   spouseAllowance: { enabled: false, amount: 60000 },
   childAllowance: { enabled: false, amount: 0 },
   insurance: { enabled: false, amount: 0 },
-  socialSecurity: { enabled: true, amount: 7200 },
+  socialSecurity: { enabled: true, amount: 9000 },
   investmentFund: { enabled: false, amount: 0 },
 };
 
@@ -66,74 +68,9 @@ function TaxCalculatorPage() {
     setHasCalculated(false);
   }, []);
 
-  /* ===== Tax Calculation Logic (Thai PIT 2568 - 2569) ===== */
+  /* ===== Pure Domain Tax Engine ===== */
   const taxResult = useMemo(() => {
-    const monthly = Math.max(0, Number(formData.monthlyIncome) || 0);
-    const freelance = Math.max(0, Number(formData.freelanceIncome) || 0);
-    const annualIncome = monthly * 12;
-    const sumIncome = annualIncome + freelance;
-    const expenseDeduction = Math.min(sumIncome * 0.5, 100000);
-
-    let totalDeduction = 0;
-    if (formData.personalAllowance.enabled) totalDeduction += formData.personalAllowance.amount;
-    if (formData.spouseAllowance.enabled) totalDeduction += formData.spouseAllowance.amount;
-    
-    // ประกันชีวิตและประกันสุขภาพ: เพดานตามกฎหมายสรรพากรไม่เกิน 100,000 บาท
-    if (formData.insurance.enabled) {
-      const insuranceAmount = Math.max(0, Number(formData.insurance.amount) || 0);
-      totalDeduction += Math.min(insuranceAmount, 100000);
-    }
-    
-    // ประกันสังคม: เพดานสูงสุดตามกฎหมาย ม.33 ไม่เกิน 9,000 บาทต่อปี
-    if (formData.socialSecurity.enabled) {
-      const ssoAmount = Math.max(0, Number(formData.socialSecurity.amount) || 0);
-      totalDeduction += Math.min(ssoAmount, 9000);
-    }
-    
-    if (formData.childAllowance.enabled) {
-      totalDeduction += Math.max(0, Number(formData.childAllowance.amount) || 0);
-    }
-    
-    if (formData.investmentFund.enabled) {
-      // 1. คำนวณสิทธิสูงสุดที่ซื้อได้ (30% ของรายได้ และ ไม่เกิน 500,000 บาท)
-      const maxAllowed = Math.min(sumIncome * 0.3, 500000);
-
-      // 2. นำจำนวนเงินที่ซื้อจริง มาเทียบกับสิทธิสูงสุดที่ได้
-      const actualDeduction = Math.min(Math.max(0, Number(formData.investmentFund.amount) || 0), maxAllowed);
-
-      totalDeduction += actualDeduction;
-    }
-
-    const netIncome = Math.max(0, sumIncome - expenseDeduction - totalDeduction);
-
-    const taxBrackets = [
-      { min: 0, max: 150000, rate: 0 },
-      { min: 150000, max: 300000, rate: 0.05 },
-      { min: 300000, max: 500000, rate: 0.10 },
-      { min: 500000, max: 750000, rate: 0.15 },
-      { min: 750000, max: 1000000, rate: 0.20 },
-      { min: 1000000, max: 2000000, rate: 0.25 },
-      { min: 2000000, max: 5000000, rate: 0.30 },
-      { min: 5000000, max: Infinity, rate: 0.35 },
-    ];
-
-    let tax = 0;
-    let remaining = netIncome;
-
-    for (const bracket of taxBrackets) {
-      if (remaining <= 0) break;
-      const taxable = Math.min(remaining, bracket.max - bracket.min);
-      tax += taxable * bracket.rate;
-      remaining -= taxable;
-    }
-
-    return {
-      annualIncome: sumIncome,
-      expenseDeduction,
-      totalDeduction,
-      netIncome,
-      tax: Math.round(tax),
-    };
+    return calculateTaxFromFormData(formData);
   }, [formData]);
 
   const handleCalculateAndSave = useCallback(async () => {
