@@ -16,7 +16,7 @@ router.post('/calculate', auth, async (req, res) => {
     monthlyIncome, freelanceIncome, withholdingTax, employmentType, personalAllowance, spouseAllowance, 
     childAllowance, insurance, socialSecurity, investmentFund,
     homeLoanInterest, parentAllowance, parentOwnFather, parentOwnMother, parentSpouseFather, parentSpouseMother,
-    donation, taxMethod,
+    donationEducation, donationGeneral, donation, taxMethod,
     annualIncome, expenseDeduction, totalDeduction, netIncome, taxAmount
   } = req.body;
 
@@ -37,6 +37,8 @@ router.post('/calculate', auth, async (req, res) => {
     const cleanParentOwnMother = Boolean(parentOwnMother);
     const cleanParentSpouseFather = Boolean(parentSpouseFather);
     const cleanParentSpouseMother = Boolean(parentSpouseMother);
+    const cleanDonationEducation = toNonNegative(donationEducation);
+    const cleanDonationGeneral = toNonNegative(donationGeneral);
     const cleanDonation = toNonNegative(donation);
     const cleanTaxMethod = taxMethod === 'flat_rate' ? 'flat_rate' : 'bracket';
     const cleanAnnual = toNonNegative(annualIncome);
@@ -51,15 +53,15 @@ router.post('/calculate', auth, async (req, res) => {
         spouse_allowance, child_allowance, insurance, social_security, 
         investment_fund, home_loan_interest, parent_allowance, 
         parent_own_father, parent_own_mother, parent_spouse_father, parent_spouse_mother,
-        donation, tax_method,
+        donation_education, donation_general, donation, tax_method,
         annual_income, expense_deduction, total_deduction, net_income, tax_amount
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24) RETURNING *`,
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26) RETURNING *`,
       [
         req.user.id, cleanMonthly, cleanFreelance, cleanWithholding, cleanEmployment, cleanPersonal,
         cleanSpouse, cleanChild, cleanInsurance, cleanSocialSecurity,
         cleanInvestment, cleanHomeLoan, cleanParent,
         cleanParentOwnFather, cleanParentOwnMother, cleanParentSpouseFather, cleanParentSpouseMother,
-        cleanDonation, cleanTaxMethod,
+        cleanDonationEducation, cleanDonationGeneral, cleanDonation, cleanTaxMethod,
         cleanAnnual, cleanExpense, cleanTotalDeduction, cleanNet, cleanTax
       ]
     );

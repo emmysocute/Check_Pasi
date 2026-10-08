@@ -80,8 +80,14 @@ function TaxCalculatorPage() {
               spouseMother: Boolean(latest.parent_spouse_mother),
               amount: Number(latest.parent_allowance) || 0 
             },
-            donationEducation: { enabled: false, amount: 0 },
-            donationGeneral: { enabled: Number(latest.donation) > 0, amount: Number(latest.donation) || 0 },
+            donationEducation: { 
+              enabled: Number(latest.donation_education) > 0, 
+              amount: Number(latest.donation_education) || 0 
+            },
+            donationGeneral: { 
+              enabled: Number(latest.donation_general) > 0 || (Number(latest.donation) > 0 && !Number(latest.donation_education)), 
+              amount: Number(latest.donation_general) || Number(latest.donation) || 0 
+            },
           }));
         }
       } catch (err) {
@@ -158,6 +164,8 @@ function TaxCalculatorPage() {
         parentOwnMother: formData.parentAllowance.enabled ? Boolean(formData.parentAllowance.ownMother) : false,
         parentSpouseFather: formData.parentAllowance.enabled ? Boolean(formData.parentAllowance.spouseFather) : false,
         parentSpouseMother: formData.parentAllowance.enabled ? Boolean(formData.parentAllowance.spouseMother) : false,
+        donationEducation: formData.donationEducation.enabled ? Math.max(0, Number(formData.donationEducation.amount) || 0) : 0,
+        donationGeneral: formData.donationGeneral.enabled ? Math.max(0, Number(formData.donationGeneral.amount) || 0) : 0,
         donation: taxResult.itemizedDeductions?.donation || 0,
         taxMethod: taxResult.taxMethod || 'bracket',
         annualIncome: taxResult.annualIncome,

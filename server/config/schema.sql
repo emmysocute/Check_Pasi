@@ -34,6 +34,8 @@ CREATE TABLE tax_records (
     parent_spouse_father BOOLEAN DEFAULT false,
     parent_spouse_mother BOOLEAN DEFAULT false,
     donation DECIMAL(12,2) DEFAULT 0,
+    donation_education DECIMAL(12,2) DEFAULT 0,
+    donation_general DECIMAL(12,2) DEFAULT 0,
     tax_method VARCHAR(20) DEFAULT 'bracket',
     calculated_at TIMESTAMP DEFAULT NOW()
 );

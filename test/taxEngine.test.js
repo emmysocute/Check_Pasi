@@ -208,3 +208,46 @@ test('Scenario 9: Parental allowance checkbox selection permutations (0 to 4 par
   assert.equal(disabled.itemizedDeductions.parentAllowance, 0);
 });
 
+test('Scenario 10: Dual-rate donation calculation and statutory 10% net income cap', () => {
+  // Case A: 2x Education + 1x General within 10% cap
+  // Monthly income: 100,000 -> Annual 1,200,000. Expense: 100,000. Personal: 60,000. Social Security: 9,000.
+  // Pre-donation net income = 1,200,000 - 100,000 - 69,000 = 1,031,000 THB.
+  // 10% cap = 103,100 THB.
+  // Donation: Education 20,000 (2x = 40,000), General 10,000 (1x = 10,000). Total eligible = 50,000 (< 103,100).
+  const resultWithinCap = calculateTaxFromFormData({
+    monthlyIncome: 100000,
+    personalAllowance: { enabled: true, amount: 60000 },
+    socialSecurity: { enabled: true, amount: 9000 },
+    donationEducation: { enabled: true, amount: 20000 },
+    donationGeneral: { enabled: true, amount: 10000 },
+  });
+
+  assert.equal(resultWithinCap.itemizedDeductions.donation, 50000);
+  assert.equal(resultWithinCap.netIncome, 1031000 - 50000);
+
+  // Case B: Donation exceeds 10% pre-donation net income cap
+  // Pre-donation net income = 1,031,000 THB -> 10% cap = 103,100 THB.
+  // Education donation = 100,000 (2x = 200,000). Capped at 103,100 THB!
+  const resultExceedingCap = calculateTaxFromFormData({
+    monthlyIncome: 100000,
+    personalAllowance: { enabled: true, amount: 60000 },
+    socialSecurity: { enabled: true, amount: 9000 },
+    donationEducation: { enabled: true, amount: 100000 },
+    donationGeneral: { enabled: false, amount: 0 },
+  });
+
+  assert.equal(resultExceedingCap.itemizedDeductions.donation, 103100);
+  assert.equal(resultExceedingCap.netIncome, 1031000 - 103100);
+
+  // Case C: Disabled donation flags yield 0 THB
+  const resultDisabled = calculateTaxFromFormData({
+    monthlyIncome: 100000,
+    personalAllowance: { enabled: true, amount: 60000 },
+    donationEducation: { enabled: false, amount: 50000 },
+    donationGeneral: { enabled: false, amount: 20000 },
+  });
+
+  assert.equal(resultDisabled.itemizedDeductions.donation, 0);
+});
+
+

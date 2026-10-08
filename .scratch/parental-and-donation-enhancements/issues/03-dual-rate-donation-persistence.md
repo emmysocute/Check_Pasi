@@ -5,12 +5,12 @@
 
 **Blocked by:** 01: Shared Input Sanitization and Keypress Guards (Prefactoring)
 
-**Status:** ready-for-agent
+**Status:** closed
 
-- [ ] เพิ่มคอลัมน์ `donation_education` และ `donation_general` ในตาราง `tax_records` ผ่าน Non-destructive Auto-migration
-- [ ] คอลัมน์ `donation` เดิมยังคงจัดเก็บยอดรวมลดหย่อนจริงหลัง Cap 10% ตามปกติเพื่อ backward compatibility
-- [ ] ปรับปรุง API `POST /calculate` ให้รับและบันทึกค่า `donationEducation` และ `donationGeneral` ลงฐานข้อมูล
-- [ ] ปรับปรุง API `GET /history` ให้ส่งคืนข้อมูลทั้งสองคอลัมน์
-- [ ] ปรับปรุงการกู้คืนข้อมูลใน TaxCalculatorPage (`fetchLatest`) ให้ฟื้นฟูค่าเงินบริจาค 2 เท่าและ 1 เท่าลงในแบบฟอร์มได้ถูกต้อง
-- [ ] เพิ่ม Unit Test ใน `test/taxEngine.test.js` ยืนยันความถูกต้องของการคำนวณเงินบริจาคทั้งสองประเภท
-- [ ] ตรวจสอบว่า `npm test`, `npm run lint`, และ `npm run build` ผ่าน 100%
+- [x] เพิ่มคอลัมน์ `donation_education` และ `donation_general` ในตาราง `tax_records` ผ่าน Non-destructive Auto-migration
+- [x] คอลัมน์ `donation` เดิมยังคงจัดเก็บยอดรวมลดหย่อนจริงหลัง Cap 10% ตามปกติเพื่อ backward compatibility
+- [x] ปรับปรุง API `POST /calculate` ให้รับและบันทึกค่า `donationEducation` และ `donationGeneral` ลงฐานข้อมูล
+- [x] ปรับปรุง API `GET /history` ให้ส่งคืนข้อมูลทั้งสองคอลัมน์
+- [x] ปรับปรุงการกู้คืนข้อมูลใน TaxCalculatorPage (`fetchLatest`) ให้ฟื้นฟูค่าเงินบริจาค 2 เท่าและ 1 เท่าลงในแบบฟอร์มได้ถูกต้อง
+- [x] เพิ่ม Unit Test ใน `test/taxEngine.test.js` ยืนยันความถูกต้องของการคำนวณเงินบริจาคทั้งสองประเภท
+- [x] ตรวจสอบว่า `npm test`, `npm run lint`, และ `npm run build` ผ่าน 100%
