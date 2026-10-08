@@ -224,6 +224,9 @@ function TaxCalculatorPage() {
             onToggle={(field, val) => updateDeduction(field, 'enabled', val)}
             onAmountChange={(field, val) => updateDeduction(field, 'amount', val)}
             onParentToggle={updateParentAllowance}
+            maxDonationCap={taxResult.maxDonationCap}
+            rawDonationClaim={taxResult.rawDonationClaim}
+            actualDonationDeduction={taxResult.itemizedDeductions?.donation || 0}
           />
           <div className="form-actions">
             <button 

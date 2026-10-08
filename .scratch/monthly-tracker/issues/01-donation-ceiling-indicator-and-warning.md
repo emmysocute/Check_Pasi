@@ -4,10 +4,10 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** completed
 
-- [ ] Tax calculation engine calculates `maxDonationCap` (10% of income remaining after expenses and non-donation allowances) and exposes it alongside the clamped deduction amount
-- [ ] Unit tests in test suite verify the 10% donation ceiling calculation and bounds clamping across multiple income tiers
-- [ ] Deduction UI displays a real-time informational badge beneath the donation inputs indicating the active statutory ceiling
-- [ ] When the entered donation exceeds the ceiling, the UI displays a soft warning notice without locking, resetting, or blocking user input
-- [ ] Responsive design adheres to existing styling tokens and WCAG AA contrast standards
+- [x] Tax calculation engine calculates `maxDonationCap` (10% of income remaining after expenses and non-donation allowances) and exposes it alongside the clamped deduction amount
+- [x] Unit tests in test suite verify the 10% donation ceiling calculation and bounds clamping across multiple income tiers
+- [x] Deduction UI displays a real-time informational badge beneath the donation inputs indicating the active statutory ceiling
+- [x] When the entered donation exceeds the ceiling, the UI displays a soft warning notice without locking, resetting, or blocking user input
+- [x] Responsive design adheres to existing styling tokens and WCAG AA contrast standards

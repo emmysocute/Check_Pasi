@@ -222,6 +222,9 @@ test('Scenario 10: Dual-rate donation calculation and statutory 10% net income c
     donationGeneral: { enabled: true, amount: 10000 },
   });
 
+  assert.equal(resultWithinCap.remainingBeforeDonation, 1031000);
+  assert.equal(resultWithinCap.maxDonationCap, 103100);
+  assert.equal(resultWithinCap.rawDonationClaim, 50000);
   assert.equal(resultWithinCap.itemizedDeductions.donation, 50000);
   assert.equal(resultWithinCap.netIncome, 1031000 - 50000);
 
@@ -236,6 +239,9 @@ test('Scenario 10: Dual-rate donation calculation and statutory 10% net income c
     donationGeneral: { enabled: false, amount: 0 },
   });
 
+  assert.equal(resultExceedingCap.remainingBeforeDonation, 1031000);
+  assert.equal(resultExceedingCap.maxDonationCap, 103100);
+  assert.equal(resultExceedingCap.rawDonationClaim, 200000);
   assert.equal(resultExceedingCap.itemizedDeductions.donation, 103100);
   assert.equal(resultExceedingCap.netIncome, 1031000 - 103100);
 
@@ -248,6 +254,33 @@ test('Scenario 10: Dual-rate donation calculation and statutory 10% net income c
   });
 
   assert.equal(resultDisabled.itemizedDeductions.donation, 0);
+  assert.equal(resultDisabled.rawDonationClaim, 0);
 });
+
+test('Scenario 11: Donation 10% ceiling boundary when remaining income is zero or low', () => {
+  // If income after expenses and deductions is 0, maxDonationCap must be 0
+  const zeroRemaining = calculateTax({
+    monthlyIncome: 10000, // 120,000/yr. Expense: 60,000. Personal: 60,000.
+    personalAllowance: 60000,
+    donationGeneral: 5000,
+  });
+  assert.equal(zeroRemaining.remainingBeforeDonation, 0);
+  assert.equal(zeroRemaining.maxDonationCap, 0);
+  assert.equal(zeroRemaining.rawDonationClaim, 5000);
+  assert.equal(zeroRemaining.itemizedDeductions.donation, 0);
+
+  // If income is 20,000/mo -> 240,000/yr. Expense: 100,000. Personal: 60,000.
+  // Remaining = 80,000. 10% cap = 8,000.
+  const lowRemaining = calculateTax({
+    monthlyIncome: 20000,
+    personalAllowance: 60000,
+    donationGeneral: 10000,
+  });
+  assert.equal(lowRemaining.remainingBeforeDonation, 80000);
+  assert.equal(lowRemaining.maxDonationCap, 8000);
+  assert.equal(lowRemaining.rawDonationClaim, 10000);
+  assert.equal(lowRemaining.itemizedDeductions.donation, 8000);
+});
+
 
 

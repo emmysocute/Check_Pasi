@@ -1,6 +1,14 @@
 import { blockInvalidChars, sanitizeNumericInput } from '../utils/numberInput';
 
-function DeductionSection({ formData, onToggle, onAmountChange, onParentToggle }) {
+function DeductionSection({
+  formData,
+  onToggle,
+  onAmountChange,
+  onParentToggle,
+  maxDonationCap = 0,
+  rawDonationClaim = 0,
+  actualDonationDeduction = 0,
+}) {
   const handleAmountChange = (key, val) => {
     onAmountChange(key, sanitizeNumericInput(val));
   };
@@ -213,6 +221,48 @@ function DeductionSection({ formData, onToggle, onAmountChange, onParentToggle }
               </div>
             );
           })}
+
+          {(Boolean(formData.donationEducation?.enabled) || Boolean(formData.donationGeneral?.enabled)) && (
+            <div className="donation-ceiling-card" id="donation-ceiling-card">
+              <div className="donation-ceiling-header">
+                <div className="donation-ceiling-title">
+                  <span className="donation-ceiling-icon">ℹ️</span>
+                  <span>
+                    สิทธิลดหย่อนเงินบริจาครวมสูงสุดในปีนี้: 
+                    <strong className="donation-ceiling-amount">
+                      {' '}{Number(maxDonationCap).toLocaleString('th-TH')} บาท
+                    </strong>
+                  </span>
+                </div>
+                <span className="donation-ceiling-tag">ม.47(7) เพดาน 10%</span>
+              </div>
+
+              <div className="donation-ceiling-desc">
+                คำนวณจากเพดานไม่เกิน 10% ของเงินได้พึงประเมินหลังหักค่าใช้จ่ายและค่าลดหย่อนอื่นทั้งหมด
+              </div>
+
+              {rawDonationClaim > maxDonationCap && maxDonationCap > 0 && (
+                <div className="donation-ceiling-warning" id="donation-cap-warning">
+                  <span className="warning-icon">⚠️</span>
+                  <div>
+                    <strong>ยอดบริจาคเกินสิทธิสูงสุด:</strong> คุณระบุยอดบริจาค (รวมสิทธิ 2 เท่า) จำนวน{' '}
+                    {Number(rawDonationClaim).toLocaleString('th-TH')} บาท ซึ่งเกินเพดาน 10% — ระบบจะนำไปลดหย่อนภาษีให้ตามเพดานจริงที่{' '}
+                    <strong>{Number(actualDonationDeduction).toLocaleString('th-TH')} บาท</strong>{' '}
+                    <span className="donation-warning-note">(คุณยังสามารถกรอกตัวเลขตามใบเสร็จจริงได้ตามปกติ)</span>
+                  </div>
+                </div>
+              )}
+
+              {maxDonationCap === 0 && rawDonationClaim > 0 && (
+                <div className="donation-ceiling-warning" id="donation-zero-cap-warning">
+                  <span className="warning-icon">⚠️</span>
+                  <div>
+                    <strong>ยังไม่มีฐานคำนวณภาษี:</strong> เนื่องจากเงินได้หลังหักค่าใช้จ่ายและค่าลดหย่อนอื่นเป็น 0 บาท สิทธิลดหย่อนเงินบริจาคในปีนี้จึงเป็น 0 บาท
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </>
