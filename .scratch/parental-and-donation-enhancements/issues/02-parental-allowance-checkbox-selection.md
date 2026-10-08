@@ -5,12 +5,12 @@
 
 **Blocked by:** 01: Shared Input Sanitization and Keypress Guards (Prefactoring)
 
-**Status:** ready-for-agent
+**Status:** closed
 
-- [ ] ปรับปรุง DeductionSection ให้แสดง Checkbox 4 รายการสำหรับบิดามารดา แทนที่ช่องกรอกตัวเลขเดิม
-- [ ] แสดง Hint คำแนะนำเกณฑ์สรรพากรและเงื่อนไขกรณีคู่สมรสไม่มีเงินได้ใต้ตัวเลือกอย่างชัดเจน
-- [ ] คำนวณยอดเงินลดหย่อนบิดามารดาอัตโนมัติ (จำนวนคนที่เลือก x 30,000 บาท) และสะท้อนไปยังผลการคำนวณภาษีทันที
-- [ ] เพิ่มคอลัมน์ `parent_own_father`, `parent_own_mother`, `parent_spouse_father`, `parent_spouse_mother` ในตาราง `tax_records` ผ่าน Non-destructive Auto-migration
-- [ ] ปรับปรุง API `POST /calculate` และ `GET /history` ให้บันทึกและส่งคืนสถานะ Checkbox ทั้ง 4 รายการ
-- [ ] เมื่อล็อกอินเข้าสู่ระบบและโหลดประวัติการคำนวณ ฟอร์มสามารถกู้คืนสถานะ Checkbox ของบิดามารดาได้ตรงตามที่บันทึกไว้
-- [ ] เพิ่ม Unit Test ใน `test/taxEngine.test.js` ครอบคลุมการคำนวณลดหย่อนบิดามารดา 0 ถึง 4 คน
+- [x] ปรับปรุง DeductionSection ให้แสดง Checkbox 4 รายการสำหรับบิดามารดา แทนที่ช่องกรอกตัวเลขเดิม
+- [x] แสดง Hint คำแนะนำเกณฑ์สรรพากรและเงื่อนไขกรณีคู่สมรสไม่มีเงินได้ใต้ตัวเลือกอย่างชัดเจน
+- [x] คำนวณยอดเงินลดหย่อนบิดามารดาอัตโนมัติ (จำนวนคนที่เลือก x 30,000 บาท) และสะท้อนไปยังผลการคำนวณภาษีทันที
+- [x] เพิ่มคอลัมน์ `parent_own_father`, `parent_own_mother`, `parent_spouse_father`, `parent_spouse_mother` ในตาราง `tax_records` ผ่าน Non-destructive Auto-migration
+- [x] ปรับปรุง API `POST /calculate` และ `GET /history` ให้บันทึกและส่งคืนสถานะ Checkbox ทั้ง 4 รายการ
+- [x] เมื่อล็อกอินเข้าสู่ระบบและโหลดประวัติการคำนวณ ฟอร์มสามารถกู้คืนสถานะ Checkbox ของบิดามารดาได้ตรงตามที่บันทึกไว้
+- [x] เพิ่ม Unit Test ใน `test/taxEngine.test.js` ครอบคลุมการคำนวณลดหย่อนบิดามารดา 0 ถึง 4 คน

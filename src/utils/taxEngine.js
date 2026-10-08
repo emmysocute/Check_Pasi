@@ -57,7 +57,7 @@ export function calculateTax(params = {}) {
 
   // 5. Extended Deductions (Home loan, Parent, Donations)
   const homeLoanInterest = Math.min(sanitizeNumber(params.homeLoanInterest), 100000);
-  const parentAllowance = sanitizeNumber(params.parentAllowance);
+  const parentAllowance = Math.min(sanitizeNumber(params.parentAllowance), 120000);
 
   // Pre-donation total deduction
   let preDonationDeduction = personal + spouse + child + insurance + socialSecurity +
@@ -176,6 +176,17 @@ export function calculateTax(params = {}) {
  * Adapter for existing React component formData format.
  */
 export function calculateTaxFromFormData(formData = {}) {
+  const p = formData.parentAllowance;
+  let parentAllowance = 0;
+  if (p?.enabled) {
+    if (p.ownFather || p.ownMother || p.spouseFather || p.spouseMother) {
+      const count = (p.ownFather ? 1 : 0) + (p.ownMother ? 1 : 0) + (p.spouseFather ? 1 : 0) + (p.spouseMother ? 1 : 0);
+      parentAllowance = count * 30000;
+    } else {
+      parentAllowance = Number(p.amount) || 0;
+    }
+  }
+
   const params = {
     monthlyIncome: formData.monthlyIncome || 0,
     freelanceIncome: formData.freelanceIncome || 0,
@@ -187,7 +198,7 @@ export function calculateTaxFromFormData(formData = {}) {
     socialSecurity: formData.socialSecurity?.enabled ? formData.socialSecurity.amount : 0,
     investmentFund: formData.investmentFund?.enabled ? formData.investmentFund.amount : 0,
     homeLoanInterest: formData.homeLoanInterest?.enabled ? formData.homeLoanInterest.amount : 0,
-    parentAllowance: formData.parentAllowance?.enabled ? formData.parentAllowance.amount : 0,
+    parentAllowance,
     donationEducation: formData.donationEducation?.enabled ? formData.donationEducation.amount : 0,
     donationGeneral: formData.donationGeneral?.enabled ? formData.donationGeneral.amount : 0,
   };

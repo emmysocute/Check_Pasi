@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { calculateTax, TAX_BRACKETS } from '../src/utils/taxEngine.js';
+import { calculateTax, calculateTaxFromFormData, TAX_BRACKETS } from '../src/utils/taxEngine.js';
 
 test('Tax Brackets Definition', () => {
   assert.equal(TAX_BRACKETS.length, 8);
@@ -177,3 +177,34 @@ test('Scenario 8: Bracket breakdown details and marginal tax rate', () => {
   // Marginal rate should be 10% (0.10)
   assert.equal(result.marginalRate, 0.10);
 });
+
+test('Scenario 9: Parental allowance checkbox selection permutations (0 to 4 parents)', () => {
+  // 1 parent (own father only)
+  const oneParent = calculateTaxFromFormData({
+    monthlyIncome: 30000,
+    parentAllowance: { enabled: true, ownFather: true, ownMother: false, spouseFather: false, spouseMother: false }
+  });
+  assert.equal(oneParent.itemizedDeductions.parentAllowance, 30000);
+
+  // 2 parents (own father + own mother)
+  const twoParents = calculateTaxFromFormData({
+    monthlyIncome: 30000,
+    parentAllowance: { enabled: true, ownFather: true, ownMother: true, spouseFather: false, spouseMother: false }
+  });
+  assert.equal(twoParents.itemizedDeductions.parentAllowance, 60000);
+
+  // 4 parents (all 4 checked)
+  const fourParents = calculateTaxFromFormData({
+    monthlyIncome: 30000,
+    parentAllowance: { enabled: true, ownFather: true, ownMother: true, spouseFather: true, spouseMother: true }
+  });
+  assert.equal(fourParents.itemizedDeductions.parentAllowance, 120000);
+
+  // Enabled is false -> 0 THB
+  const disabled = calculateTaxFromFormData({
+    monthlyIncome: 30000,
+    parentAllowance: { enabled: false, ownFather: true, ownMother: true }
+  });
+  assert.equal(disabled.itemizedDeductions.parentAllowance, 0);
+});
+

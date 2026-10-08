@@ -29,6 +29,10 @@ CREATE TABLE tax_records (
     withholding_tax DECIMAL(12,2) DEFAULT 0,
     home_loan_interest DECIMAL(12,2) DEFAULT 0,
     parent_allowance DECIMAL(12,2) DEFAULT 0,
+    parent_own_father BOOLEAN DEFAULT false,
+    parent_own_mother BOOLEAN DEFAULT false,
+    parent_spouse_father BOOLEAN DEFAULT false,
+    parent_spouse_mother BOOLEAN DEFAULT false,
     donation DECIMAL(12,2) DEFAULT 0,
     tax_method VARCHAR(20) DEFAULT 'bracket',
     calculated_at TIMESTAMP DEFAULT NOW()

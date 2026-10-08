@@ -15,7 +15,8 @@ router.post('/calculate', auth, async (req, res) => {
   const {
     monthlyIncome, freelanceIncome, withholdingTax, employmentType, personalAllowance, spouseAllowance, 
     childAllowance, insurance, socialSecurity, investmentFund,
-    homeLoanInterest, parentAllowance, donation, taxMethod,
+    homeLoanInterest, parentAllowance, parentOwnFather, parentOwnMother, parentSpouseFather, parentSpouseMother,
+    donation, taxMethod,
     annualIncome, expenseDeduction, totalDeduction, netIncome, taxAmount
   } = req.body;
 
@@ -32,6 +33,10 @@ router.post('/calculate', auth, async (req, res) => {
     const cleanInvestment = toNonNegative(investmentFund, 500000);
     const cleanHomeLoan = toNonNegative(homeLoanInterest, 100000);
     const cleanParent = toNonNegative(parentAllowance, 120000);
+    const cleanParentOwnFather = Boolean(parentOwnFather);
+    const cleanParentOwnMother = Boolean(parentOwnMother);
+    const cleanParentSpouseFather = Boolean(parentSpouseFather);
+    const cleanParentSpouseMother = Boolean(parentSpouseMother);
     const cleanDonation = toNonNegative(donation);
     const cleanTaxMethod = taxMethod === 'flat_rate' ? 'flat_rate' : 'bracket';
     const cleanAnnual = toNonNegative(annualIncome);
@@ -44,13 +49,17 @@ router.post('/calculate', auth, async (req, res) => {
       `INSERT INTO tax_records (
         user_id, monthly_income, freelance_income, withholding_tax, employment_type, personal_allowance, 
         spouse_allowance, child_allowance, insurance, social_security, 
-        investment_fund, home_loan_interest, parent_allowance, donation, tax_method,
+        investment_fund, home_loan_interest, parent_allowance, 
+        parent_own_father, parent_own_mother, parent_spouse_father, parent_spouse_mother,
+        donation, tax_method,
         annual_income, expense_deduction, total_deduction, net_income, tax_amount
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20) RETURNING *`,
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24) RETURNING *`,
       [
         req.user.id, cleanMonthly, cleanFreelance, cleanWithholding, cleanEmployment, cleanPersonal,
         cleanSpouse, cleanChild, cleanInsurance, cleanSocialSecurity,
-        cleanInvestment, cleanHomeLoan, cleanParent, cleanDonation, cleanTaxMethod,
+        cleanInvestment, cleanHomeLoan, cleanParent,
+        cleanParentOwnFather, cleanParentOwnMother, cleanParentSpouseFather, cleanParentSpouseMother,
+        cleanDonation, cleanTaxMethod,
         cleanAnnual, cleanExpense, cleanTotalDeduction, cleanNet, cleanTax
       ]
     );

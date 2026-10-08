@@ -51,6 +51,10 @@ const runMigrations = async () => {
       withholding_tax DECIMAL(12,2) DEFAULT 0,
       home_loan_interest DECIMAL(12,2) DEFAULT 0,
       parent_allowance DECIMAL(12,2) DEFAULT 0,
+      parent_own_father BOOLEAN DEFAULT false,
+      parent_own_mother BOOLEAN DEFAULT false,
+      parent_spouse_father BOOLEAN DEFAULT false,
+      parent_spouse_mother BOOLEAN DEFAULT false,
       donation DECIMAL(12,2) DEFAULT 0,
       tax_method VARCHAR(20) DEFAULT 'bracket',
       calculated_at TIMESTAMP DEFAULT NOW()
@@ -87,6 +91,10 @@ const runMigrations = async () => {
     `ALTER TABLE tax_records ADD COLUMN IF NOT EXISTS withholding_tax DECIMAL(12,2) DEFAULT 0`,
     `ALTER TABLE tax_records ADD COLUMN IF NOT EXISTS home_loan_interest DECIMAL(12,2) DEFAULT 0`,
     `ALTER TABLE tax_records ADD COLUMN IF NOT EXISTS parent_allowance DECIMAL(12,2) DEFAULT 0`,
+    `ALTER TABLE tax_records ADD COLUMN IF NOT EXISTS parent_own_father BOOLEAN DEFAULT false`,
+    `ALTER TABLE tax_records ADD COLUMN IF NOT EXISTS parent_own_mother BOOLEAN DEFAULT false`,
+    `ALTER TABLE tax_records ADD COLUMN IF NOT EXISTS parent_spouse_father BOOLEAN DEFAULT false`,
+    `ALTER TABLE tax_records ADD COLUMN IF NOT EXISTS parent_spouse_mother BOOLEAN DEFAULT false`,
     `ALTER TABLE tax_records ADD COLUMN IF NOT EXISTS donation DECIMAL(12,2) DEFAULT 0`,
     `ALTER TABLE tax_records ADD COLUMN IF NOT EXISTS tax_method VARCHAR(20) DEFAULT 'bracket'`
   ];

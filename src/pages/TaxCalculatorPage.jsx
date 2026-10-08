@@ -20,7 +20,14 @@ const DEFAULT_STATE = {
   socialSecurity: { enabled: true, amount: 9000 },
   investmentFund: { enabled: false, amount: 0 },
   homeLoanInterest: { enabled: false, amount: 0 },
-  parentAllowance: { enabled: false, amount: 0 },
+  parentAllowance: { 
+    enabled: false, 
+    ownFather: false, 
+    ownMother: false, 
+    spouseFather: false, 
+    spouseMother: false, 
+    amount: 0 
+  },
   donationEducation: { enabled: false, amount: 0 },
   donationGeneral: { enabled: false, amount: 0 },
 };
@@ -65,7 +72,14 @@ function TaxCalculatorPage() {
             socialSecurity: { enabled: Number(latest.social_security) > 0, amount: Math.min(Number(latest.social_security) || 0, 9000) },
             investmentFund: { enabled: Number(latest.investment_fund) > 0, amount: Number(latest.investment_fund) || 0 },
             homeLoanInterest: { enabled: Number(latest.home_loan_interest) > 0, amount: Math.min(Number(latest.home_loan_interest) || 0, 100000) },
-            parentAllowance: { enabled: Number(latest.parent_allowance) > 0, amount: Number(latest.parent_allowance) || 0 },
+            parentAllowance: { 
+              enabled: Number(latest.parent_allowance) > 0 || Boolean(latest.parent_own_father || latest.parent_own_mother || latest.parent_spouse_father || latest.parent_spouse_mother),
+              ownFather: Boolean(latest.parent_own_father),
+              ownMother: Boolean(latest.parent_own_mother),
+              spouseFather: Boolean(latest.parent_spouse_father),
+              spouseMother: Boolean(latest.parent_spouse_mother),
+              amount: Number(latest.parent_allowance) || 0 
+            },
             donationEducation: { enabled: false, amount: 0 },
             donationGeneral: { enabled: Number(latest.donation) > 0, amount: Number(latest.donation) || 0 },
           }));
@@ -86,6 +100,24 @@ function TaxCalculatorPage() {
       ...prev,
       [field]: { ...prev[field], [key]: value }
     }));
+  }, []);
+
+  const updateParentAllowance = useCallback((personKey, checked) => {
+    setFormData(prev => {
+      const current = prev.parentAllowance || {};
+      const updated = { ...current, [personKey]: checked };
+      const count = (updated.ownFather ? 1 : 0) + (updated.ownMother ? 1 : 0) +
+                    (updated.spouseFather ? 1 : 0) + (updated.spouseMother ? 1 : 0);
+      const amount = count * 30000;
+      return {
+        ...prev,
+        parentAllowance: {
+          ...updated,
+          amount,
+          enabled: count > 0 || current.enabled
+        }
+      };
+    });
   }, []);
 
   const executeClearForm = useCallback(() => {
@@ -122,6 +154,10 @@ function TaxCalculatorPage() {
         investmentFund: formData.investmentFund.enabled ? Math.max(0, Number(formData.investmentFund.amount) || 0) : 0,
         homeLoanInterest: formData.homeLoanInterest.enabled ? Math.min(Math.max(0, Number(formData.homeLoanInterest.amount) || 0), 100000) : 0,
         parentAllowance: formData.parentAllowance.enabled ? Math.max(0, Number(formData.parentAllowance.amount) || 0) : 0,
+        parentOwnFather: formData.parentAllowance.enabled ? Boolean(formData.parentAllowance.ownFather) : false,
+        parentOwnMother: formData.parentAllowance.enabled ? Boolean(formData.parentAllowance.ownMother) : false,
+        parentSpouseFather: formData.parentAllowance.enabled ? Boolean(formData.parentAllowance.spouseFather) : false,
+        parentSpouseMother: formData.parentAllowance.enabled ? Boolean(formData.parentAllowance.spouseMother) : false,
         donation: taxResult.itemizedDeductions?.donation || 0,
         taxMethod: taxResult.taxMethod || 'bracket',
         annualIncome: taxResult.annualIncome,
@@ -157,6 +193,7 @@ function TaxCalculatorPage() {
             formData={formData}
             onToggle={(field, val) => updateDeduction(field, 'enabled', val)}
             onAmountChange={(field, val) => updateDeduction(field, 'amount', val)}
+            onParentToggle={updateParentAllowance}
           />
           <div className="form-actions">
             <button 

@@ -1,6 +1,6 @@
 import { blockInvalidChars, sanitizeNumericInput } from '../utils/numberInput';
 
-function DeductionSection({ formData, onToggle, onAmountChange }) {
+function DeductionSection({ formData, onToggle, onAmountChange, onParentToggle }) {
   const handleAmountChange = (key, val) => {
     onAmountChange(key, sanitizeNumericInput(val));
   };
@@ -55,7 +55,10 @@ function DeductionSection({ formData, onToggle, onAmountChange }) {
       key: 'parentAllowance',
       label: 'ค่าอุปการะเลี้ยงดูบิดามารดา',
       hint: [
-        'ลดหย่อนคนละ 30,000 บาท (บิดามารดาอายุ 60 ปีขึ้นไป และรายได้ไม่เกิน 30,000 บาท/ปี)',
+        'ลดหย่อนคนละ 30,000 บาท สูงสุด 4 ท่าน (ตนเอง 2 ท่าน, คู่สมรส 2 ท่าน)',
+        'เกณฑ์: อายุ 60 ปีบริบูรณ์ขึ้นไป และรายได้ทั้งปีไม่เกิน 30,000 บาท',
+        'บิดามารดา 1 ท่าน ใช้สิทธิลดหย่อนได้เพียง 1 คน (ห้ามใช้ซ้ำระหว่างพี่น้อง ตามแบบ ล.ย.03)',
+        'บิดามารดาคู่สมรส: ใช้สิทธิได้เฉพาะกรณีคู่สมรสไม่มีเงินได้ตลอดปีภาษี',
       ],
     },
     {
@@ -100,23 +103,92 @@ function DeductionSection({ formData, onToggle, onAmountChange }) {
                     <span className="toggle-slider" />
                   </label>
                 </div>
-                <div className="input-wrapper">
-                  <input
-                    type="number"
-                    id={`amount-${d.key}`}
-                    value={item.amount === 0 ? '' : item.amount}
-                    onChange={e => handleAmountChange(d.key, e.target.value)}
-                    onKeyDown={blockInvalidChars}
-                    disabled={!item.enabled}
-                    placeholder="0"
-                    min="0"
-                    step="any"
-                    style={{
-                      opacity: item.enabled ? 1 : 0.5,
-                    }}
-                  />
-                  <span className="input-suffix">บาท</span>
-                </div>
+
+                {d.key === 'parentAllowance' ? (
+                  item.enabled ? (
+                    <div className="parent-checkbox-container">
+                      <label className="parent-check-item">
+                        <input
+                          type="checkbox"
+                          id="check-parent-own-father"
+                          checked={Boolean(item.ownFather)}
+                          onChange={e => onParentToggle && onParentToggle('ownFather', e.target.checked)}
+                        />
+                        <span className="parent-check-text">
+                          <span>บิดาของผู้มีเงินได้</span>
+                          <span className="parent-check-sub">+30,000 บ.</span>
+                        </span>
+                      </label>
+
+                      <label className="parent-check-item">
+                        <input
+                          type="checkbox"
+                          id="check-parent-own-mother"
+                          checked={Boolean(item.ownMother)}
+                          onChange={e => onParentToggle && onParentToggle('ownMother', e.target.checked)}
+                        />
+                        <span className="parent-check-text">
+                          <span>มารดาของผู้มีเงินได้</span>
+                          <span className="parent-check-sub">+30,000 บ.</span>
+                        </span>
+                      </label>
+
+                      <label className="parent-check-item">
+                        <input
+                          type="checkbox"
+                          id="check-parent-spouse-father"
+                          checked={Boolean(item.spouseFather)}
+                          onChange={e => onParentToggle && onParentToggle('spouseFather', e.target.checked)}
+                        />
+                        <span className="parent-check-text">
+                          <span>บิดาของคู่สมรส</span>
+                          <span className="parent-check-sub">+30,000 บ. (คู่สมรสไม่มีเงินได้)</span>
+                        </span>
+                      </label>
+
+                      <label className="parent-check-item">
+                        <input
+                          type="checkbox"
+                          id="check-parent-spouse-mother"
+                          checked={Boolean(item.spouseMother)}
+                          onChange={e => onParentToggle && onParentToggle('spouseMother', e.target.checked)}
+                        />
+                        <span className="parent-check-text">
+                          <span>มารดาของคู่สมรส</span>
+                          <span className="parent-check-sub">+30,000 บ. (คู่สมรสไม่มีเงินได้)</span>
+                        </span>
+                      </label>
+
+                      <div className="parent-total-badge">
+                        <span>รวมลดหย่อนบิดามารดา:</span>
+                        <strong>{(Number(item.amount) || 0).toLocaleString('th-TH')} บาท</strong>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="parent-disabled-preview">
+                      <span>เปิดสิทธิเพื่อเลือกบิดามารดา (คนละ 30,000 บาท สูงสุด 4 ท่าน)</span>
+                    </div>
+                  )
+                ) : (
+                  <div className="input-wrapper">
+                    <input
+                      type="number"
+                      id={`amount-${d.key}`}
+                      value={item.amount === 0 ? '' : item.amount}
+                      onChange={e => handleAmountChange(d.key, e.target.value)}
+                      onKeyDown={blockInvalidChars}
+                      disabled={!item.enabled}
+                      placeholder="0"
+                      min="0"
+                      step="any"
+                      style={{
+                        opacity: item.enabled ? 1 : 0.5,
+                      }}
+                    />
+                    <span className="input-suffix">บาท</span>
+                  </div>
+                )}
+
                 {d.hint && item.enabled && (
                   <div className="deduction-hint">
                     {d.hint.map((text, idx) => (
@@ -133,4 +205,4 @@ function DeductionSection({ formData, onToggle, onAmountChange }) {
   );
 }
 
-export default DeductionSection
+export default DeductionSection;
