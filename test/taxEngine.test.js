@@ -124,3 +124,56 @@ test('Scenario 6: Extended deductions (Home loan cap, parents, donations)', () =
   // Net income = 960,000 - 100,000 - 254,000 = 606,000
   assert.equal(result.netIncome, 606000);
 });
+
+test('Scenario 7: Section 48(2) Flat Rate Tax (0.5%) evaluation for freelance income > 120,000', () => {
+  // Case A: Freelance 1,050,000 with high deductions such that progressive tax is small (1,500 THB)
+  // Flat rate 0.5% = 5,250 THB (> 5,000 THB and > bracket tax 1,500 THB) -> taxMethod: 'flat_rate'
+  const flatResult = calculateTax({
+    monthlyIncome: 0,
+    freelanceIncome: 1050000,
+    personalAllowance: 60000,
+    spouseAllowance: 60000,
+    childAllowance: 150000,
+    parentAllowance: 60000,
+    homeLoanInterest: 100000,
+    insurance: 100000,
+    investmentFund: 240000,
+    socialSecurity: 0,
+  });
+
+  assert.equal(flatResult.netIncome, 180000);
+  assert.equal(flatResult.bracketTax, 1500);
+  assert.equal(flatResult.flatRateTax, 5250);
+  assert.equal(flatResult.taxMethod, 'flat_rate');
+  assert.equal(flatResult.finalTax, 5250);
+
+  // Case B: Freelance 800,000 where flat rate 0.5% is 4,000 THB (<= 5,000 THB)
+  // Revenue Code exempts flat rate if <= 5,000 -> remains 'bracket'
+  const waivedResult = calculateTax({
+    monthlyIncome: 0,
+    freelanceIncome: 800000,
+  });
+  assert.equal(waivedResult.flatRateTax, 4000);
+  assert.equal(waivedResult.taxMethod, 'bracket');
+});
+
+test('Scenario 8: Bracket breakdown details and marginal tax rate', () => {
+  const result = calculateTax({
+    monthlyIncome: 40000, // 480,000/yr. Expense = 100,000. Deductions = 60,000.
+    personalAllowance: 60000,
+    // Net = 480,000 - 100,000 - 60,000 = 320,000 THB
+  });
+
+  assert.equal(result.brackets.length, 8);
+  // Bracket 0-150k: taxable 150,000, tax 0
+  assert.equal(result.brackets[0].taxable, 150000);
+  assert.equal(result.brackets[0].tax, 0);
+  // Bracket 150k-300k: taxable 150,000, tax 7,500
+  assert.equal(result.brackets[1].taxable, 150000);
+  assert.equal(result.brackets[1].tax, 7500);
+  // Bracket 300k-500k: taxable 20,000, tax 2,000
+  assert.equal(result.brackets[2].taxable, 20000);
+  assert.equal(result.brackets[2].tax, 2000);
+  // Marginal rate should be 10% (0.10)
+  assert.equal(result.marginalRate, 0.10);
+});

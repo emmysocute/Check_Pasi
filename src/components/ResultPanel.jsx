@@ -1,5 +1,8 @@
+import { useState } from 'react';
+
 function ResultPanel({ result, visible }) {
-  const fmt = (n) => n.toLocaleString('th-TH')
+  const [isBracketOpen, setIsBracketOpen] = useState(false);
+  const fmt = (n) => (n ?? 0).toLocaleString('th-TH');
 
   return (
     <div className="right-panel">
@@ -14,6 +17,18 @@ function ResultPanel({ result, visible }) {
 
         {visible && (
           <>
+            <div style={{ padding: '0 24px' }}>
+              {result.taxMethod === 'flat_rate' ? (
+                <div className="tax-method-badge flat-rate">
+                  ⚡ คำนวณวิธีเหมา 0.5% (ม.48(2))
+                </div>
+              ) : (
+                <div className="tax-method-badge bracket">
+                  📈 คำนวณตามอัตราก้าวหน้า (ม.48(1))
+                </div>
+              )}
+            </div>
+
             {result.status === 'refund' ? (
               <div className="result-highlight refund">
                 <div className="refund-badge">🎉 ได้รับเงินคืนภาษี (Tax Refund)</div>
@@ -39,6 +54,21 @@ function ResultPanel({ result, visible }) {
                   <span className="amount">{fmt(result.finalTax ?? result.tax)}</span>
                   <span className="unit">บาท / ปี</span>
                 </div>
+              </div>
+            )}
+
+            {result.taxMethod === 'flat_rate' && (
+              <div style={{
+                margin: '12px 24px 0',
+                padding: '10px 14px',
+                background: '#fffbeb',
+                border: '1px solid #fef3c7',
+                borderRadius: 'var(--radius-md)',
+                fontSize: '11px',
+                color: '#92400e',
+                lineHeight: 1.5
+              }}>
+                💡 เนื่องจากคุณมีรายได้ฟรีแลนซ์/อื่นๆ เกิน 120,000 บาท และคำนวณภาษีวิธีเหมา 0.5% ({fmt(result.flatRateTax)} บาท) ได้ยอดสูงกว่าวิธีอัตราก้าวหน้า ({fmt(result.bracketTax)} บาท) กฎหมายสรรพากรกำหนดให้เสียภาษีตามยอดที่สูงกว่า
               </div>
             )}
 
@@ -102,6 +132,66 @@ function ResultPanel({ result, visible }) {
               )}
             </div>
 
+            {/* ===== Collapsible Tax Bracket Breakdown ===== */}
+            {result.brackets && result.brackets.length > 0 && (
+              <div className="tax-bracket-accordion">
+                <button
+                  type="button"
+                  className="accordion-toggle-btn"
+                  onClick={() => setIsBracketOpen(prev => !prev)}
+                  aria-expanded={isBracketOpen}
+                >
+                  <span className="accordion-toggle-title">
+                    <span>📊</span>
+                    <span>ดูแจกแจงขั้นบันไดภาษี 8 ขั้น</span>
+                  </span>
+                  <span className={`accordion-arrow ${isBracketOpen ? 'open' : ''}`}>▼</span>
+                </button>
+                {isBracketOpen && (
+                  <div className="accordion-content">
+                    <div className="marginal-banner">
+                      <span className="marginal-banner-label">ฐานภาษีสูงสุดของคุณ:</span>
+                      <span className="marginal-banner-badge">{Math.round((result.marginalRate || 0) * 100)}%</span>
+                    </div>
+                    <table className="bracket-table">
+                      <thead>
+                        <tr>
+                          <th>ขั้นเงินได้สุทธิ</th>
+                          <th className="text-right">อัตรา</th>
+                          <th className="text-right">เงินได้ในขั้น</th>
+                          <th className="text-right">ภาษี</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {result.brackets.map((b, idx) => {
+                          const isMarginal = result.marginalRate > 0 && b.rate === result.marginalRate && b.taxable > 0;
+                          const hasTaxable = b.taxable > 0;
+                          return (
+                            <tr
+                              key={idx}
+                              className={`${isMarginal ? 'marginal-bracket' : ''} ${hasTaxable ? 'active-bracket' : ''}`}
+                            >
+                              <td>
+                                {b.label}
+                                {isMarginal && <span style={{ marginLeft: 4, fontSize: 10, color: 'var(--primary-600)' }}>★ สูงสุด</span>}
+                              </td>
+                              <td className="text-right">
+                                <span className={`rate-chip ${b.rate === 0 ? 'zero' : b.rate <= 0.1 ? 'low' : b.rate <= 0.2 ? 'mid' : 'high'}`}>
+                                  {Math.round(b.rate * 100)}%
+                                </span>
+                              </td>
+                              <td className="text-right">{fmt(b.taxable)} ฿</td>
+                              <td className="text-right" style={{ fontWeight: b.tax > 0 ? 600 : 400 }}>{fmt(b.tax)} ฿</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="result-note">
               <p>
                 ผลการคำนวณนี้เป็นการประมาณการเบื้องต้น
@@ -123,7 +213,7 @@ function ResultPanel({ result, visible }) {
             <span>• สามารถหักค่าลดหย่อนภาษีได้ตามสิทธิที่กฎหมายกำหนด</span>
           </div>
           <div className="info-list-item">
-            <span>• หากมีรายได้มากกว่า 2,000,000 บาท อาจต้องยื่นแบบภาษี</span>
+            <span>• สำหรับฟรีแลนซ์/รายได้อื่นเกิน 120,000 บ. กรมสรรพากรจะเปรียบเทียบอัตราเหมา 0.5% (ม.48(2))</span>
           </div>
           <div className="info-list-item">
             <span>
@@ -136,7 +226,7 @@ function ResultPanel({ result, visible }) {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-export default ResultPanel
+export default ResultPanel;

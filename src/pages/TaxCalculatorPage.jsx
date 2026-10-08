@@ -121,6 +121,7 @@ function TaxCalculatorPage() {
         homeLoanInterest: formData.homeLoanInterest.enabled ? Math.min(Math.max(0, Number(formData.homeLoanInterest.amount) || 0), 100000) : 0,
         parentAllowance: formData.parentAllowance.enabled ? Math.max(0, Number(formData.parentAllowance.amount) || 0) : 0,
         donation: taxResult.itemizedDeductions?.donation || 0,
+        taxMethod: taxResult.taxMethod || 'bracket',
         annualIncome: taxResult.annualIncome,
         expenseDeduction: taxResult.expenseDeduction,
         totalDeduction: taxResult.totalDeduction,

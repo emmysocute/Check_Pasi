@@ -15,7 +15,7 @@ router.post('/calculate', auth, async (req, res) => {
   const {
     monthlyIncome, freelanceIncome, withholdingTax, employmentType, personalAllowance, spouseAllowance, 
     childAllowance, insurance, socialSecurity, investmentFund,
-    homeLoanInterest, parentAllowance, donation,
+    homeLoanInterest, parentAllowance, donation, taxMethod,
     annualIncome, expenseDeduction, totalDeduction, netIncome, taxAmount
   } = req.body;
 
@@ -33,6 +33,7 @@ router.post('/calculate', auth, async (req, res) => {
     const cleanHomeLoan = toNonNegative(homeLoanInterest, 100000);
     const cleanParent = toNonNegative(parentAllowance, 120000);
     const cleanDonation = toNonNegative(donation);
+    const cleanTaxMethod = taxMethod === 'flat_rate' ? 'flat_rate' : 'bracket';
     const cleanAnnual = toNonNegative(annualIncome);
     const cleanExpense = toNonNegative(expenseDeduction, 100000);
     const cleanTotalDeduction = toNonNegative(totalDeduction);
@@ -43,13 +44,13 @@ router.post('/calculate', auth, async (req, res) => {
       `INSERT INTO tax_records (
         user_id, monthly_income, freelance_income, withholding_tax, employment_type, personal_allowance, 
         spouse_allowance, child_allowance, insurance, social_security, 
-        investment_fund, home_loan_interest, parent_allowance, donation,
+        investment_fund, home_loan_interest, parent_allowance, donation, tax_method,
         annual_income, expense_deduction, total_deduction, net_income, tax_amount
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19) RETURNING *`,
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20) RETURNING *`,
       [
         req.user.id, cleanMonthly, cleanFreelance, cleanWithholding, cleanEmployment, cleanPersonal,
         cleanSpouse, cleanChild, cleanInsurance, cleanSocialSecurity,
-        cleanInvestment, cleanHomeLoan, cleanParent, cleanDonation,
+        cleanInvestment, cleanHomeLoan, cleanParent, cleanDonation, cleanTaxMethod,
         cleanAnnual, cleanExpense, cleanTotalDeduction, cleanNet, cleanTax
       ]
     );
