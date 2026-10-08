@@ -7,29 +7,29 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recha
 function HomePage() {
   const { user } = useAuth();
   const [history, setHistory] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(Boolean(user));
 
   useEffect(() => {
-    if (!user) {
-      setLoading(false);
-      return;
-    }
+    if (!user) return;
 
+    let isMounted = true;
     const fetchHistory = async () => {
       try {
         const res = await api.get('/tax/history');
-        setHistory(res.data);
+        if (isMounted) setHistory(res.data);
       } catch (err) {
-        console.error(err);
+        console.error('Fetch home history error:', err);
+      } finally {
+        if (isMounted) setLoading(false);
       }
-      setLoading(false);
     };
     fetchHistory();
+    return () => { isMounted = false; };
   }, [user]);
 
-  const fmt = (n) => Number(n).toLocaleString('th-TH');
+  const fmt = (n) => Number(n ?? 0).toLocaleString('th-TH');
 
-  if (loading) return <div style={{ padding: '24px' }}>กำลังโหลดข้อมูล...</div>;
+  if (user && loading) return <div style={{ padding: '24px' }}>กำลังโหลดข้อมูล...</div>;
 
   if (!user) {
     return (
@@ -61,15 +61,17 @@ function HomePage() {
   }
 
   const latest = history[0];
-  
+  const annualIncome = Number(latest.annual_income) || 0;
   const expenseAndDeduction = Number(latest.total_deduction) + Number(latest.expense_deduction || 0);
-  const taxAmount = Number(latest.tax_amount);
-  const takeHomeIncome = Math.max(0, Number(latest.annual_income) - expenseAndDeduction - taxAmount);
+  const taxAmount = Number(latest.tax_amount) || 0;
+  const withholdingTax = Number(latest.withholding_tax) || 0;
+  const netBalance = taxAmount - withholdingTax;
+  const takeHomeIncome = Math.max(0, annualIncome - taxAmount);
 
   const chartData = [
-    { name: 'เงินได้สุทธิหลังหักภาษี', value: takeHomeIncome, color: '#1a6ae0' },
-    { name: 'หักค่าใช้จ่าย & ลดหย่อน', value: expenseAndDeduction, color: '#12b76a' },
-    { name: 'ภาษีที่ต้องจ่าย', value: taxAmount, color: '#f04438' }
+    { name: 'เงินได้สุทธิคงเหลือหลังภาษี', value: takeHomeIncome, color: '#1a6ae0' },
+    { name: 'หักค่าใช้จ่าย & ค่าลดหย่อน', value: expenseAndDeduction, color: '#12b76a' },
+    { name: 'ภาษีที่คำนวณได้', value: taxAmount, color: '#f04438' }
   ];
 
   return (
@@ -100,7 +102,7 @@ function HomePage() {
             <div className="result-row">
               <span className="result-row-label">รวมหักค่าใช้จ่าย & ลดหย่อน</span>
               <span className="result-row-value">
-                {fmt(Number(latest.total_deduction) + Number(latest.expense_deduction || 0))} <span className="result-row-unit">บาท</span>
+                {fmt(expenseAndDeduction)} <span className="result-row-unit">บาท</span>
               </span>
             </div>
             <div className="result-row highlight">
@@ -109,14 +111,39 @@ function HomePage() {
                 {fmt(latest.net_income)} <span className="result-row-unit">บาท</span>
               </span>
             </div>
+            {withholdingTax > 0 && (
+              <div className="result-row">
+                <span className="result-row-label">หัก ณ ที่จ่ายสะสม</span>
+                <span className="result-row-value" style={{ color: 'var(--primary-600)' }}>
+                  - {fmt(withholdingTax)} <span className="result-row-unit">บาท</span>
+                </span>
+              </div>
+            )}
           </div>
 
-          <div style={{ marginTop: '24px', padding: '16px', background: 'var(--red-50)', borderRadius: 'var(--radius-md)', border: '1px solid #fecaca' }}>
-            <div style={{ fontSize: '13px', color: 'var(--red-500)', marginBottom: '4px' }}>ภาษีที่ต้องชำระ (ประมาณการ)</div>
-            <div style={{ fontSize: '32px', fontWeight: '800', color: 'var(--red-500)', lineHeight: '1' }}>
-              {fmt(latest.tax_amount)} <span style={{ fontSize: '16px' }}>บาท</span>
+          {/* สรุปสถานะภาษีสุทธิ */}
+          {withholdingTax > 0 && netBalance < 0 ? (
+            <div style={{ marginTop: '20px', padding: '16px', background: '#ecfdf5', borderRadius: 'var(--radius-md)', border: '1px solid #a7f3d0' }}>
+              <div style={{ fontSize: '13px', color: '#047857', fontWeight: 600, marginBottom: '4px' }}>🎉 ได้รับเงินคืนภาษีสุทธิ (Refund)</div>
+              <div style={{ fontSize: '32px', fontWeight: '800', color: '#059669', lineHeight: '1' }}>
+                +{fmt(Math.abs(netBalance))} <span style={{ fontSize: '16px' }}>บาท</span>
+              </div>
             </div>
-          </div>
+          ) : withholdingTax > 0 && netBalance > 0 ? (
+            <div style={{ marginTop: '20px', padding: '16px', background: 'var(--red-50)', borderRadius: 'var(--radius-md)', border: '1px solid #fecaca' }}>
+              <div style={{ fontSize: '13px', color: 'var(--red-500)', fontWeight: 600, marginBottom: '4px' }}>⚠️ ภาษีที่ต้องชำระเพิ่มเติม</div>
+              <div style={{ fontSize: '32px', fontWeight: '800', color: 'var(--red-500)', lineHeight: '1' }}>
+                {fmt(netBalance)} <span style={{ fontSize: '16px' }}>บาท</span>
+              </div>
+            </div>
+          ) : (
+            <div style={{ marginTop: '20px', padding: '16px', background: 'var(--red-50)', borderRadius: 'var(--radius-md)', border: '1px solid #fecaca' }}>
+              <div style={{ fontSize: '13px', color: 'var(--red-500)', marginBottom: '4px' }}>ภาษีที่ต้องชำระ (ประมาณการ)</div>
+              <div style={{ fontSize: '32px', fontWeight: '800', color: 'var(--red-500)', lineHeight: '1' }}>
+                {fmt(latest.tax_amount)} <span style={{ fontSize: '16px' }}>บาท</span>
+              </div>
+            </div>
+          )}
           
           <div style={{ marginTop: '20px', textAlign: 'center' }}>
             <Link to="/calculator" className="btn btn-primary" style={{ width: '100%' }}>

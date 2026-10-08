@@ -28,6 +28,7 @@ const DEFAULT_STATE = {
 function TaxCalculatorPage() {
   const [formData, setFormData] = useState(DEFAULT_STATE);
   const [hasCalculated, setHasCalculated] = useState(true);
+  const [showResetModal, setShowResetModal] = useState(false);
   const [toasts, setToasts] = useState([]);
   const { user } = useAuth();
 
@@ -87,9 +88,10 @@ function TaxCalculatorPage() {
     }));
   }, []);
 
-  const clearForm = useCallback(() => {
+  const executeClearForm = useCallback(() => {
     setFormData(DEFAULT_STATE);
     setHasCalculated(false);
+    setShowResetModal(false);
     showToast('ล้างข้อมูลเรียบร้อยแล้ว', 'info');
   }, [showToast]);
 
@@ -157,10 +159,18 @@ function TaxCalculatorPage() {
             onAmountChange={(field, val) => updateDeduction(field, 'amount', val)}
           />
           <div className="form-actions">
-            <button className="btn btn-outline" onClick={clearForm}>
+            <button 
+              type="button" 
+              className="btn btn-outline" 
+              onClick={() => setShowResetModal(true)}
+            >
               ล้างข้อมูล
             </button>
-            <button className="btn btn-primary" onClick={handleCalculateAndSave}>
+            <button 
+              type="button" 
+              className="btn btn-primary" 
+              onClick={handleCalculateAndSave}
+            >
               บันทึก
             </button>
           </div>
@@ -195,6 +205,37 @@ function TaxCalculatorPage() {
           <span className="jump-arrow">↓ ดูสรุปผล</span>
         </button>
       </div>
+
+      {/* Confirmation Modal สำหรับการล้างข้อมูล */}
+      {showResetModal && (
+        <div className="modal-backdrop" onClick={() => setShowResetModal(false)}>
+          <div className="confirm-modal-box" onClick={e => e.stopPropagation()}>
+            <div className="confirm-modal-header">
+              <div className="confirm-modal-icon">🔄</div>
+              <div className="confirm-modal-title">ยืนยันการล้างข้อมูล</div>
+            </div>
+            <div className="confirm-modal-desc">
+              คุณแน่ใจหรือไม่ว่าต้องการล้างข้อมูลที่กรอกทั้งหมด? ข้อมูลจะถูกรีเซ็ตกลับเป็นค่าเริ่มต้น
+            </div>
+            <div className="confirm-modal-actions">
+              <button 
+                type="button" 
+                className="btn btn-outline" 
+                onClick={() => setShowResetModal(false)}
+              >
+                ยกเลิก
+              </button>
+              <button 
+                type="button" 
+                className="btn btn-danger" 
+                onClick={executeClearForm}
+              >
+                ยืนยันล้างข้อมูล
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

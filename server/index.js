@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const db = require('./config/db'); // Import database connection
+require('./config/db'); // Initialize database connection and migrations
 
 const app = express();
 
