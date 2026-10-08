@@ -8,9 +8,14 @@ require('dotenv').config({ path: path.join(__dirname, '../../.env') });
 const isLocal = !process.env.DB_HOST || ['localhost', '127.0.0.1', 'postgres', 'taxme_db'].includes(process.env.DB_HOST);
 const useSSL = process.env.DB_SSL === 'true' || (!isLocal && process.env.DB_SSL !== 'false');
 
+// Determine host: if set to 'postgres' outside docker container, fallback to 'localhost'
+const hostConfig = (process.env.DB_HOST === 'postgres' && process.platform === 'win32')
+  ? 'localhost'
+  : (process.env.DB_HOST || 'localhost');
+
 // Create pool with individual connection parameters instead of connectionString
 const pool = new Pool({
-  host: process.env.DB_HOST || 'localhost',
+  host: hostConfig,
   port: process.env.DB_PORT || 5432,
   user: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD || 'postgres',
