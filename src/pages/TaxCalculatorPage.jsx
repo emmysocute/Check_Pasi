@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import WelcomeBanner from '../components/WelcomeBanner';
 import IncomeSection from '../components/IncomeSection';
 import DeductionSection from '../components/DeductionSection';
@@ -32,8 +33,48 @@ const DEFAULT_STATE = {
   donationGeneral: { enabled: false, amount: 0 },
 };
 
+function mapRecordToFormData(record) {
+  if (!record) return DEFAULT_STATE;
+  return {
+    monthlyIncome: Math.max(0, Number(record.monthly_income) || 0),
+    freelanceIncome: Math.max(0, Number(record.freelance_income) || 0),
+    withholdingTax: Math.max(0, Number(record.withholding_tax) || 0),
+    employmentType: record.employment_type || 'salary',
+    personalAllowance: { enabled: Number(record.personal_allowance) > 0, amount: Number(record.personal_allowance) || 60000 },
+    spouseAllowance: { enabled: Number(record.spouse_allowance) > 0, amount: Number(record.spouse_allowance) || 60000 },
+    childAllowance: { enabled: Number(record.child_allowance) > 0, amount: Number(record.child_allowance) || 0 },
+    insurance: { enabled: Number(record.insurance) > 0, amount: Math.min(Number(record.insurance) || 0, 100000) },
+    socialSecurity: { enabled: Number(record.social_security) > 0, amount: Math.min(Number(record.social_security) || 0, 9000) },
+    investmentFund: { enabled: Number(record.investment_fund) > 0, amount: Number(record.investment_fund) || 0 },
+    homeLoanInterest: { enabled: Number(record.home_loan_interest) > 0, amount: Math.min(Number(record.home_loan_interest) || 0, 100000) },
+    parentAllowance: { 
+      enabled: Number(record.parent_allowance) > 0 || Boolean(record.parent_own_father || record.parent_own_mother || record.parent_spouse_father || record.parent_spouse_mother),
+      ownFather: Boolean(record.parent_own_father),
+      ownMother: Boolean(record.parent_own_mother),
+      spouseFather: Boolean(record.parent_spouse_father),
+      spouseMother: Boolean(record.parent_spouse_mother),
+      amount: Number(record.parent_allowance) || 0 
+    },
+    donationEducation: { 
+      enabled: Number(record.donation_education) > 0, 
+      amount: Number(record.donation_education) || 0 
+    },
+    donationGeneral: { 
+      enabled: Number(record.donation_general) > 0 || (Number(record.donation) > 0 && !Number(record.donation_education)), 
+      amount: Number(record.donation_general) || Number(record.donation) || 0 
+    },
+  };
+}
+
 function TaxCalculatorPage() {
-  const [formData, setFormData] = useState(DEFAULT_STATE);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState(() => {
+    if (location.state?.loadRecord) {
+      return mapRecordToFormData(location.state.loadRecord);
+    }
+    return DEFAULT_STATE;
+  });
   const [hasCalculated, setHasCalculated] = useState(true);
   const [showResetModal, setShowResetModal] = useState(false);
   const [toasts, setToasts] = useState([]);
@@ -52,50 +93,31 @@ function TaxCalculatorPage() {
   }, []);
 
   useEffect(() => {
+    if (location.state?.loadRecord) {
+      setTimeout(() => {
+        showToast('โหลดข้อมูลจากประวัติเรียบร้อยแล้ว', 'success');
+      }, 0);
+      navigate(location.pathname, { replace: true, state: {} });
+      return;
+    }
+
     if (!user) return;
 
+    let isMounted = true;
     const fetchLatest = async () => {
       try {
         const res = await api.get('/tax/history');
-        if (res.data && res.data.length > 0) {
-          const latest = res.data[0];
-          setFormData(prev => ({
-            ...prev,
-            monthlyIncome: Math.max(0, Number(latest.monthly_income) || 0),
-            freelanceIncome: Math.max(0, Number(latest.freelance_income) || 0),
-            withholdingTax: Math.max(0, Number(latest.withholding_tax) || 0),
-            employmentType: latest.employment_type || 'salary',
-            personalAllowance: { enabled: Number(latest.personal_allowance) > 0, amount: Number(latest.personal_allowance) || 60000 },
-            spouseAllowance: { enabled: Number(latest.spouse_allowance) > 0, amount: Number(latest.spouse_allowance) || 60000 },
-            childAllowance: { enabled: Number(latest.child_allowance) > 0, amount: Number(latest.child_allowance) || 0 },
-            insurance: { enabled: Number(latest.insurance) > 0, amount: Math.min(Number(latest.insurance) || 0, 100000) },
-            socialSecurity: { enabled: Number(latest.social_security) > 0, amount: Math.min(Number(latest.social_security) || 0, 9000) },
-            investmentFund: { enabled: Number(latest.investment_fund) > 0, amount: Number(latest.investment_fund) || 0 },
-            homeLoanInterest: { enabled: Number(latest.home_loan_interest) > 0, amount: Math.min(Number(latest.home_loan_interest) || 0, 100000) },
-            parentAllowance: { 
-              enabled: Number(latest.parent_allowance) > 0 || Boolean(latest.parent_own_father || latest.parent_own_mother || latest.parent_spouse_father || latest.parent_spouse_mother),
-              ownFather: Boolean(latest.parent_own_father),
-              ownMother: Boolean(latest.parent_own_mother),
-              spouseFather: Boolean(latest.parent_spouse_father),
-              spouseMother: Boolean(latest.parent_spouse_mother),
-              amount: Number(latest.parent_allowance) || 0 
-            },
-            donationEducation: { 
-              enabled: Number(latest.donation_education) > 0, 
-              amount: Number(latest.donation_education) || 0 
-            },
-            donationGeneral: { 
-              enabled: Number(latest.donation_general) > 0 || (Number(latest.donation) > 0 && !Number(latest.donation_education)), 
-              amount: Number(latest.donation_general) || Number(latest.donation) || 0 
-            },
-          }));
+        if (isMounted && res.data && res.data.length > 0) {
+          setFormData(prev => ({ ...prev, ...mapRecordToFormData(res.data[0]) }));
         }
       } catch (err) {
         console.error('Failed to fetch latest calculation', err);
       }
     };
     fetchLatest();
-  }, [user]);
+
+    return () => { isMounted = false; };
+  }, [user, location.state, showToast, navigate, location.pathname]);
 
   const updateField = useCallback((field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));

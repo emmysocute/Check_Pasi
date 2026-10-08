@@ -88,7 +88,7 @@ function DeductionSection({ formData, onToggle, onAmountChange, onParentToggle }
           {deductions.map(d => {
             const item = formData[d.key] || { enabled: false, amount: 0 };
             return (
-              <div className="deduction-item" key={d.key}>
+              <div className={`deduction-item ${d.key === 'parentAllowance' ? 'parent-allowance-item' : ''}`} key={d.key}>
                 <div className="deduction-header">
                   <span className="deduction-label">
                     {d.label}
@@ -107,7 +107,7 @@ function DeductionSection({ formData, onToggle, onAmountChange, onParentToggle }
                 {d.key === 'parentAllowance' ? (
                   item.enabled ? (
                     <div className="parent-checkbox-container">
-                      <label className="parent-check-item">
+                      <label className={`parent-check-item ${item.ownFather ? 'is-checked' : ''}`}>
                         <input
                           type="checkbox"
                           id="check-parent-own-father"
@@ -120,7 +120,7 @@ function DeductionSection({ formData, onToggle, onAmountChange, onParentToggle }
                         </span>
                       </label>
 
-                      <label className="parent-check-item">
+                      <label className={`parent-check-item ${item.ownMother ? 'is-checked' : ''}`}>
                         <input
                           type="checkbox"
                           id="check-parent-own-mother"
@@ -133,7 +133,7 @@ function DeductionSection({ formData, onToggle, onAmountChange, onParentToggle }
                         </span>
                       </label>
 
-                      <label className="parent-check-item">
+                      <label className={`parent-check-item ${item.spouseFather ? 'is-checked' : ''}`}>
                         <input
                           type="checkbox"
                           id="check-parent-spouse-father"
@@ -146,7 +146,7 @@ function DeductionSection({ formData, onToggle, onAmountChange, onParentToggle }
                         </span>
                       </label>
 
-                      <label className="parent-check-item">
+                      <label className={`parent-check-item ${item.spouseMother ? 'is-checked' : ''}`}>
                         <input
                           type="checkbox"
                           id="check-parent-spouse-mother"
@@ -163,6 +163,12 @@ function DeductionSection({ formData, onToggle, onAmountChange, onParentToggle }
                         <span>รวมลดหย่อนบิดามารดา:</span>
                         <strong>{(Number(item.amount) || 0).toLocaleString('th-TH')} บาท</strong>
                       </div>
+
+                      {(item.spouseFather || item.spouseMother) && !formData.spouseAllowance?.enabled && (
+                        <div className="parent-smart-tip">
+                          💡 <strong>คำแนะนำสรรพากร:</strong> การลดหย่อนบิดามารดาคู่สมรสใช้ได้เฉพาะกรณีคู่สมรสไม่มีเงินได้ตลอดปีภาษี หากเข้าเกณฑ์นี้ คุณสามารถเปิดใช้สิทธิ <u>"ลดหย่อนคู่สมรส (60,000 บ.)"</u> ด้านบนเพิ่มเติมได้
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <div className="parent-disabled-preview">
@@ -170,23 +176,31 @@ function DeductionSection({ formData, onToggle, onAmountChange, onParentToggle }
                     </div>
                   )
                 ) : (
-                  <div className="input-wrapper">
-                    <input
-                      type="number"
-                      id={`amount-${d.key}`}
-                      value={item.amount === 0 ? '' : item.amount}
-                      onChange={e => handleAmountChange(d.key, e.target.value)}
-                      onKeyDown={blockInvalidChars}
-                      disabled={!item.enabled}
-                      placeholder="0"
-                      min="0"
-                      step="any"
-                      style={{
-                        opacity: item.enabled ? 1 : 0.5,
-                      }}
-                    />
-                    <span className="input-suffix">บาท</span>
-                  </div>
+                  <>
+                    <div className="input-wrapper">
+                      <input
+                        type="number"
+                        id={`amount-${d.key}`}
+                        value={item.amount === 0 ? '' : item.amount}
+                        onChange={e => handleAmountChange(d.key, e.target.value)}
+                        onKeyDown={blockInvalidChars}
+                        disabled={!item.enabled}
+                        placeholder="0"
+                        min="0"
+                        step="any"
+                        style={{
+                          opacity: item.enabled ? 1 : 0.5,
+                        }}
+                      />
+                      <span className="input-suffix">บาท</span>
+                    </div>
+
+                    {d.key === 'donationEducation' && item.enabled && Number(item.amount) > 0 && (
+                      <div className="donation-double-badge">
+                        ✨ ได้รับสิทธิลดหย่อน 2 เท่า: {(Number(item.amount) * 2).toLocaleString('th-TH')} บาท
+                      </div>
+                    )}
+                  </>
                 )}
 
                 {d.hint && item.enabled && (

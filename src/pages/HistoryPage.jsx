@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import Toast from '../components/Toast';
 
@@ -7,6 +8,11 @@ function HistoryPage() {
   const [loading, setLoading] = useState(true);
   const [toasts, setToasts] = useState([]);
   const [deleteCandidate, setDeleteCandidate] = useState(null);
+  const navigate = useNavigate();
+
+  const handleLoadRecord = (record) => {
+    navigate('/calculator', { state: { loadRecord: record } });
+  };
 
   const showToast = useCallback((message, type = 'success') => {
     const id = Date.now() + Math.random();
@@ -122,7 +128,14 @@ function HistoryPage() {
                         {Number(record.withholding_tax) > 0 ? `${fmt(record.withholding_tax)} ฿` : '-'}
                       </td>
                       <td>{renderStatusBadge(record)}</td>
-                      <td style={{ textAlign: 'center' }}>
+                      <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
+                        <button 
+                          onClick={() => handleLoadRecord(record)}
+                          className="history-action-load"
+                          title="นำข้อมูลนี้ไปคำนวณในฟอร์ม"
+                        >
+                          ใช้ข้อมูลนี้
+                        </button>
                         <button 
                           onClick={() => setDeleteCandidate(record.id)}
                           className="history-action-delete"
@@ -147,13 +160,22 @@ function HistoryPage() {
                     <span className="date-icon">🗓️</span>
                     <span>{formatDate(record.calculated_at)}</span>
                   </div>
-                  <button 
-                    onClick={() => setDeleteCandidate(record.id)}
-                    className="history-card-delete-btn"
-                    title="ลบรายการ"
-                  >
-                    ลบ
-                  </button>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <button 
+                      onClick={() => handleLoadRecord(record)}
+                      className="history-card-load-btn"
+                      title="นำข้อมูลนี้ไปคำนวณในฟอร์ม"
+                    >
+                      ใช้ข้อมูลนี้
+                    </button>
+                    <button 
+                      onClick={() => setDeleteCandidate(record.id)}
+                      className="history-card-delete-btn"
+                      title="ลบรายการ"
+                    >
+                      ลบ
+                    </button>
+                  </div>
                 </div>
 
                 <div className="history-card-details">

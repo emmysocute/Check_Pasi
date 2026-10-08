@@ -106,4 +106,4 @@ function IncomeSection({
   );
 }
 
-export default IncomeSection
+export default IncomeSection;
