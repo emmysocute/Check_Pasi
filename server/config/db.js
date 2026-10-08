@@ -102,6 +102,7 @@ const runMigrations = async () => {
     `ALTER TABLE tax_records ADD COLUMN IF NOT EXISTS parent_own_mother BOOLEAN DEFAULT false`,
     `ALTER TABLE tax_records ADD COLUMN IF NOT EXISTS parent_spouse_father BOOLEAN DEFAULT false`,
     `ALTER TABLE tax_records ADD COLUMN IF NOT EXISTS parent_spouse_mother BOOLEAN DEFAULT false`,
+    `ALTER TABLE tax_records ADD COLUMN IF NOT EXISTS donation DECIMAL(12,2) DEFAULT 0`,
     `ALTER TABLE tax_records ADD COLUMN IF NOT EXISTS donation_education DECIMAL(12,2) DEFAULT 0`,
     `ALTER TABLE tax_records ADD COLUMN IF NOT EXISTS donation_general DECIMAL(12,2) DEFAULT 0`,
     `ALTER TABLE tax_records ADD COLUMN IF NOT EXISTS tax_method VARCHAR(20) DEFAULT 'bracket'`,
@@ -130,38 +131,40 @@ const runMigrations = async () => {
     )`
   ];
 
-  try {
-    console.log('🔄 Checking and running database migrations...');
-    for (const sql of migrations) {
+  console.log('🔄 Checking and running database migrations...');
+  for (const sql of migrations) {
+    try {
       await pool.query(sql);
+    } catch (err) {
+      console.error('⚠️ Database migration warning:', err.message);
     }
-    console.log('✅ Database schema verified and up-to-date');
-  } catch (err) {
-    console.error('⚠️ Database migration error:', err.message);
   }
+  console.log('✅ Database schema verified and up-to-date');
 };
 
-// Test connection with better error handling
-const testConnection = async () => {
-  try {
-    const client = await pool.connect();
-    console.log('✅ Database connected successfully');
-    console.log('📊 Connected to:', {
-      host: process.env.DB_HOST || 'localhost',
-      port: process.env.DB_PORT,
-      database: process.env.DB_NAME,
-      user: process.env.DB_USER
-    });
-    client.release();
-    await runMigrations();
-  } catch (err) {
-    console.error('❌ Database connection error:', err.message);
-    console.error('🔍 Connection config:', {
-      host: process.env.DB_HOST || 'localhost',
-      port: process.env.DB_PORT,
-      database: process.env.DB_NAME,
-      user: process.env.DB_USER
-    });
+// Test connection with retry loop for containerized environment
+const testConnection = async (maxRetries = 10, delayMs = 2000) => {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const client = await pool.connect();
+      console.log('✅ Database connected successfully');
+      console.log('📊 Connected to:', {
+        host: process.env.DB_HOST || 'localhost',
+        port: process.env.DB_PORT,
+        database: process.env.DB_NAME,
+        user: process.env.DB_USER
+      });
+      client.release();
+      await runMigrations();
+      return;
+    } catch (err) {
+      console.warn(`⏳ Waiting for database to be ready (attempt ${attempt}/${maxRetries}): ${err.message}`);
+      if (attempt < maxRetries) {
+        await new Promise(res => setTimeout(res, delayMs));
+      } else {
+        console.error('❌ Database connection failed after maximum retries');
+      }
+    }
   }
 };
 
