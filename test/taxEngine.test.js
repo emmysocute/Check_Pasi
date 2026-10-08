@@ -74,3 +74,33 @@ test('Scenario 4: Defensive bounds on negative numbers', () => {
   assert.equal(result.finalTax, 0);
   assert.equal(result.netIncome, 0);
 });
+
+test('Scenario 5: Withholding Tax and Tax Refund vs Payable', () => {
+  // Case A: Withholding tax > final tax -> Refund
+  const refundResult = calculateTax({
+    monthlyIncome: 50000, // tax = 20,600
+    freelanceIncome: 0,
+    personalAllowance: 60000,
+    socialSecurity: 9000,
+    withholdingTax: 30000,
+  });
+  assert.equal(refundResult.finalTax, 20600);
+  assert.equal(refundResult.withholdingTax, 30000);
+  assert.equal(refundResult.status, 'refund');
+  assert.equal(refundResult.refundAmount, 9400);
+  assert.equal(refundResult.payableAmount, 0);
+
+  // Case B: Withholding tax < final tax -> Payable
+  const payableResult = calculateTax({
+    monthlyIncome: 50000, // tax = 20,600
+    freelanceIncome: 0,
+    personalAllowance: 60000,
+    socialSecurity: 9000,
+    withholdingTax: 15000,
+  });
+  assert.equal(payableResult.finalTax, 20600);
+  assert.equal(payableResult.withholdingTax, 15000);
+  assert.equal(payableResult.status, 'payable');
+  assert.equal(payableResult.refundAmount, 0);
+  assert.equal(payableResult.payableAmount, 5600);
+});

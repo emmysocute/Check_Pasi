@@ -3,6 +3,7 @@ import WelcomeBanner from '../components/WelcomeBanner';
 import IncomeSection from '../components/IncomeSection';
 import DeductionSection from '../components/DeductionSection';
 import ResultPanel from '../components/ResultPanel';
+import Toast from '../components/Toast';
 import api from '../utils/api';
 import { useAuth } from '../contexts/AuthContext';
 import { calculateTaxFromFormData } from '../utils/taxEngine';
@@ -23,7 +24,21 @@ const DEFAULT_STATE = {
 function TaxCalculatorPage() {
   const [formData, setFormData] = useState(DEFAULT_STATE);
   const [hasCalculated, setHasCalculated] = useState(true);
+  const [toasts, setToasts] = useState([]);
   const { user } = useAuth();
+
+  const showToast = useCallback((message, type = 'success') => {
+    const id = Date.now() + Math.random();
+    setToasts(prev => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    }, 3800);
+  }, []);
+
+  const dismissToast = useCallback((id) => {
+    setToasts(prev => prev.filter(t => t.id !== id));
+  }, []);
+
   useEffect(() => {
     if (!user) return;
 
@@ -36,6 +51,7 @@ function TaxCalculatorPage() {
             ...prev,
             monthlyIncome: Math.max(0, Number(latest.monthly_income) || 0),
             freelanceIncome: Math.max(0, Number(latest.freelance_income) || 0),
+            withholdingTax: Math.max(0, Number(latest.withholding_tax) || 0),
             employmentType: latest.employment_type || 'salary',
             personalAllowance: { enabled: Number(latest.personal_allowance) > 0, amount: Number(latest.personal_allowance) || 60000 },
             spouseAllowance: { enabled: Number(latest.spouse_allowance) > 0, amount: Number(latest.spouse_allowance) || 60000 },
@@ -66,7 +82,8 @@ function TaxCalculatorPage() {
   const clearForm = useCallback(() => {
     setFormData(DEFAULT_STATE);
     setHasCalculated(false);
-  }, []);
+    showToast('ล้างข้อมูลเรียบร้อยแล้ว', 'info');
+  }, [showToast]);
 
   /* ===== Pure Domain Tax Engine ===== */
   const taxResult = useMemo(() => {
@@ -77,7 +94,7 @@ function TaxCalculatorPage() {
     setHasCalculated(true);
 
     if (!user) {
-      alert('กรุณาเข้าสู่ระบบก่อนบันทึกข้อมูล');
+      showToast('กรุณาเข้าสู่ระบบก่อนบันทึกข้อมูล', 'info');
       return;
     }
 
@@ -85,6 +102,7 @@ function TaxCalculatorPage() {
       await api.post('/tax/calculate', {
         monthlyIncome: Math.max(0, Number(formData.monthlyIncome) || 0),
         freelanceIncome: Math.max(0, Number(formData.freelanceIncome) || 0),
+        withholdingTax: Math.max(0, Number(formData.withholdingTax) || 0),
         employmentType: formData.employmentType,
         personalAllowance: formData.personalAllowance.enabled ? formData.personalAllowance.amount : 0,
         spouseAllowance: formData.spouseAllowance.enabled ? formData.spouseAllowance.amount : 0,
@@ -96,27 +114,29 @@ function TaxCalculatorPage() {
         expenseDeduction: taxResult.expenseDeduction,
         totalDeduction: taxResult.totalDeduction,
         netIncome: taxResult.netIncome,
-        taxAmount: taxResult.tax
+        taxAmount: taxResult.finalTax || taxResult.tax
       });
-      alert('บันทึกข้อมูลสำเร็จ!');
+      showToast('บันทึกข้อมูลการคำนวณภาษีสำเร็จเรียบร้อยแล้ว!', 'success');
     } catch (err) {
       console.error('Save tax calculation error:', err);
-      alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+      showToast('เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่อีกครั้ง', 'error');
     }
-  }, [formData, user, taxResult]);
+  }, [formData, user, taxResult, showToast]);
 
   return (
     <div className="content-area has-floating-bar">
+      <Toast toasts={toasts} onDismiss={dismissToast} />
+
       <div className="left-content">
         <WelcomeBanner />
         <div className="form-card animate-in-delay-1">
           <IncomeSection
             monthlyIncome={formData.monthlyIncome}
             freelanceIncome={formData.freelanceIncome}
-            employmentType={formData.employmentType}
+            withholdingTax={formData.withholdingTax}
             onIncomeChange={(val) => updateField('monthlyIncome', val)}
             onFreelanceChange={(val) => updateField('freelanceIncome', val)}
-            onTypeChange={(val) => updateField('employmentType', val)}
+            onWithholdingChange={(val) => updateField('withholdingTax', val)}
           />
           <div className="section-divider" />
           <DeductionSection
@@ -152,7 +172,13 @@ function TaxCalculatorPage() {
         >
           <span className="jump-icon">📊</span>
           <span className="jump-text">
-            ภาษีที่ต้องจ่าย: <strong>{Number(taxResult.tax).toLocaleString('th-TH')} ฿</strong>
+            {taxResult.status === 'refund' ? (
+              <span>ได้คืนภาษี: <strong style={{ color: '#86efac' }}>+{Number(taxResult.refundAmount).toLocaleString('th-TH')} ฿</strong></span>
+            ) : taxResult.status === 'payable' && taxResult.withholdingTax > 0 ? (
+              <span>จ่ายเพิ่ม: <strong style={{ color: '#fca5a5' }}>{Number(taxResult.payableAmount).toLocaleString('th-TH')} ฿</strong></span>
+            ) : (
+              <span>ภาษีที่ต้องจ่าย: <strong>{Number(taxResult.tax).toLocaleString('th-TH')} ฿</strong></span>
+            )}
           </span>
           <span className="jump-arrow">↓ ดูสรุปผล</span>
         </button>

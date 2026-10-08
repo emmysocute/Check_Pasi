@@ -26,6 +26,7 @@ CREATE TABLE tax_records (
     total_deduction DECIMAL(12,2),
     net_income DECIMAL(12,2),
     tax_amount DECIMAL(12,2),
+    withholding_tax DECIMAL(12,2) DEFAULT 0,
     calculated_at TIMESTAMP DEFAULT NOW()
 );
 
