@@ -1,5 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+  History,
+  Calendar,
+  Sparkles,
+  AlertCircle,
+  Trash2,
+} from 'lucide-react';
 import api from '../utils/api';
 import Toast from '../components/Toast';
 import useToast from '../hooks/useToast';
@@ -58,14 +65,16 @@ function HistoryPage() {
     if (wht > 0 && netBalance < 0) {
       return (
         <span className="history-status-badge refund">
-          🎉 ได้คืน {fmt(Math.abs(netBalance))} ฿
+          <Sparkles size={12} className="inline-sparkle" />
+          <span>ได้คืน {fmt(Math.abs(netBalance))} ฿</span>
         </span>
       );
     }
     if (wht > 0 && netBalance > 0) {
       return (
         <span className="history-status-badge payable">
-          ⚠️ จ่ายเพิ่ม {fmt(netBalance)} ฿
+          <AlertCircle size={12} />
+          <span>จ่ายเพิ่ม {fmt(netBalance)} ฿</span>
         </span>
       );
     }
@@ -82,7 +91,10 @@ function HistoryPage() {
       <Toast toasts={toasts} onDismiss={dismissToast} />
 
       <div className="section-header" style={{ marginBottom: '24px', padding: '0' }}>
-        <h3 className="section-title">📋 ประวัติการคำนวณภาษี</h3>
+        <div className="section-header-title-row">
+          <History size={18} className="section-icon" />
+          <h3 className="section-title">ประวัติการคำนวณภาษี</h3>
+        </div>
       </div>
       
       {history.length === 0 ? (
@@ -146,7 +158,7 @@ function HistoryPage() {
               <div key={record.id} className="history-card-item form-card animate-in">
                 <div className="history-card-top">
                   <div className="history-card-date">
-                    <span className="date-icon">🗓️</span>
+                    <span className="date-icon"><Calendar size={13} /></span>
                     <span>{formatDate(record.calculated_at)}</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -204,7 +216,9 @@ function HistoryPage() {
         <div className="modal-backdrop" onClick={() => setDeleteCandidate(null)}>
           <div className="confirm-modal-box" onClick={e => e.stopPropagation()}>
             <div className="confirm-modal-header">
-              <div className="confirm-modal-icon">🗑️</div>
+              <div className="confirm-modal-icon">
+                <Trash2 size={22} className="text-red-500" />
+              </div>
               <div className="confirm-modal-title">ยืนยันการลบประวัติ</div>
             </div>
             <div className="confirm-modal-desc">

@@ -1,5 +1,16 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import {
+  ArrowRight,
+  CalendarDays,
+  Scale,
+  FileText,
+  Briefcase,
+  Lock,
+  Sparkles,
+  AlertCircle,
+  Zap,
+} from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../utils/api';
 import { calculateTax } from '../utils/taxEngine';
@@ -64,7 +75,9 @@ function HomePage() {
         {/* Hero Section */}
         <section className="landing-hero animate-in">
           <div className="landing-badge">
-            <span className="badge-sparkle" aria-hidden="true">✨</span>
+            <span className="badge-sparkle" aria-hidden="true">
+              <Sparkles size={14} />
+            </span>
             <span>ระบบคำนวณและวางแผนภาษี ปีภาษี 2569</span>
           </div>
 
@@ -81,10 +94,12 @@ function HomePage() {
 
           <div className="landing-cta-group">
             <Link to="/calculator" className="btn btn-primary btn-lg">
-              <span>เริ่มคำนวณภาษีเต็มรูปแบบ (ฟรี) 🚀</span>
+              <span>เริ่มคำนวณภาษีเต็มรูปแบบ (ฟรี)</span>
+              <ArrowRight size={16} />
             </Link>
-            <Link to="/tracker" className="btn btn-outline btn-lg">
-              <span>บันทึกรายได้ฟรีแลนซ์ 12 เดือน 📅</span>
+            <Link to="/monthly-tracker" className="btn btn-outline btn-lg">
+              <CalendarDays size={16} />
+              <span>บันทึกรายได้ฟรีแลนซ์ 12 เดือน</span>
             </Link>
           </div>
         </section>
@@ -93,7 +108,9 @@ function HomePage() {
         <section className="quick-calc-section animate-in-delay-1">
           <div className="quick-calc-card">
             <div className="quick-calc-header">
-              <div className="quick-calc-icon" aria-hidden="true">⚡</div>
+              <div className="quick-calc-icon" aria-hidden="true">
+                <Zap size={20} />
+              </div>
               <div>
                 <h2 className="quick-calc-title">ทดลองคำนวณภาษีเบื้องต้นทันที</h2>
                 <p className="quick-calc-subtitle">ใส่เงินเดือนของคุณเพื่อดูประมาณการภาษีและเงินได้สุทธิ</p>
@@ -145,7 +162,8 @@ function HomePage() {
                   className="btn btn-primary"
                   onClick={handleStartWithSalary}
                 >
-                  <span>นำยอดนี้ไปวางแผนลดหย่อนต่อ (เช็กประกัน, กองทุน, ครอบครัว) ➡️</span>
+                  <span>นำยอดนี้ไปวางแผนลดหย่อนต่อ (เช็กประกัน, กองทุน, ครอบครัว)</span>
+                  <ArrowRight size={16} />
                 </button>
               </div>
             </div>
@@ -156,7 +174,9 @@ function HomePage() {
         <section className="landing-features animate-in-delay-2">
           <div className="feature-grid">
             <div className="feature-card">
-              <div className="feature-icon" aria-hidden="true">⚖️</div>
+              <div className="feature-icon" aria-hidden="true">
+                <Scale size={22} />
+              </div>
               <h3 className="feature-title">แม่นยำตามเกณฑ์สรรพากร 2569</h3>
               <p className="feature-desc">
                 คิดอัตราภาษีก้าวหน้า 8 ขั้นบันไดอย่างถูกต้อง พร้อมระบบเปรียบเทียบภาษีเหมา 0.5% (ม.48(2)) สำหรับผู้มีรายได้ฟรีแลนซ์เกิน 1.2 แสนบาท
@@ -164,7 +184,9 @@ function HomePage() {
             </div>
 
             <div className="feature-card">
-              <div className="feature-icon" aria-hidden="true">📋</div>
+              <div className="feature-icon" aria-hidden="true">
+                <FileText size={22} />
+              </div>
               <h3 className="feature-title">โครงสร้างลดหย่อน 4 หมวด ภ.ง.ด.</h3>
               <p className="feature-desc">
                 จัดหมวดหมู่ ตนเอง/ครอบครัว, ประกัน/การออม, ที่อยู่อาศัย, และเงินบริจาค ตามแบบยื่นจริงของกรมสรรพากร ช่วยเตือนสิทธิ์ครบถ้วน
@@ -172,7 +194,9 @@ function HomePage() {
             </div>
 
             <div className="feature-card">
-              <div className="feature-icon" aria-hidden="true">💼</div>
+              <div className="feature-icon" aria-hidden="true">
+                <Briefcase size={22} />
+              </div>
               <h3 className="feature-title">บันทึกรายได้ฟรีแลนซ์ 12 เดือน</h3>
               <p className="feature-desc">
                 สำหรับคนทำงานอิสระ มีปุ่มลัดคำนวณหัก ณ ที่จ่าย 3% สะสมยอดรายเดือน และส่งยอดไปคำนวณภาษีประจำปีได้ในคลิกเดียว
@@ -183,7 +207,9 @@ function HomePage() {
 
         {/* Security / Trust Assurance */}
         <section className="landing-trust-bar">
-          <span className="trust-icon" aria-hidden="true">🔒</span>
+          <span className="trust-icon" aria-hidden="true">
+            <Lock size={15} />
+          </span>
           <span>ข้อมูลการคำนวณปลอดภัย ไม่มีการส่งต่อให้บุคคลภายนอก ใช้งานฟรี 100%</span>
         </section>
       </div>
@@ -199,7 +225,8 @@ function HomePage() {
             <h2>ยินดีต้อนรับ, {user.display_name || user.email}</h2>
             <p style={{ margin: '0 auto 16px' }}>คุณยังไม่มีประวัติการคำนวณภาษีที่บันทึกไว้</p>
             <Link to="/calculator" className="btn btn-primary btn-lg">
-              เริ่มคำนวณและบันทึกประวัติภาษีกันเลย 🚀
+              <span>เริ่มคำนวณและบันทึกประวัติภาษี</span>
+              <ArrowRight size={16} />
             </Link>
           </div>
         </div>
@@ -271,7 +298,10 @@ function HomePage() {
           {/* สรุปสถานะภาษีสุทธิ (Calm palette) */}
           {withholdingTax > 0 && netBalance < 0 ? (
             <div className="home-refund-card">
-              <div className="home-refund-badge">🎉 ได้รับเงินคืนภาษีสุทธิ (Tax Refund)</div>
+              <div className="home-refund-badge">
+                <Sparkles size={14} className="inline-sparkle" />
+                <span>ได้รับเงินคืนภาษีสุทธิ (Tax Refund)</span>
+              </div>
               <div className="home-refund-label">ยอดเงินที่คุณจะได้รับคืนจากกรมสรรพากร</div>
               <div className="home-refund-amount">
                 +{fmt(Math.abs(netBalance))} <span className="home-refund-unit">บาท</span>
@@ -279,7 +309,10 @@ function HomePage() {
             </div>
           ) : withholdingTax > 0 && netBalance > 0 ? (
             <div className="home-payable-card">
-              <div className="home-payable-badge">📋 ยอดภาษีที่ต้องชำระเพิ่มเติม</div>
+              <div className="home-payable-badge">
+                <AlertCircle size={14} />
+                <span>ยอดภาษีที่ต้องชำระเพิ่มเติม</span>
+              </div>
               <div className="home-payable-label">ยอดภาษีที่ต้องนำส่งเพิ่มหลังหัก ณ ที่จ่ายแล้ว</div>
               <div className="home-payable-amount">
                 {fmt(netBalance)} <span className="home-payable-unit">บาท</span>
@@ -296,7 +329,8 @@ function HomePage() {
           
           <div style={{ marginTop: '20px', textAlign: 'center' }}>
             <Link to="/calculator" className="btn btn-primary" style={{ width: '100%' }}>
-              ไปหน้าคำนวณภาษี 🧮
+              <span>ไปหน้าคำนวณภาษี</span>
+              <ArrowRight size={16} />
             </Link>
           </div>
         </div>

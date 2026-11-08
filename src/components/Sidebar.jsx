@@ -1,6 +1,16 @@
 import { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import {
+  Home,
+  Calculator,
+  CalendarDays,
+  History,
+  User,
+  X,
+  ShieldCheck,
+  Sparkles,
+} from 'lucide-react';
 
 function Sidebar({ isOpen = false, onClose = () => {} }) {
   const location = useLocation();
@@ -25,19 +35,19 @@ function Sidebar({ isOpen = false, onClose = () => {} }) {
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [isOpen, onClose]);
-  
+
   const navItems = [
-    { icon: '🏠', label: 'หน้าหลัก', path: '/' },
-    { icon: '🧮', label: 'คำนวณภาษี', path: '/calculator' },
-    { icon: '📅', label: 'บันทึกรายได้ 12 เดือน', path: '/monthly-tracker' },
-    { icon: '📋', label: 'ประวัติการคำนวณ', path: '/history', protected: true },
-    { icon: '👤', label: 'โปรไฟล์', path: '/profile', protected: true },
+    { icon: Home, label: 'หน้าหลัก', path: '/' },
+    { icon: Calculator, label: 'คำนวณภาษี', path: '/calculator' },
+    { icon: CalendarDays, label: 'บันทึกรายได้ 12 เดือน', path: '/monthly-tracker' },
+    { icon: History, label: 'ประวัติการคำนวณ', path: '/history', protected: true },
+    { icon: User, label: 'โปรไฟล์', path: '/profile', protected: true },
   ];
 
   return (
     <>
       {/* Backdrop overlay สำหรับจอมือถือเมื่อเปิด Drawer */}
-      <div 
+      <div
         className={`sidebar-backdrop ${isOpen ? 'active' : ''}`}
         onClick={onClose}
         aria-hidden="true"
@@ -45,27 +55,32 @@ function Sidebar({ isOpen = false, onClose = () => {} }) {
 
       <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
         <div className="sidebar-logo">
-          <div className="sidebar-logo-brand">
+          <Link to="/" className="sidebar-logo-brand" onClick={onClose}>
+            <span className="logo-accent-mark">
+              <Sparkles size={16} strokeWidth={2.5} />
+            </span>
             <span className="logo-text">Check Pasi</span>
-          </div>
-          <button 
-            className="sidebar-close-btn" 
-            onClick={onClose} 
+          </Link>
+          <button
+            type="button"
+            className="sidebar-close-btn"
+            onClick={onClose}
             aria-label="ปิดเมนู"
             title="ปิดเมนู"
           >
-            ✕
+            <X size={18} />
           </button>
         </div>
 
-        <nav className="sidebar-nav">
+        <nav className="sidebar-nav" aria-label="เมนูหลัก">
           {navItems.map((item) => {
-            // Hide protected items if not logged in
             if (item.protected && !user) return null;
-            
-            const isActive = location.pathname === item.path && 
-                             (item.path !== '/' || location.pathname === '/');
-                             
+
+            const IconComponent = item.icon;
+            const isActive =
+              location.pathname === item.path &&
+              (item.path !== '/' || location.pathname === '/');
+
             return (
               <Link
                 key={item.path}
@@ -74,26 +89,27 @@ function Sidebar({ isOpen = false, onClose = () => {} }) {
                 className={`nav-item ${isActive ? 'active' : ''}`}
                 style={{ textDecoration: 'none' }}
               >
-                <span className="nav-icon">{item.icon}</span>
-                <span>{item.label}</span>
+                <span className="nav-icon" aria-hidden="true">
+                  <IconComponent size={18} strokeWidth={isActive ? 2.2 : 1.75} />
+                </span>
+                <span className="nav-label">{item.label}</span>
               </Link>
             );
           })}
         </nav>
 
-        <div className="illustration-container">
-          <div className="illustration-box">
-            <div className="illustration-character">📊</div>
-            <div className="illustration-text">
-              <p>วางแผนภาษี</p>
-              <p>ให้เป็นเรื่องง่าย</p>
-              <p>สำหรับคุณ</p>
-            </div>
+        {/* Refined Trust Badge instead of AI cartoon mascot */}
+        <div className="sidebar-footer-card">
+          <div className="sidebar-footer-badge">
+            <ShieldCheck size={16} className="badge-shield-icon" />
+            <span className="badge-year-text">ปีภาษี 2569</span>
           </div>
-        </div>
-
-        <div className="sidebar-tagline">
-          <p>Check Pasi © 2569</p>
+          <p className="sidebar-footer-caption">
+            ระบบคำนวณมาตรฐาน ภ.ง.ด. 90/91
+          </p>
+          <div className="sidebar-tagline">
+            <span>Check Pasi © 2569</span>
+          </div>
         </div>
       </aside>
     </>

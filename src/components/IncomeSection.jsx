@@ -1,3 +1,4 @@
+import { Info } from 'lucide-react';
 import { blockInvalidChars, parseFormattedNumber, formatNumberWithCommas } from '../utils/numberInput';
 
 function IncomeSection({ 
@@ -94,7 +95,8 @@ function IncomeSection({
               <span className="input-suffix">บาท</span>
             </div>
             <div className="input-hint-text">
-              ℹ️ ภาษีที่ถูกหักไว้ล่วงหน้าระหว่างปี เช่น ตามหนังสือรับรองการหักภาษี ณ ที่จ่าย (ใบ 50 ทวิ)
+              <Info size={13} className="inline-hint-icon" />
+              <span>ภาษีที่ถูกหักไว้ล่วงหน้าระหว่างปี เช่น ตามหนังสือรับรองการหักภาษี ณ ที่จ่าย (ใบ 50 ทวิ)</span>
             </div>
           </div>
         </div>

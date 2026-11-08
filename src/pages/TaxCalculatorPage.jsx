@@ -1,6 +1,7 @@
 /* oxlint-disable react/set-state-in-effect */
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { Download, BarChart3, RotateCcw } from 'lucide-react';
 import WelcomeBanner from '../components/WelcomeBanner';
 import IncomeSection from '../components/IncomeSection';
 import DeductionSection from '../components/DeductionSection';
@@ -146,7 +147,7 @@ function TaxCalculatorPage() {
         },
       });
       setHasCalculated(true);
-      showToast(`🎉 นำเข้ายอดสะสม 12 เดือน ${year ? `ปี ${year}` : ''} เรียบร้อยแล้ว`, 'success');
+      showToast(`นำเข้ายอดสะสม 12 เดือน ${year ? `ปี ${year}` : ''} เรียบร้อยแล้ว`, 'success');
       navigate(location.pathname, { replace: true, state: null });
     }
   }, [location.state, location.pathname, navigate, showToast]);
@@ -259,7 +260,9 @@ function TaxCalculatorPage() {
         {trackerImportInfo && (
           <div className="imported-tracker-banner">
             <div className="imported-tracker-left">
-              <span className="imported-tracker-icon">📥</span>
+              <span className="imported-tracker-icon">
+                <Download size={16} />
+              </span>
               <div>
                 <div className="imported-tracker-title">
                   นำเข้ายอดสะสม 12 เดือน {trackerImportInfo.taxYear ? `(ปีภาษี ${trackerImportInfo.taxYear})` : ''} เรียบร้อยแล้ว
@@ -343,7 +346,9 @@ function TaxCalculatorPage() {
           }}
           aria-label="ดูผลลัพธ์การคำนวณภาษี"
         >
-          <span className="jump-icon">📊</span>
+          <span className="jump-icon">
+            <BarChart3 size={15} />
+          </span>
           <span className="jump-text">
             {taxResult.status === 'refund' ? (
               <span>ได้คืนภาษี: <strong style={{ color: '#86efac' }}>+{Number(taxResult.refundAmount).toLocaleString('th-TH')} ฿</strong></span>
@@ -362,7 +367,9 @@ function TaxCalculatorPage() {
         <div className="modal-backdrop" onClick={() => setShowResetModal(false)}>
           <div className="confirm-modal-box" onClick={e => e.stopPropagation()}>
             <div className="confirm-modal-header">
-              <div className="confirm-modal-icon">🔄</div>
+              <div className="confirm-modal-icon">
+                <RotateCcw size={22} className="text-amber" />
+              </div>
               <div className="confirm-modal-title">ยืนยันการล้างข้อมูล</div>
             </div>
             <div className="confirm-modal-desc">

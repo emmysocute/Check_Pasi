@@ -1,5 +1,21 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+  CalendarDays,
+  Coins,
+  Receipt,
+  ShieldCheck,
+  FileText,
+  Download,
+  Copy,
+  Sparkles,
+  Save,
+  ArrowRight,
+  X,
+  Sliders,
+  Check,
+  Plus,
+} from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../utils/api';
 import Toast from '../components/Toast';
@@ -220,7 +236,10 @@ function MonthlyTrackerPage() {
       {/* Header Banner */}
       <div className="tracker-header glass-card">
         <div className="tracker-header-left">
-          <div className="tracker-badge">📅 ระบบวางแผนรายเดือน</div>
+          <div className="tracker-badge">
+            <CalendarDays size={13} />
+            <span>ระบบวางแผนรายเดือน</span>
+          </div>
           <h1 className="tracker-title">บันทึกรายได้ 12 เดือน (พาร์ทไทม์ & ฟรีแลนซ์)</h1>
           <p className="tracker-subtitle">
             จดรายได้ ภาษีหัก ณ ที่จ่าย 3% และประกันสังคมแยกรายเดือน เพื่อสะสมยอดส่งคำนวณภาษีและเช็กสิทธิเงินคืนภาษีสะสม
@@ -250,7 +269,8 @@ function MonthlyTrackerPage() {
       {/* Customizable Columns Toggle Bar */}
       <div className="tracker-toolbar glass-card">
         <div className="tracker-toolbar-label">
-          <span>⚙️ เลือกข้อมูลที่ต้องการกรอก:</span>
+          <Sliders size={14} className="toolbar-icon" />
+          <span>เลือกข้อมูลที่ต้องการกรอก:</span>
           <span className="tracker-toolbar-sub">(ปิดคอลัมน์ที่ไม่จำเป็นเพื่อให้หน้าจอสะอาดขึ้น)</span>
         </div>
         <div className="tracker-pills-group">
@@ -260,7 +280,9 @@ function MonthlyTrackerPage() {
             title="รายได้ของแต่ละเดือนจำเป็นต้องกรอก"
             disabled
           >
-            ✓ 💰 รายได้ของเดือน
+            <Check size={13} />
+            <Coins size={14} />
+            <span>รายได้ของเดือน</span>
           </button>
 
           <button
@@ -269,7 +291,9 @@ function MonthlyTrackerPage() {
             onClick={() => toggleSetting('showWithholding')}
             id="toggle-col-withholding"
           >
-            {settings.showWithholding ? '✓' : '+'} 🧾 ภาษีหัก ณ ที่จ่าย (3%)
+            {settings.showWithholding ? <Check size={13} /> : <Plus size={13} />}
+            <Receipt size={14} />
+            <span>ภาษีหัก ณ ที่จ่าย (3%)</span>
           </button>
 
           <button
@@ -278,7 +302,9 @@ function MonthlyTrackerPage() {
             onClick={() => toggleSetting('showSocialSecurity')}
             id="toggle-col-social-security"
           >
-            {settings.showSocialSecurity ? '✓' : '+'} 🏥 ประกันสังคม
+            {settings.showSocialSecurity ? <Check size={13} /> : <Plus size={13} />}
+            <ShieldCheck size={14} />
+            <span>ประกันสังคม</span>
           </button>
 
           <button
@@ -287,7 +313,9 @@ function MonthlyTrackerPage() {
             onClick={() => toggleSetting('showNote')}
             id="toggle-col-note"
           >
-            {settings.showNote ? '✓' : '+'} 📝 โน้ต / แหล่งที่มา
+            {settings.showNote ? <Check size={13} /> : <Plus size={13} />}
+            <FileText size={14} />
+            <span>โน้ต / แหล่งที่มา</span>
           </button>
         </div>
       </div>
@@ -323,7 +351,8 @@ function MonthlyTrackerPage() {
           onClick={handleExportCSV}
           title="ดาวน์โหลดสรุป 12 เดือนเป็นไฟล์ CSV เพื่อเปิดใน Excel"
         >
-          📥 ดาวน์โหลด Excel / CSV
+          <Download size={14} />
+          <span>ดาวน์โหลด Excel / CSV</span>
         </button>
       </div>
 
@@ -471,7 +500,8 @@ function MonthlyTrackerPage() {
                             title="คัดลอกข้อมูลไปเดือนถัดไป"
                             id={`btn-copy-${rec.month}`}
                           >
-                            📋 คัดลอก
+                            <Copy size={12} />
+                            <span>คัดลอก</span>
                           </button>
                         )}
                         {(rec.income > 0 || rec.withholdingTax > 0 || rec.socialSecurity > 0 || rec.note) && (
@@ -482,7 +512,7 @@ function MonthlyTrackerPage() {
                             title="ล้างข้อมูลเดือนนี้"
                             id={`btn-clear-${rec.month}`}
                           >
-                            ✕
+                            <X size={13} />
                           </button>
                         )}
                       </div>
@@ -528,7 +558,8 @@ function MonthlyTrackerPage() {
             <span className="stat-label">ประมาณการสิทธิภาษี</span>
             {estimatedRefund.status === 'refund' && (
               <span className="stat-value refund-positive">
-                🎉 โอกาสได้เงินคืน: +{estimatedRefund.refundPotential.toLocaleString('th-TH')} บ.
+                <Sparkles size={14} className="sparkle-icon" />
+                <span>โอกาสได้เงินคืน: +{estimatedRefund.refundPotential.toLocaleString('th-TH')} บ.</span>
               </span>
             )}
             {estimatedRefund.status === 'payable' && (
@@ -553,7 +584,8 @@ function MonthlyTrackerPage() {
             title="ดาวน์โหลดสรุป 12 เดือนเป็นไฟล์ CSV เพื่อเปิดใน Excel"
             id="btn-export-csv"
           >
-            📥 ดาวน์โหลด Excel
+            <Download size={14} />
+            <span>ดาวน์โหลด Excel</span>
           </button>
 
           <button
@@ -563,7 +595,8 @@ function MonthlyTrackerPage() {
             disabled={isSaving}
             id="btn-save-tracker"
           >
-            {isSaving ? '⏳ กำลังบันทึก...' : '💾 บันทึกข้อมูล'}
+            <Save size={14} />
+            <span>{isSaving ? 'กำลังบันทึก...' : 'บันทึกข้อมูล'}</span>
           </button>
 
           <button
@@ -572,7 +605,8 @@ function MonthlyTrackerPage() {
             onClick={handleSendToCalculator}
             id="btn-bridge-to-calculator"
           >
-            🚀 ส่งยอดไปคำนวณภาษีประจำปี
+            <span>ส่งยอดไปคำนวณภาษี</span>
+            <ArrowRight size={15} />
           </button>
         </div>
       </div>

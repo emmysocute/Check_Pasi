@@ -1,10 +1,25 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
+import {
+  Sparkles,
+  TrendingUp,
+  FileSpreadsheet,
+  ChevronDown,
+  ChevronUp,
+  Copy,
+  Check,
+  CheckCircle2,
+  AlertCircle,
+  Info,
+  Sliders,
+  Layers,
+} from 'lucide-react';
 import { simulateTaxSavings } from '../utils/taxEngine';
 
 function ResultPanel({ result, visible, onOpenPreFilingSheet }) {
   const [isBracketOpen, setIsBracketOpen] = useState(false);
   const [isAdvisorOpen, setIsAdvisorOpen] = useState(true);
   const [simulatedAmount, setSimulatedAmount] = useState(30000);
+  const [hasCopied, setHasCopied] = useState(false);
 
   const fmt = (n) => (n ?? 0).toLocaleString('th-TH');
 
@@ -13,6 +28,19 @@ function ResultPanel({ result, visible, onOpenPreFilingSheet }) {
     return simulateTaxSavings(result, simulatedAmount);
   }, [result, simulatedAmount]);
 
+  const handleCopyResult = useCallback(() => {
+    if (!result) return;
+    const amount =
+      result.status === 'refund'
+        ? result.refundAmount
+        : result.status === 'payable'
+        ? result.payableAmount
+        : result.finalTax;
+    navigator.clipboard.writeText(String(amount || 0));
+    setHasCopied(true);
+    setTimeout(() => setHasCopied(false), 2000);
+  }, [result]);
+
   return (
     <div className="right-panel">
       {/* ===== Tax Result Card ===== */}
@@ -20,7 +48,7 @@ function ResultPanel({ result, visible, onOpenPreFilingSheet }) {
         <div className="result-header">
           <div className="result-header-text">
             <h3>ผลการคำนวณภาษี</h3>
-            <p>จากข้อมูลที่คุณกรอก</p>
+            <p>จากข้อมูลที่คุณกรอกสำหรับปีภาษี 2569</p>
           </div>
         </div>
 
@@ -29,55 +57,119 @@ function ResultPanel({ result, visible, onOpenPreFilingSheet }) {
             <div style={{ padding: '0 24px' }}>
               {result.taxMethod === 'flat_rate' ? (
                 <div className="tax-method-badge flat-rate">
-                  ⚡ คำนวณวิธีเหมา 0.5% (ม.48(2))
+                  <TrendingUp size={13} />
+                  <span>คำนวณวิธีเหมา 0.5% (ม.48(2))</span>
                 </div>
               ) : (
                 <div className="tax-method-badge bracket">
-                  📈 คำนวณตามอัตราก้าวหน้า (ม.48(1))
+                  <Layers size={13} />
+                  <span>คำนวณตามอัตราก้าวหน้า (ม.48(1))</span>
                 </div>
               )}
             </div>
 
+            {/* Interactive Result Highlight with One-Click Copy */}
             {result.status === 'refund' ? (
               <div className="result-highlight refund">
-                <div className="refund-badge">🎉 ได้รับเงินคืนภาษี (Tax Refund)</div>
+                <div className="refund-badge">
+                  <Sparkles size={14} className="sparkle-icon" />
+                  <span>ได้รับเงินคืนภาษี (Tax Refund)</span>
+                </div>
                 <div className="result-highlight-label">ยอดเงินที่คุณจะได้รับคืนจากกรมสรรพากร</div>
-                <div className="result-highlight-amount">
-                  <span className="amount">{fmt(result.refundAmount)}</span>
-                  <span className="unit">บาท</span>
+                <div className="result-highlight-amount-row">
+                  <div className="result-highlight-amount">
+                    <span className="amount">{fmt(result.refundAmount)}</span>
+                    <span className="unit">บาท</span>
+                  </div>
+                  <button
+                    type="button"
+                    className="result-copy-btn"
+                    onClick={handleCopyResult}
+                    title="คัดลอกยอดเงินคืน"
+                    aria-label="คัดลอกยอดเงินคืน"
+                  >
+                    {hasCopied ? <Check size={15} /> : <Copy size={15} />}
+                    <span>{hasCopied ? 'คัดลอกแล้ว' : 'คัดลอก'}</span>
+                  </button>
                 </div>
               </div>
             ) : result.status === 'payable' && result.withholdingTax > 0 ? (
               <div className="result-highlight payable">
-                <div className="refund-badge">📋 ยอดภาษีที่ต้องชำระเพิ่มเติม</div>
+                <div className="refund-badge">
+                  <AlertCircle size={14} />
+                  <span>ยอดภาษีที่ต้องชำระเพิ่มเติม</span>
+                </div>
                 <div className="result-highlight-label">ยอดภาษีที่ต้องนำส่งเพิ่มหลังหัก ณ ที่จ่ายแล้ว</div>
-                <div className="result-highlight-amount">
-                  <span className="amount">{fmt(result.payableAmount)}</span>
-                  <span className="unit">บาท</span>
+                <div className="result-highlight-amount-row">
+                  <div className="result-highlight-amount">
+                    <span className="amount">{fmt(result.payableAmount)}</span>
+                    <span className="unit">บาท</span>
+                  </div>
+                  <button
+                    type="button"
+                    className="result-copy-btn"
+                    onClick={handleCopyResult}
+                    title="คัดลอกยอดที่ต้องชำระ"
+                    aria-label="คัดลอกยอดที่ต้องชำระ"
+                  >
+                    {hasCopied ? <Check size={15} /> : <Copy size={15} />}
+                    <span>{hasCopied ? 'คัดลอกแล้ว' : 'คัดลอก'}</span>
+                  </button>
                 </div>
               </div>
             ) : (
               <div className="result-highlight standard">
                 <div className="result-highlight-label">ภาษีที่ต้องชำระทั้งปี (โดยประมาณ)</div>
-                <div className="result-highlight-amount">
-                  <span className="amount">{fmt(result.finalTax ?? result.tax)}</span>
-                  <span className="unit">บาท / ปี</span>
+                <div className="result-highlight-amount-row">
+                  <div className="result-highlight-amount">
+                    <span className="amount">{fmt(result.finalTax ?? result.tax)}</span>
+                    <span className="unit">บาท / ปี</span>
+                  </div>
+                  <button
+                    type="button"
+                    className="result-copy-btn"
+                    onClick={handleCopyResult}
+                    title="คัดลอกยอดภาษี"
+                    aria-label="คัดลอกยอดภาษี"
+                  >
+                    {hasCopied ? <Check size={15} /> : <Copy size={15} />}
+                    <span>{hasCopied ? 'คัดลอกแล้ว' : 'คัดลอก'}</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Interactive Tax Bracket Progress Meter (Delightful visual touch) */}
+            {result.taxMethod !== 'flat_rate' && (
+              <div className="tax-meter-container">
+                <div className="tax-meter-header">
+                  <span>ฐานภาษีของคุณ:</span>
+                  <strong className="tax-meter-rate">{Math.round((result.marginalRate || 0) * 100)}%</strong>
+                </div>
+                <div className="tax-meter-bar" aria-label="แถบแสดงอัตราภาษี 8 ขั้น">
+                  {[0, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35].map((rate, i) => {
+                    const isPassed = (result.marginalRate || 0) >= rate && (result.netIncome || 0) > 0;
+                    const isCurrent = (result.marginalRate || 0) === rate && (result.netIncome || 0) > 0;
+                    return (
+                      <div
+                        key={i}
+                        className={`meter-step ${isPassed ? 'passed' : ''} ${isCurrent ? 'current' : ''}`}
+                        title={`ฐาน ${rate * 100}%`}
+                      >
+                        <span className="meter-step-label">{rate * 100}%</span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
 
             {result.taxMethod === 'flat_rate' && (
-              <div style={{
-                margin: '12px 24px 0',
-                padding: '10px 14px',
-                background: '#fffbeb',
-                border: '1px solid #fef3c7',
-                borderRadius: 'var(--radius-md)',
-                fontSize: '11px',
-                color: '#92400e',
-                lineHeight: 1.5
-              }}>
-                💡 เนื่องจากคุณมีรายได้ฟรีแลนซ์/อื่นๆ เกิน 120,000 บาท และคำนวณภาษีวิธีเหมา 0.5% ({fmt(result.flatRateTax)} บาท) ได้ยอดสูงกว่าวิธีอัตราก้าวหน้า ({fmt(result.bracketTax)} บาท) กฎหมายสรรพากรกำหนดให้เสียภาษีตามยอดที่สูงกว่า
+              <div className="flat-rate-notice">
+                <Info size={15} className="notice-icon" />
+                <span>
+                  เนื่องจากคุณมีรายได้ฟรีแลนซ์/อื่นๆ เกิน 120,000 บาท และคำนวณภาษีวิธีเหมา 0.5% ({fmt(result.flatRateTax)} บาท) ได้ยอดสูงกว่าวิธีอัตราก้าวหน้า ({fmt(result.bracketTax)} บาท) กฎหมายสรรพากรกำหนดให้เสียภาษีตามยอดที่สูงกว่า
+                </span>
               </div>
             )}
 
@@ -117,23 +209,15 @@ function ResultPanel({ result, visible, onOpenPreFilingSheet }) {
                 <>
                   <div className="result-row">
                     <span className="result-row-label">หัก ภาษี ณ ที่จ่ายสะสม</span>
-                    <span className="result-row-value" style={{ color: 'var(--primary-600)' }}>
+                    <span className="result-row-value text-indigo">
                       - {fmt(result.withholdingTax)} บาท
                     </span>
                   </div>
-                  <div className="result-row highlight" style={{ 
-                    borderTop: '2px dashed var(--gray-200)', 
-                    paddingTop: '10px', 
-                    marginTop: '6px' 
-                  }}>
+                  <div className="result-row highlight summary-net-row">
                     <span className="result-row-label" style={{ fontWeight: 700 }}>
                       {result.status === 'refund' ? 'ยอดเงินคืนภาษีสุทธิ' : 'ยอดภาษีที่ต้องชำระเพิ่ม'}
                     </span>
-                    <span className="result-row-value" style={{ 
-                      fontWeight: 800, 
-                      color: result.status === 'refund' ? 'var(--green-600)' : 'var(--red-600)',
-                      fontSize: '15px'
-                    }}>
+                    <span className={`result-row-value ${result.status === 'refund' ? 'text-emerald' : 'text-amber'}`} style={{ fontWeight: 800, fontSize: '15.5px' }}>
                       {result.status === 'refund' ? `+ ${fmt(result.refundAmount)} ฿` : `${fmt(result.payableAmount)} ฿`}
                     </span>
                   </div>
@@ -147,14 +231,16 @@ function ResultPanel({ result, visible, onOpenPreFilingSheet }) {
                 <button
                   type="button"
                   className="accordion-toggle-btn"
-                  onClick={() => setIsBracketOpen(prev => !prev)}
+                  onClick={() => setIsBracketOpen((prev) => !prev)}
                   aria-expanded={isBracketOpen}
                 >
                   <span className="accordion-toggle-title">
-                    <span>📊</span>
-                    <span>ดูแจกแจงขั้นบันไดภาษี 8 ขั้น</span>
+                    <Layers size={15} />
+                    <span>แจกแจงขั้นบันไดภาษี 8 ขั้น</span>
                   </span>
-                  <span className={`accordion-arrow ${isBracketOpen ? 'open' : ''}`}>▼</span>
+                  <span className="accordion-arrow">
+                    {isBracketOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                  </span>
                 </button>
                 {isBracketOpen && (
                   <div className="accordion-content">
@@ -182,7 +268,7 @@ function ResultPanel({ result, visible, onOpenPreFilingSheet }) {
                             >
                               <td>
                                 {b.label}
-                                {isMarginal && <span style={{ marginLeft: 4, fontSize: 10, color: 'var(--primary-600)' }}>★ สูงสุด</span>}
+                                {isMarginal && <span className="marginal-star-tag">★ สูงสุด</span>}
                               </td>
                               <td className="text-right">
                                 <span className={`rate-chip ${b.rate === 0 ? 'zero' : b.rate <= 0.1 ? 'low' : b.rate <= 0.2 ? 'mid' : 'high'}`}>
@@ -209,16 +295,17 @@ function ResultPanel({ result, visible, onOpenPreFilingSheet }) {
                   className="btn btn-outline btn-block prefiling-trigger-btn"
                   onClick={onOpenPreFilingSheet}
                 >
-                  📋 ดูใบสรุปเตรียมยื่นแบบ ภ.ง.ด. 90/91
+                  <FileSpreadsheet size={16} />
+                  <span>ดูใบสรุปเตรียมยื่นแบบ ภ.ง.ด. 90/91</span>
                 </button>
               </div>
             )}
 
             <div className="result-note">
               <p>
-                ℹ️ ผลการคำนวณนี้เป็นการประมาณการตามเกณฑ์สรรพากรปีภาษี 2569
+                ผลการคำนวณเป็นการประมาณการตามเกณฑ์กรมสรรพากรปีภาษี 2569
                 <br />
-                เพื่อใช้เตรียมตัววางแผนและนำตัวเลขไปยื่นแบบ ภ.ง.ด. 90/91 ผ่าน rd.go.th
+                เพื่อใช้วางแผนและนำตัวเลขไปยื่นแบบ ภ.ง.ด. 90/91 ผ่าน rd.go.th
               </p>
             </div>
           </>
@@ -227,11 +314,14 @@ function ResultPanel({ result, visible, onOpenPreFilingSheet }) {
 
       {/* ===== Interactive Tax Saving Advisor (What-If Simulator) ===== */}
       {visible && (result.finalTax > 0 || result.netIncome > 150000) && simulation && (
-        <div className="advisor-card glass-card">
+        <div className="advisor-card">
           <div className="advisor-header">
             <div className="advisor-title-box">
-              <span className="advisor-badge">💡 วางแผนภาษีอัจฉริยะ</span>
-              <h4 className="advisor-title">จำลองซื้อลดหย่อนเพิ่ม</h4>
+              <span className="advisor-badge">
+                <Sliders size={12} />
+                <span>จำลองลดหย่อนเพิ่ม</span>
+              </span>
+              <h4 className="advisor-title">What-If Tax Advisor</h4>
             </div>
             <button
               type="button"
@@ -239,7 +329,7 @@ function ResultPanel({ result, visible, onOpenPreFilingSheet }) {
               onClick={() => setIsAdvisorOpen((prev) => !prev)}
               aria-expanded={isAdvisorOpen}
             >
-              {isAdvisorOpen ? 'ย่อลง ▲' : 'จำลอง ▼'}
+              {isAdvisorOpen ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
             </button>
           </div>
 
@@ -298,7 +388,10 @@ function ResultPanel({ result, visible, onOpenPreFilingSheet }) {
                   </div>
                   <div className="savings-microcopy">
                     {simulation.newStatus === 'refund' && simulation.baseStatus !== 'refund' ? (
-                      <span>🎉 พลิกเป็น <strong>ได้รับเงินคืนภาษี ฿{fmt(Math.abs(simulation.newBalance))}</strong></span>
+                      <span className="refund-turn-highlight">
+                        <Sparkles size={13} />
+                        <span>พลิกเป็น <strong>ได้รับเงินคืนภาษี ฿{fmt(Math.abs(simulation.newBalance))}</strong></span>
+                      </span>
                     ) : (
                       <span>ภาระภาษีลดเหลือ <strong>฿{fmt(simulation.newTax)}</strong> (เดิม ฿{fmt(simulation.baseTax)})</span>
                     )}
@@ -317,20 +410,24 @@ function ResultPanel({ result, visible, onOpenPreFilingSheet }) {
       {/* ===== Info Card ===== */}
       <div className="info-card">
         <div className="info-card-header">
+          <Info size={16} />
           <h4>ข้อมูลที่ควรรู้</h4>
         </div>
         <div className="info-list">
           <div className="info-list-item">
-            <span>• สามารถหักค่าลดหย่อนภาษีได้ตามสิทธิที่กฎหมายกำหนด</span>
+            <CheckCircle2 size={14} className="check-icon" />
+            <span>สามารถหักค่าลดหย่อนภาษีได้ตามสิทธิที่กฎหมายกำหนด</span>
           </div>
           <div className="info-list-item">
-            <span>• สำหรับฟรีแลนซ์/รายได้อื่นเกิน 120,000 บ. กรมสรรพากรจะเปรียบเทียบอัตราเหมา 0.5% (ม.48(2))</span>
+            <CheckCircle2 size={14} className="check-icon" />
+            <span>สำหรับฟรีแลนซ์/รายได้อื่นเกิน 120,000 บ. กรมสรรพากรจะเปรียบเทียบอัตราเหมา 0.5% (ม.48(2))</span>
           </div>
           <div className="info-list-item">
+            <CheckCircle2 size={14} className="check-icon" />
             <span>
-              • ตรวจสอบรายละเอียดเพิ่มเติมได้ที่{' '}
+              ตรวจสอบรายละเอียดเพิ่มเติมได้ที่{' '}
               <a href="https://www.rd.go.th" target="_blank" rel="noopener noreferrer">
-                กรมสรรพากร
+                กรมสรรพากร (rd.go.th)
               </a>
             </span>
           </div>

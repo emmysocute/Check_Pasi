@@ -1,4 +1,14 @@
 import { useEffect } from 'react';
+import {
+  FileSpreadsheet,
+  Printer,
+  X,
+  ExternalLink,
+  ShieldCheck,
+  CheckCircle2,
+  AlertCircle,
+  Sparkles,
+} from 'lucide-react';
 
 /**
  * ภ.ง.ด. 90/91 Pre-Filing Cheat Sheet Modal & Clean Print Sheet
@@ -41,7 +51,7 @@ function PreFilingSheetModal({ result, onClose }) {
         {/* Modal Toolbar (hidden during print) */}
         <div className="prefiling-toolbar no-print">
           <div className="prefiling-toolbar-title">
-            <span>📄</span>
+            <FileSpreadsheet size={18} className="text-emerald" />
             <span>ใบสรุปเตรียมยื่นแบบ ภ.ง.ด. 90/91 (Cheat Sheet)</span>
           </div>
           <div className="prefiling-toolbar-actions">
@@ -50,7 +60,8 @@ function PreFilingSheetModal({ result, onClose }) {
               className="btn btn-primary btn-sm prefiling-print-btn"
               onClick={handlePrint}
             >
-              🖨️ พิมพ์ / บันทึก PDF (A4)
+              <Printer size={15} />
+              <span>พิมพ์ / บันทึก PDF (A4)</span>
             </button>
             <button
               type="button"
@@ -58,7 +69,8 @@ function PreFilingSheetModal({ result, onClose }) {
               onClick={onClose}
               aria-label="ปิดหน้าต่าง"
             >
-              ✕ ปิด
+              <X size={15} />
+              <span>ปิด</span>
             </button>
           </div>
         </div>
@@ -68,7 +80,10 @@ function PreFilingSheetModal({ result, onClose }) {
           {/* Header */}
           <header className="prefiling-header">
             <div className="prefiling-brand">
-              <span className="prefiling-brand-badge">Check Pasi — แผ่นเตรียมยื่นภาษี</span>
+              <span className="prefiling-brand-badge">
+                <ShieldCheck size={13} />
+                <span>Check Pasi — แผ่นเตรียมยื่นภาษี</span>
+              </span>
               <h2 id="prefiling-modal-title" className="prefiling-title">
                 สรุปข้อมูลเตรียมยื่นแบบภาษีเงินได้บุคคลธรรมดา
               </h2>
@@ -237,11 +252,22 @@ function PreFilingSheetModal({ result, onClose }) {
                   </tr>
                   <tr className={`final-summary-row ${result.status}`}>
                     <td className="field-name summary-title">
-                      {result.status === 'refund'
-                        ? '🎉 ภาษีที่ชำระไว้เกิน (ยอดเงินคืนที่ได้รับจากสรรพากร)'
-                        : result.status === 'payable'
-                        ? '📋 ยอดภาษีที่ต้องชำระเพิ่มเติม'
-                        : '✓ ยอดภาษีสุทธิพอดี (ไม่ต้องชำระเพิ่ม)'}
+                      {result.status === 'refund' ? (
+                        <span className="summary-status-tag">
+                          <Sparkles size={14} />
+                          <span>ภาษีที่ชำระไว้เกิน (ยอดเงินคืนที่ได้รับจากสรรพากร)</span>
+                        </span>
+                      ) : result.status === 'payable' ? (
+                        <span className="summary-status-tag">
+                          <AlertCircle size={14} />
+                          <span>ยอดภาษีที่ต้องชำระเพิ่มเติม</span>
+                        </span>
+                      ) : (
+                        <span className="summary-status-tag">
+                          <CheckCircle2 size={14} />
+                          <span>ยอดภาษีสุทธิพอดี (ไม่ต้องชำระเพิ่ม)</span>
+                        </span>
+                      )}
                     </td>
                     <td className="field-value summary-amount">
                       {result.status === 'refund'
@@ -259,9 +285,10 @@ function PreFilingSheetModal({ result, onClose }) {
           {/* Footer Legal & Instructions */}
           <footer className="prefiling-footer">
             <div className="prefiling-tip">
-              💡 <strong>คำแนะนำในการยื่นแบบ:</strong> ล็อกอินเข้าสู่ระบบ{' '}
+              <strong>คำแนะนำในการยื่นแบบ:</strong> ล็อกอินเข้าสู่ระบบ{' '}
               <a href="https://efiling.rd.go.th" target="_blank" rel="noopener noreferrer">
                 efiling.rd.go.th
+                <ExternalLink size={12} className="inline-ext-icon" />
               </a>{' '}
               ด้วย Digital ID หรือเลขประจำตัวประชาชน และนำตัวเลขแต่ละช่องที่สรุปไว้ในเอกสารนี้ไปกรอกตามหมวด จะช่วยให้ยื่นแบบได้รวดเร็ว แม่นยำ และไม่ตกหล่น
             </div>

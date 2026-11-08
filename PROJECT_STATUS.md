@@ -38,6 +38,12 @@
 - [x] **[PDPA & Privacy Protection]** การกำบังข้อมูลส่วนบุคคลใน `ProfilePage.jsx`:
   - พัฒนาโมดูล `src/utils/privacy.js` พร้อมฟังก์ชัน `maskTaxId()` และ `formatTaxId()`
   - กำบังเลขประจำตัวผู้เสียภาษี 13 หลัก (เช่น `1-1002-XXXXX-32-1`) พร้อมปุ่มไอคอนดวงตาสำหรับเปิด/ปิดการแสดงผล
+- [x] **[De-AI & Artisanal Polish สำเร็จ]** ขจัดความรู้สึกที่เป็น AI Template ทั่วทั้งเว็บ:
+  - ติดตั้ง `lucide-react` และแทนที่ Emoji ดั้งเดิมทั้ง 58 จุดด้วยชุดไอคอนเวกเตอร์เส้นคม 1.75px ระดับมืออาชีพ
+  - นำกล่องภาพประกอบการ์ตูน AI ในแถบ Sidebar ออก แทนที่ด้วยการ์ดมาตรฐานปีภาษี 2569 สุขุมน่าเชื่อถือ
+  - เพิ่มลูกเล่นอินเตอร์แอ็กชัน **Interactive Tax Bracket Meter** แสดงขั้นภาษี 8 ขั้นแบบเกจวัดสด
+  - เพิ่มปุ่ม **One-Click Quick Copy** คัดลอกยอดภาษี/เงินคืนเข้า Clipboard พร้อมแอนิเมชันยืนยันผล
+  - ปรับพาเลทสีสู่ **Artisanal Fintech Palette**: Deep Slate/Ink (`#0f172a`), Off-white surfaces, Muted Emerald (`#059669`)
 - [x] ชุดทดสอบอัตโนมัติ Unit Tests ทั้งหมด 36 ชุด ผ่านการทดสอบ 100% (Node Test Runner)
 - [x] ตรวจสอบโค้ดผ่าน Oxlint 0 warnings / 0 errors และ Impeccable Detector 0 anti-patterns
 

@@ -1,3 +1,5 @@
+import { ShieldCheck } from 'lucide-react';
+
 function WelcomeBanner() {
   return (
     <div className="welcome-banner">
@@ -10,10 +12,11 @@ function WelcomeBanner() {
         </p>
       </div>
       <div className="welcome-badge">
-        <div className="welcome-badge-text">ปีภาษี 2569</div>
+        <ShieldCheck size={16} />
+        <span className="welcome-badge-text">ปีภาษี 2569</span>
       </div>
     </div>
   );
 }
 
-export default WelcomeBanner
+export default WelcomeBanner;

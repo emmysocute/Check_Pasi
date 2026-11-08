@@ -1,11 +1,21 @@
 import { useState, useMemo } from 'react';
+import {
+  Users,
+  ShieldCheck,
+  Home,
+  HeartHandshake,
+  AlertCircle,
+  ArrowRight,
+  CheckCircle2,
+  Check,
+} from 'lucide-react';
 import { blockInvalidChars, parseFormattedNumber, formatNumberWithCommas } from '../utils/numberInput';
 
 const DEDUCTION_TABS = [
-  { id: 'family', label: 'ตนเองและครอบครัว', icon: '👤' },
-  { id: 'insuranceSavings', label: 'ประกันและการออม', icon: '🛡️' },
-  { id: 'property', label: 'ที่อยู่อาศัย', icon: '🏠' },
-  { id: 'donation', label: 'เงินบริจาค', icon: '🎗️' },
+  { id: 'family', label: 'ตนเองและครอบครัว', icon: Users },
+  { id: 'insuranceSavings', label: 'ประกันและการออม', icon: ShieldCheck },
+  { id: 'property', label: 'ที่อยู่อาศัย', icon: Home },
+  { id: 'donation', label: 'เงินบริจาค', icon: HeartHandshake },
 ];
 
 const ALL_DEDUCTIONS = [
@@ -58,16 +68,19 @@ const ALL_DEDUCTIONS = [
     tab: 'insuranceSavings',
     label: 'ประกันชีวิต / ประกันสุขภาพ',
     hint: [
-      'ประกันชีวิตทั่วไป + สุขภาพตนเอง: รวมกันลดหย่อนได้ตามจริงไม่เกิน 100,000 บาท',
-      '(ประกันสุขภาพตนเอง หักได้ไม่เกิน 25,000 บาท)',
+      'ประกันชีวิตทั่วไป + ประกันสุขภาพตนเอง รวมกันลดหย่อนได้สูงสุดไม่เกิน 100,000 บาท',
+      'เฉพาะประกันสุขภาพตนเอง ลดหย่อนตามจริงไม่เกิน 25,000 บาท',
+      'เงื่อนไข: กรมธรรม์อายุ 10 ปีขึ้นไป กับบริษัทประกันในประเทศไทย',
     ],
   },
   {
     key: 'investmentFund',
     tab: 'insuranceSavings',
-    label: 'กองทุนสำรองเลี้ยงชีพ / RMF / SSF',
+    label: 'กองทุนรวมเพื่อการออม / สำรองเลี้ยงชีพ / กบข.',
     hint: [
-      'ลดหย่อนได้สูงสุดไม่เกิน 30% ของเงินได้พึงประเมิน และเมื่อรวมกลุ่มเกษียณทั้งหมดไม่เกิน 500,000 บาท',
+      'SSF: ลดหย่อนได้สูงสุด 30% ของเงินได้ แต่ไม่เกิน 200,000 บาท (ถือครอง 10 ปีเต็ม)',
+      'RMF: ลดหย่อนได้สูงสุด 30% ของเงินได้ แต่ไม่เกิน 500,000 บาท (ลงทุนถึงอายุ 55 ปี)',
+      'กองทุนสำรองเลี้ยงชีพ / กบข. / กอช. / ประกันบำนาญ: เมื่อรวมกับกลุ่มเกษียณทั้งหมดแล้วต้องไม่เกิน 500,000 บาท',
     ],
   },
 
@@ -75,41 +88,49 @@ const ALL_DEDUCTIONS = [
   {
     key: 'homeLoanInterest',
     tab: 'property',
-    label: 'ดอกเบี้ยเงินกู้ยืมเพื่อซื้อที่อยู่อาศัย (บ้าน/คอนโด)',
-    hint: ['ลดหย่อนได้ตามจำนวนที่จ่ายจริง สูงสุดไม่เกิน 100,000 บาท'],
+    label: 'ดอกเบี้ยเงินกู้ยืมเพื่อซื้อหรือสร้างที่อยู่อาศัย',
+    hint: [
+      'หักลดหย่อนได้ตามที่จ่ายจริง สูงสุดไม่เกิน 100,000 บาท',
+      'กรณีกู้ร่วม จะเฉลี่ยค่าลดหย่อนตามจำนวนผู้กู้ร่วมทุกคน',
+      'ต้องมีหนังสือรับรองการชำระดอกเบี้ยจากสถาบันการเงินในไทย',
+    ],
   },
 
   // 4. เงินบริจาค
   {
     key: 'donationEducation',
     tab: 'donation',
-    label: 'เงินบริจาคเพื่อการศึกษา / กีฬา / รพ.รัฐ',
-    hint: ['ลดหย่อนได้ 2 เท่าของยอดจ่ายจริง (รวมบริจาคทุกประเภทไม่เกิน 10% ของเงินได้หลังหักลดหย่อน)'],
+    label: 'เงินบริจาคเพื่อการศึกษา / กีฬา / โรงพยาบาลรัฐ (ลดหย่อนได้ 2 เท่า)',
+    hint: [
+      'ได้รับสิทธิหักลดหย่อน 2 เท่าของจำนวนเงินที่จ่ายจริง',
+      'เพดานสิทธิ: เมื่อรวมกับเงินบริจาคทั่วไปแล้ว ต้องไม่เกิน 10% ของเงินได้หลังหักค่าใช้จ่ายและค่าลดหย่อนอื่นทั้งหมด',
+      'แนะนำบริจาคผ่านระบบ e-Donation เพื่อความสะดวกในการตรวจสอบของสรรพากร',
+    ],
   },
   {
     key: 'donationGeneral',
     tab: 'donation',
-    label: 'เงินบริจาคทั่วไป / สาธารณกุศล',
-    hint: ['ลดหย่อนได้ตามจำนวนที่จ่ายจริง (รวมบริจาคทุกประเภทไม่เกิน 10% ของเงินได้หลังหักลดหย่อน)'],
+    label: 'เงินบริจาคทั่วไป / องค์กรสาธารณกุศล',
+    hint: [
+      'หักลดหย่อนได้ตามที่จ่ายจริง (1 เท่า)',
+      'เพดานสิทธิ: เมื่อรวมกับเงินบริจาคเพื่อการศึกษาแล้ว ต้องไม่เกิน 10% ของเงินได้หลังหักค่าใช้จ่ายและค่าลดหย่อนอื่นทั้งหมด',
+      'ต้องเป็นมูลนิธิหรือองค์กรสาธารณกุศลตามประกาศกระทรวงการคลัง',
+    ],
   },
 ];
 
-function DeductionSection({
-  formData,
-  onToggle,
-  onAmountChange,
-  onParentToggle,
-  maxDonationCap = 0,
+function DeductionSection({ 
+  formData, 
+  onToggle, 
+  onChange, 
+  onParentToggle, 
+  parentBreakdown,
   rawDonationClaim = 0,
+  maxDonationCap = Infinity,
   actualDonationDeduction = 0,
 }) {
   const [activeTab, setActiveTab] = useState('family');
 
-  const handleAmountChange = (key, val) => {
-    onAmountChange(key, parseFormattedNumber(val));
-  };
-
-  // Calculate sum per tab for header badges (derived state - Good React #03)
   const tabTotals = useMemo(() => {
     const totals = {
       family: 0,
@@ -120,39 +141,33 @@ function DeductionSection({
 
     ALL_DEDUCTIONS.forEach((d) => {
       const item = formData[d.key];
-      if (!item?.enabled) return;
-
-      if (d.key === 'parentAllowance') {
-        totals.family += Number(item.amount) || 0;
-      } else if (d.key === 'personalAllowance' || d.key === 'spouseAllowance') {
-        totals.family += Number(item.amount) || 60000;
-      } else if (d.key === 'donationEducation') {
-        totals.donation += (Number(item.amount) || 0) * 2;
-      } else if (totals[d.tab] !== undefined) {
-        totals[d.tab] += Number(item.amount) || 0;
+      if (item && item.enabled) {
+        if (d.key === 'parentAllowance') {
+          totals.family += parentBreakdown ? parentBreakdown.total : (Number(item.amount) || 0);
+        } else if (d.tab === 'donation') {
+          // Handled via actualDonationDeduction passed from parent engine
+        } else {
+          totals[d.tab] += Number(item.amount) || 0;
+        }
       }
     });
 
+    totals.donation = actualDonationDeduction || 0;
     return totals;
-  }, [formData]);
+  }, [formData, parentBreakdown, actualDonationDeduction]);
 
   const filteredDeductions = useMemo(() => {
     return ALL_DEDUCTIONS.filter((d) => d.tab === activeTab);
   }, [activeTab]);
 
-  const nextTabInfo = useMemo(() => {
-    const currentIndex = DEDUCTION_TABS.findIndex((t) => t.id === activeTab);
-    if (currentIndex >= 0 && currentIndex < DEDUCTION_TABS.length - 1) {
-      return DEDUCTION_TABS[currentIndex + 1];
-    }
-    return null;
-  }, [activeTab]);
+  const currentTabIndex = DEDUCTION_TABS.findIndex((t) => t.id === activeTab);
+  const nextTabInfo = currentTabIndex < DEDUCTION_TABS.length - 1 ? DEDUCTION_TABS[currentTabIndex + 1] : null;
 
   return (
     <>
       <div className="section-header">
         <div className="section-number">2</div>
-        <div style={{ flex: 1 }}>
+        <div>
           <h3 className="section-title">รายการลดหย่อนภาษี (4 หมวดสรรพากร)</h3>
           <p className="section-subtitle">เลือกเปิดสิทธิและกรอกตัวเลขในหมวดที่คุณมีสิทธิลดหย่อน</p>
         </div>
@@ -164,6 +179,7 @@ function DeductionSection({
           {DEDUCTION_TABS.map((tab) => {
             const isSelected = activeTab === tab.id;
             const tabTotal = tabTotals[tab.id] || 0;
+            const TabIcon = tab.icon;
             return (
               <button
                 key={tab.id}
@@ -175,7 +191,9 @@ function DeductionSection({
                 className={`deduction-tab-btn ${isSelected ? 'active' : ''}`}
                 onClick={() => setActiveTab(tab.id)}
               >
-                <span className="deduction-tab-icon" aria-hidden="true">{tab.icon}</span>
+                <span className="deduction-tab-icon" aria-hidden="true">
+                  <TabIcon size={16} strokeWidth={isSelected ? 2.2 : 1.75} />
+                </span>
                 <span className="deduction-tab-label">{tab.label}</span>
                 <span className={`deduction-tab-badge ${tabTotal > 0 ? 'has-value' : ''}`}>
                   {tabTotal > 0 ? `฿${tabTotal.toLocaleString('th-TH')}` : '0 บ.'}
@@ -208,7 +226,8 @@ function DeductionSection({
                     </span>
                     {d.key === 'personalAllowance' ? (
                       <span className="statutory-badge">
-                        ✓ ได้รับสิทธิทุกคน
+                        <CheckCircle2 size={13} />
+                        <span>ได้รับสิทธิทุกคน</span>
                       </span>
                     ) : (
                       <label className="toggle-switch">
@@ -267,7 +286,7 @@ function DeductionSection({
                           />
                           <span className="parent-check-text">
                             <span>บิดาของคู่สมรส</span>
-                            <span className="parent-check-sub">+30,000 บ. (คู่สมรสไม่มีเงินได้)</span>
+                            <span className="parent-check-sub">+30,000 บ.</span>
                           </span>
                         </label>
 
@@ -280,59 +299,55 @@ function DeductionSection({
                           />
                           <span className="parent-check-text">
                             <span>มารดาของคู่สมรส</span>
-                            <span className="parent-check-sub">+30,000 บ. (คู่สมรสไม่มีเงินได้)</span>
+                            <span className="parent-check-sub">+30,000 บ.</span>
                           </span>
                         </label>
-
-                        <div className="parent-total-badge">
-                          <span>รวมลดหย่อนบิดามารดา:</span>
-                          <strong>{(Number(item.amount) || 0).toLocaleString('th-TH')} บาท</strong>
-                        </div>
-
-                        {(item.spouseFather || item.spouseMother) && !formData.spouseAllowance?.enabled && (
-                          <div className="parent-smart-tip">
-                            💡 <strong>คำแนะนำสรรพากร:</strong> การลดหย่อนบิดามารดาคู่สมรสใช้ได้เฉพาะกรณีคู่สมรสไม่มีเงินได้ตลอดปีภาษี หากเข้าเกณฑ์นี้ คุณสามารถเปิดใช้สิทธิ <u>"ลดหย่อนคู่สมรส (60,000 บ.)"</u> ด้านบนเพิ่มเติมได้
-                          </div>
-                        )}
                       </div>
                     ) : (
-                      <div className="parent-disabled-preview">
-                        <span>เปิดสิทธิเพื่อเลือกบิดามารดา (คนละ 30,000 บาท สูงสุด 4 ท่าน)</span>
-                      </div>
-                    )
-                  ) : (
-                    <>
-                      <div className="input-wrapper">
+                      <div className="input-wrapper disabled">
                         <input
                           type="text"
-                          inputMode="numeric"
-                          id={`amount-${d.key}`}
-                          aria-labelledby={`label-${d.key}`}
-                          value={formatNumberWithCommas(item.amount)}
-                          onChange={(e) => handleAmountChange(d.key, e.target.value)}
-                          onKeyDown={blockInvalidChars}
-                          disabled={!item.enabled}
-                          placeholder="0"
-                          autoComplete="off"
-                          style={{
-                            opacity: item.enabled ? 1 : 0.5,
-                          }}
+                          value="0"
+                          disabled
+                          readOnly
+                          aria-label="ค่าอุปการะเลี้ยงดูบิดามารดา ปิดการใช้งาน"
                         />
                         <span className="input-suffix">บาท</span>
                       </div>
-
-                      {d.key === 'donationEducation' && item.enabled && Number(item.amount) > 0 && (
-                        <div className="donation-double-badge">
-                          ✨ ได้รับสิทธิลดหย่อน 2 เท่า: {(Number(item.amount) * 2).toLocaleString('th-TH')} บาท
-                        </div>
-                      )}
-                    </>
+                    )
+                  ) : (
+                    <div className={`input-wrapper ${!item.enabled ? 'disabled' : ''}`}>
+                      <span className="input-prefix" aria-hidden="true">฿</span>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        id={`input-${d.key}`}
+                        value={formatNumberWithCommas(item.amount)}
+                        onChange={(e) => onChange(d.key, parseFormattedNumber(e.target.value))}
+                        onKeyDown={blockInvalidChars}
+                        disabled={!item.enabled}
+                        placeholder="0"
+                        autoComplete="off"
+                        aria-label={`จำนวนเงิน ${d.label}`}
+                      />
+                      <span className="input-suffix">บาท</span>
+                    </div>
                   )}
 
-                  {d.hint && (item.enabled || d.key === 'personalAllowance') && (
-                    <div className="deduction-hint">
-                      {d.hint.map((text, idx) => (
-                        <div key={idx} className="deduction-hint-item">• {text}</div>
+                  {isParentItem && item.enabled && parentBreakdown && (
+                    <div className="parent-summary-bar">
+                      <span>รวมสิทธิบิดามารดา ({parentBreakdown.count} ท่าน):</span>
+                      <strong>{parentBreakdown.total.toLocaleString('th-TH')} บาท</strong>
+                    </div>
+                  )}
+
+                  {d.hint && (
+                    <div className="deduction-hints">
+                      {d.hint.map((h, i) => (
+                        <div key={i} className="hint-line">
+                          <span className="hint-bullet">•</span>
+                          <span>{h}</span>
+                        </div>
                       ))}
                     </div>
                   )}
@@ -340,29 +355,26 @@ function DeductionSection({
               );
             })}
 
-            {/* Donation ceiling advice when viewing donation tab */}
-            {activeTab === 'donation' && (Boolean(formData.donationEducation?.enabled) || Boolean(formData.donationGeneral?.enabled)) && (
-              <div className="donation-ceiling-card" id="donation-ceiling-card">
-                <div className="donation-ceiling-header">
-                  <div className="donation-ceiling-title">
-                    <span className="donation-ceiling-icon">ℹ️</span>
-                    <span>
-                      สิทธิลดหย่อนเงินบริจาครวมสูงสุดในปีนี้: 
-                      <strong className="donation-ceiling-amount">
-                        {' '}{Number(maxDonationCap).toLocaleString('th-TH')} บาท
-                      </strong>
-                    </span>
+            {/* Donation Ceiling Callout inside donation tab */}
+            {activeTab === 'donation' && (
+              <div className="donation-status-card">
+                <div className="donation-status-header">
+                  <div className="donation-cap-label">
+                    <span>เพดานบริจาคสูงสุด 10% ของเงินได้สุทธิขั้นต้น:</span>
+                    <strong>{maxDonationCap === Infinity ? 'รอการคำนวณ' : `${Number(maxDonationCap).toLocaleString('th-TH')} บาท`}</strong>
                   </div>
-                  <span className="donation-ceiling-tag">ม.47(7) เพดาน 10%</span>
+                  <div className="donation-actual-label">
+                    <span>ยอดหักลดหย่อนที่ใช้ได้จริง:</span>
+                    <strong className="text-emerald">{Number(actualDonationDeduction).toLocaleString('th-TH')} บาท</strong>
+                  </div>
                 </div>
-
-                <div className="donation-ceiling-desc">
+                <div className="donation-status-note">
                   คำนวณจากเพดานไม่เกิน 10% ของเงินได้พึงประเมินหลังหักค่าใช้จ่ายและค่าลดหย่อนอื่นทั้งหมด
                 </div>
 
                 {rawDonationClaim > maxDonationCap && maxDonationCap > 0 && (
                   <div className="donation-ceiling-warning" id="donation-cap-warning">
-                    <span className="warning-icon">⚠️</span>
+                    <AlertCircle size={16} className="warning-icon" />
                     <div>
                       <strong>ยอดบริจาคเกินสิทธิสูงสุด:</strong> คุณระบุยอดบริจาค (รวมสิทธิ 2 เท่า) จำนวน{' '}
                       {Number(rawDonationClaim).toLocaleString('th-TH')} บาท ซึ่งเกินเพดาน 10% — ระบบจะนำไปลดหย่อนภาษีให้ตามเพดานจริงที่{' '}
@@ -374,7 +386,7 @@ function DeductionSection({
 
                 {maxDonationCap === 0 && rawDonationClaim > 0 && (
                   <div className="donation-ceiling-warning" id="donation-zero-cap-warning">
-                    <span className="warning-icon">⚠️</span>
+                    <AlertCircle size={16} className="warning-icon" />
                     <div>
                       <strong>ยังไม่มีฐานคำนวณภาษี:</strong> เนื่องจากเงินได้หลังหักค่าใช้จ่ายและค่าลดหย่อนอื่นเป็น 0 บาท สิทธิลดหย่อนเงินบริจาคในปีนี้จึงเป็น 0 บาท
                     </div>
@@ -393,11 +405,12 @@ function DeductionSection({
                 onClick={() => setActiveTab(nextTabInfo.id)}
               >
                 <span>ถัดไป: หมวด{nextTabInfo.label}</span>
-                <span className="next-arrow" aria-hidden="true">➡️</span>
+                <ArrowRight size={15} className="next-arrow" aria-hidden="true" />
               </button>
             ) : (
               <div className="deduction-tab-completed-note">
-                <span>✅ ตรวจสอบครบทั้ง 4 หมวดแล้ว ดูสรุปผลภาษีที่การ์ดทางขวามือได้เลย</span>
+                <Check size={16} className="text-emerald" />
+                <span>ตรวจสอบครบทั้ง 4 หมวดแล้ว ดูสรุปผลภาษีที่การ์ดทางขวามือได้เลย</span>
               </div>
             )}
           </div>

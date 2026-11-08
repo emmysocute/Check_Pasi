@@ -1,4 +1,11 @@
 import { useState, useEffect } from 'react';
+import {
+  User,
+  ShieldCheck,
+  Eye,
+  EyeOff,
+  KeyRound,
+} from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../utils/api';
 import Alert from '../components/Alert';
@@ -208,7 +215,10 @@ function ProfilePage() {
       {/* ส่วนที่ 1: ข้อมูลส่วนตัว */}
       <div className="form-card" style={{ marginBottom: '24px' }}>
         <div className="section-header">
-          <h3 className="section-title">👤 ข้อมูลส่วนตัว</h3>
+          <div className="section-header-title-row">
+            <User size={18} className="section-icon" />
+            <h3 className="section-title">ข้อมูลส่วนตัว</h3>
+          </div>
         </div>
         <div className="section-body">
           {profileMessage.text && (
@@ -285,7 +295,10 @@ function ProfilePage() {
                   <label htmlFor="profile-tax-id" className="form-label" style={{ marginBottom: 0 }}>
                     เลขประจำตัวผู้เสียภาษี (Tax ID)
                   </label>
-                  <span className="privacy-badge">🔒 ปกป้องข้อมูล (PDPA)</span>
+                  <span className="privacy-badge">
+                    <ShieldCheck size={12} />
+                    <span>ปกป้องข้อมูล (PDPA)</span>
+                  </span>
                 </div>
                 <div className={`input-wrapper ${profileErrors.taxId ? 'has-error' : ''} has-action-btn`}>
                   <input
@@ -306,7 +319,7 @@ function ProfilePage() {
                     aria-label={isTaxIdRevealed ? 'ซ่อนเลขประจำตัวผู้เสียภาษี' : 'แสดงเลขประจำตัวผู้เสียภาษี'}
                     title={isTaxIdRevealed ? 'ซ่อนเลข' : 'แสดงเลข'}
                   >
-                    {isTaxIdRevealed ? '👁️' : '👁️‍🗨️'}
+                    {isTaxIdRevealed ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
                 {profile.taxId ? (
@@ -365,7 +378,10 @@ function ProfilePage() {
       {/* ส่วนที่ 2: เปลี่ยนรหัสผ่าน */}
       <div className="form-card">
         <div className="section-header">
-          <h3 className="section-title">🔒 เปลี่ยนรหัสผ่าน</h3>
+          <div className="section-header-title-row">
+            <KeyRound size={18} className="section-icon" />
+            <h3 className="section-title">เปลี่ยนรหัสผ่าน</h3>
+          </div>
         </div>
         <div className="section-body">
           {passwordMessage.text && (
