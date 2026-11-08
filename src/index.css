@@ -82,13 +82,16 @@ body {
 }
 
 /* ===== Base Links Reset ===== */
-a,
-a:visited,
+a {
+  text-decoration: none;
+  color: inherit;
+  transition: color var(--transition-fast);
+}
+
 a:hover,
 a:focus,
 a:active {
   text-decoration: none;
-  color: inherit;
 }
 
 /* ===== Scrollbar ===== */
@@ -452,12 +455,41 @@ a:active {
 .topbar-auth-btns {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .topbar-auth-btns a,
-.topbar-auth-btns a:hover {
+.topbar-auth-btns a:hover,
+.topbar-auth-btns a:visited {
   text-decoration: none !important;
+}
+
+.topbar-auth-btns .btn-outline {
+  border: 1.5px solid var(--gray-300) !important;
+  background: #ffffff !important;
+  color: var(--gray-700) !important;
+  font-weight: 600 !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.topbar-auth-btns .btn-outline:hover {
+  border-color: var(--primary-500) !important;
+  color: var(--primary-600) !important;
+  background: var(--primary-50) !important;
+}
+
+.topbar-auth-btns .btn-primary {
+  background: linear-gradient(135deg, var(--primary-600), var(--primary-700)) !important;
+  border: 1px solid var(--primary-700) !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  box-shadow: 0 2px 6px rgba(26, 106, 224, 0.3) !important;
+}
+
+.topbar-auth-btns .btn-primary:hover {
+  background: linear-gradient(135deg, var(--primary-700), #1d4ed8) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 10px rgba(26, 106, 224, 0.4) !important;
 }
 
 .btn-sm {
@@ -1153,27 +1185,49 @@ a.btn:active {
   text-decoration: none !important;
 }
 
-.btn-outline {
-  background: #fff;
-  border: 1.5px solid var(--gray-300);
-  color: var(--gray-600);
+.btn-outline,
+.btn-outline:visited,
+a.btn-outline,
+button.btn-outline {
+  background: #ffffff !important;
+  border: 1.5px solid var(--gray-300) !important;
+  color: var(--gray-700) !important;
+  text-decoration: none !important;
 }
 
-.btn-outline:hover {
-  border-color: var(--gray-400);
-  background: var(--gray-50);
+.btn-outline:hover,
+a.btn-outline:hover,
+button.btn-outline:hover {
+  border-color: var(--primary-500) !important;
+  color: var(--primary-600) !important;
+  background: var(--primary-50) !important;
+}
+
+.btn-primary,
+.btn-primary:visited,
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active,
+a.btn-primary,
+a.btn-primary:visited,
+a.btn-primary *,
+.btn-primary *,
+.btn-primary span {
+  color: #ffffff !important;
+  fill: #ffffff !important;
+  text-decoration: none !important;
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(26, 106, 224, 0.3);
+  background: linear-gradient(135deg, var(--primary-600), var(--primary-700)) !important;
+  border: 1px solid var(--primary-700) !important;
+  box-shadow: 0 2px 8px rgba(26, 106, 224, 0.3) !important;
   padding: 11px 36px;
 }
 
 .btn-primary:hover {
-  background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
-  box-shadow: 0 4px 12px rgba(26, 106, 224, 0.4);
+  background: linear-gradient(135deg, var(--primary-700), #1d4ed8) !important;
+  box-shadow: 0 4px 14px rgba(26, 106, 224, 0.45) !important;
   transform: translateY(-1px);
 }
 
@@ -2640,33 +2694,33 @@ a.btn:active {
 }
 
 .result-highlight.payable {
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 55%, #334155 100%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.4), 0 4px 10px rgba(15, 23, 42, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 45%, #fff7ed 100%) !important;
+  border: 1.5px solid #fde68a !important;
+  box-shadow: 0 6px 20px -4px rgba(217, 119, 6, 0.12), 0 2px 6px rgba(0, 0, 0, 0.04) !important;
   position: relative;
   overflow: hidden;
-  color: #ffffff;
+  color: #1e293b !important;
 }
 
 .result-highlight.payable .refund-badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(245, 158, 11, 0.2);
-  border: 1px solid rgba(245, 158, 11, 0.35);
-  color: #fef08a;
+  background: #fef08a !important;
+  border: 1px solid #fde047 !important;
+  color: #854d0e !important;
   padding: 5px 12px;
   border-radius: var(--radius-full);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.2px;
-  backdrop-filter: blur(8px);
   margin-bottom: 8px;
+  box-shadow: 0 1px 3px rgba(180, 83, 9, 0.12);
 }
 
 .result-highlight.payable .result-highlight-label {
   font-size: 12.5px;
-  color: #cbd5e1 !important;
+  color: #78350f !important;
   font-weight: 500;
   margin-bottom: 6px;
 }
@@ -2674,7 +2728,7 @@ a.btn:active {
 .result-highlight.payable .result-highlight-amount .amount {
   font-size: 38px;
   font-weight: 850;
-  color: #ffffff !important;
+  color: #0f172a !important;
   letter-spacing: -1px;
   line-height: 1;
 }
@@ -2682,8 +2736,20 @@ a.btn:active {
 .result-highlight.payable .result-highlight-amount .unit {
   font-size: 17px;
   font-weight: 700;
-  color: #e2e8f0 !important;
+  color: #475569 !important;
   margin-left: 2px;
+}
+
+.result-highlight.payable .result-copy-btn {
+  background: #ffffff !important;
+  border: 1px solid #fde68a !important;
+  color: #854d0e !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.result-highlight.payable .result-copy-btn:hover {
+  background: #fef3c7 !important;
+  color: #713f12 !important;
 }
 
 .result-highlight.zero {
@@ -3545,16 +3611,20 @@ a.btn:active {
 }
 
 .month-number {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: var(--primary-100);
-  color: var(--primary-700);
-  font-size: 12px;
-  font-weight: 800;
+  min-width: 28px;
+  height: 22px;
+  padding: 0 5px;
+  border-radius: var(--radius-sm);
+  background: var(--gray-100);
+  border: 1px solid var(--gray-200);
+  color: var(--gray-600);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
   flex-shrink: 0;
 }
 

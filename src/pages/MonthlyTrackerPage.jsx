@@ -382,7 +382,7 @@ function MonthlyTrackerPage() {
                     {/* Month Column */}
                     <td className="month-col">
                       <div className="month-badge-wrapper">
-                        <span className="month-number">{rec.month}</span>
+                        <span className="month-number">{String(rec.month).padStart(2, '0')}</span>
                         <div className="month-labels">
                           <span className="month-name-bold">{monthShort}</span>
                           <span className="month-name-full">{monthName}</span>
@@ -417,7 +417,7 @@ function MonthlyTrackerPage() {
                     {/* Withholding Tax Column */}
                     {settings.showWithholding && (
                       <td className="wht-col">
-                        <div className="table-input-group has-shortcut">
+                        <div className={`table-input-group ${(!rec.withholdingTax || Number(rec.withholdingTax) === 0) ? 'has-shortcut' : ''}`}>
                           <input
                             type="number"
                             id={`input-wht-${rec.month}`}
@@ -436,16 +436,18 @@ function MonthlyTrackerPage() {
                             step="any"
                           />
                           <span className="input-suffix">บาท</span>
-                          <button
-                            type="button"
-                            className="btn-quick-3percent"
-                            onClick={() => handleQuick3Percent(index)}
-                            title="คำนวณ 3% อัตโนมัติจากรายได้เดือนนี้"
-                            id={`btn-3pct-${rec.month}`}
-                          >
-                            <Zap size={11} />
-                            <span>3%</span>
-                          </button>
+                          {(!rec.withholdingTax || Number(rec.withholdingTax) === 0) && (
+                            <button
+                              type="button"
+                              className="btn-quick-3percent"
+                              onClick={() => handleQuick3Percent(index)}
+                              title="คำนวณ 3% อัตโนมัติจากรายได้เดือนนี้"
+                              id={`btn-3pct-${rec.month}`}
+                            >
+                              <Zap size={11} />
+                              <span>3%</span>
+                            </button>
+                          )}
                         </div>
                       </td>
                     )}
