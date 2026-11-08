@@ -1,6 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { calculateTax, calculateTaxFromFormData, TAX_BRACKETS } from '../src/utils/taxEngine.js';
+import {
+  calculateTax,
+  calculateTaxFromFormData,
+  simulateTaxSavings,
+  TAX_BRACKETS,
+} from '../src/utils/taxEngine.js';
 
 test('Tax Brackets Definition', () => {
   assert.equal(TAX_BRACKETS.length, 8);
@@ -281,6 +286,107 @@ test('Scenario 11: Donation 10% ceiling boundary when remaining income is zero o
   assert.equal(lowRemaining.rawDonationClaim, 10000);
   assert.equal(lowRemaining.itemizedDeductions.donation, 8000);
 });
+
+test('Scenario 12: simulateTaxSavings returns 0 savings on zero or invalid deduction or 0 tax', () => {
+  const baseResult = calculateTax({
+    monthlyIncome: 20000, // 240k - 100k - 60k = 80k net (0% bracket)
+    personalAllowance: 60000,
+  });
+
+  const simZero = simulateTaxSavings(baseResult, 0);
+  assert.equal(simZero.taxSaved, 0);
+  assert.equal(simZero.effectiveSavingRate, 0);
+
+  const simNegative = simulateTaxSavings(baseResult, -10000);
+  assert.equal(simNegative.taxSaved, 0);
+
+  const simOnZeroTax = simulateTaxSavings(baseResult, 30000);
+  assert.equal(simOnZeroTax.taxSaved, 0);
+  assert.equal(simOnZeroTax.effectiveSavingRate, 0);
+});
+
+test('Scenario 13: simulateTaxSavings in 5% tax bracket accurately saves 5%', () => {
+  // Salary 30,000/mo = 360,000/yr. Expense = 100,000. Personal = 60,000. Net = 200,000.
+  // Tax = (200,000 - 150,000) * 0.05 = 2,500 THB.
+  const baseParams = {
+    monthlyIncome: 30000,
+    personalAllowance: 60000,
+  };
+
+  const sim = simulateTaxSavings(baseParams, 20000);
+  // New net = 180,000. Tax = 30,000 * 0.05 = 1,500 THB.
+  // Tax saved = 1,000 THB. Effective saving rate = 5.0%
+  assert.equal(sim.baseTax, 2500);
+  assert.equal(sim.newTax, 1500);
+  assert.equal(sim.taxSaved, 1000);
+  assert.equal(sim.effectiveSavingRate, 5);
+  assert.equal(sim.newNetIncome, 180000);
+});
+
+test('Scenario 14: simulateTaxSavings in 15% tax bracket accurately saves 15%', () => {
+  // Salary 65,000/mo = 780,000/yr. Expense = 100,000. Personal = 60,000. SSO = 9,000.
+  // Net = 611,000 THB (in 15% bracket, range 500,001 - 750,000).
+  const baseParams = {
+    monthlyIncome: 65000,
+    personalAllowance: 60000,
+    socialSecurity: 9000,
+  };
+
+  // Additional 50,000 deduction:
+  // 611,000 - 50,000 = 561,000 (still in 15% bracket).
+  // Tax saved = 50,000 * 0.15 = 7,500 THB.
+  const sim = simulateTaxSavings(baseParams, 50000);
+  assert.equal(sim.taxSaved, 7500);
+  assert.equal(sim.effectiveSavingRate, 15);
+  assert.equal(sim.marginalRate, 0.15);
+  assert.equal(sim.newNetIncome, 561000);
+});
+
+test('Scenario 15: simulateTaxSavings across bracket boundary calculates weighted savings', () => {
+  // Net income 320,000 THB (20,000 in 10% bracket, remainder in 5%).
+  // Base tax: 7,500 (from 5%) + 2,000 (from 10%) = 9,500 THB.
+  // Simulate 50,000 additional deduction:
+  // New net income = 270,000 THB (all in 5% bracket).
+  // New tax = (270,000 - 150,000) * 0.05 = 6,000 THB.
+  // Tax saved = 9,500 - 6,000 = 3,500 THB.
+  // Effective rate = 3,500 / 50,000 = 7.0%.
+  const baseResult = {
+    netIncome: 320000,
+    finalTax: 9500,
+    marginalRate: 0.10,
+    withholdingTax: 0,
+    status: 'payable',
+    netBalance: 9500,
+  };
+
+  const sim = simulateTaxSavings(baseResult, 50000);
+  assert.equal(sim.newNetIncome, 270000);
+  assert.equal(sim.newTax, 6000);
+  assert.equal(sim.taxSaved, 3500);
+  assert.equal(sim.effectiveSavingRate, 7.0);
+  assert.equal(sim.newMarginalRate, 0.05);
+});
+
+test('Scenario 16: simulateTaxSavings transforms tax payable into tax refund', () => {
+  // Tax is 5,000. Withholding is 4,000. Net balance is +1,000 (payable).
+  // If simulated tax becomes 2,500, withholding (4,000) > tax (2,500) -> 1,500 refund!
+  const baseResult = {
+    netIncome: 250000,
+    finalTax: 5000,
+    marginalRate: 0.05,
+    withholdingTax: 4000,
+    status: 'payable',
+    netBalance: 1000,
+  };
+
+  const sim = simulateTaxSavings(baseResult, 50000);
+  assert.equal(sim.newTax, 2500);
+  assert.equal(sim.taxSaved, 2500);
+  assert.equal(sim.baseStatus, 'payable');
+  assert.equal(sim.newStatus, 'refund');
+  assert.equal(sim.newBalance, -1500);
+});
+
 
 
 

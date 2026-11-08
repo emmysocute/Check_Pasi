@@ -5,6 +5,9 @@ import {
   calculateMonthlyTotals,
   calculateQuick3Percent,
   estimateTrackerRefund,
+  QUARTERS,
+  filterRecordsByQuarter,
+  calculateQuarterSummaries,
 } from '../src/utils/monthlyTracker.js';
 
 test('createDefaultMonthlyRecords creates 12 default month entries', () => {
@@ -66,4 +69,43 @@ test('estimateTrackerRefund calculates refund potential correctly', () => {
   assert.equal(payableCase.estimatedTax, 7500);
   assert.equal(payableCase.payablePotential, 5500);
   assert.equal(payableCase.status, 'payable');
+});
+
+test('filterRecordsByQuarter returns correct months for each quarter', () => {
+  const records = createDefaultMonthlyRecords();
+  assert.equal(filterRecordsByQuarter(records, 'ALL').length, 12);
+
+  const q1 = filterRecordsByQuarter(records, 'Q1');
+  assert.equal(q1.length, 3);
+  assert.deepEqual(q1.map(r => r.month), [1, 2, 3]);
+
+  const q2 = filterRecordsByQuarter(records, 'Q2');
+  assert.equal(q2.length, 3);
+  assert.deepEqual(q2.map(r => r.month), [4, 5, 6]);
+
+  const q3 = filterRecordsByQuarter(records, 'Q3');
+  assert.equal(q3.length, 3);
+  assert.deepEqual(q3.map(r => r.month), [7, 8, 9]);
+
+  const q4 = filterRecordsByQuarter(records, 'Q4');
+  assert.equal(q4.length, 3);
+  assert.deepEqual(q4.map(r => r.month), [10, 11, 12]);
+});
+
+test('QUARTERS constant defines all four quarters plus ALL option', () => {
+  assert.equal(QUARTERS.length, 5);
+  assert.deepEqual(QUARTERS.map(q => q.id), ['ALL', 'Q1', 'Q2', 'Q3', 'Q4']);
+});
+
+test('calculateQuarterSummaries calculates subtotals per quarter accurately', () => {
+  const records = createDefaultMonthlyRecords();
+  records[0].income = 10000; // Jan (Q1)
+  records[1].income = 20000; // Feb (Q1)
+  records[3].income = 40000; // Apr (Q2)
+
+  const summaries = calculateQuarterSummaries(records);
+  assert.equal(summaries.Q1.totalIncome, 30000);
+  assert.equal(summaries.Q2.totalIncome, 40000);
+  assert.equal(summaries.Q3.totalIncome, 0);
+  assert.equal(summaries.Q4.totalIncome, 0);
 });

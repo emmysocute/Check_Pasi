@@ -33,9 +33,36 @@ export function sanitizeNumericInput(val, max = 999999999) {
   if (val === '' || val === null || val === undefined) {
     return 0;
   }
-  const num = Number(val);
+  const cleanVal = typeof val === 'string' ? val.replace(/,/g, '') : val;
+  const num = Number(cleanVal);
   if (isNaN(num) || num < 0) {
     return 0;
   }
   return Math.min(num, max);
+}
+
+/**
+ * Formats a numeric value or string with thousand separators (commas).
+ * Preserves decimal points if typed.
+ * @param {number|string} val
+ * @returns {string}
+ */
+export function formatNumberWithCommas(val) {
+  if (val === '' || val === null || val === undefined || val === 0) {
+    return '';
+  }
+  const str = String(val).replace(/,/g, '');
+  const parts = str.split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return parts.join('.');
+}
+
+/**
+ * Parses user input containing commas back to a clean number.
+ * @param {string|number} val
+ * @param {number} max
+ * @returns {number}
+ */
+export function parseFormattedNumber(val, max = 999999999) {
+  return sanitizeNumericInput(val, max);
 }

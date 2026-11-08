@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../utils/api';
 import Alert from '../components/Alert';
+import { maskTaxId } from '../utils/privacy';
 
 function ProfilePage() {
   const { updateUser } = useAuth();
+  const [isTaxIdRevealed, setIsTaxIdRevealed] = useState(false);
 
   // Profile Information State
   const [profile, setProfile] = useState({
@@ -279,17 +281,39 @@ function ProfilePage() {
                 )}
               </div>
               <div className="form-group">
-                <label className="form-label">เลขประจำตัวผู้เสียภาษี (Tax ID)</label>
-                <div className={`input-wrapper ${profileErrors.taxId ? 'has-error' : ''}`}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <label htmlFor="profile-tax-id" className="form-label" style={{ marginBottom: 0 }}>
+                    เลขประจำตัวผู้เสียภาษี (Tax ID)
+                  </label>
+                  <span className="privacy-badge">🔒 ปกป้องข้อมูล (PDPA)</span>
+                </div>
+                <div className={`input-wrapper ${profileErrors.taxId ? 'has-error' : ''} has-action-btn`}>
                   <input
-                    type="text"
+                    id="profile-tax-id"
+                    type={isTaxIdRevealed ? 'text' : 'password'}
                     name="taxId"
                     value={profile.taxId}
                     onChange={handleProfileChange}
                     placeholder="เลขประจำตัว 13 หลัก"
                     maxLength={13}
+                    autoComplete="off"
+                    spellCheck="false"
                   />
+                  <button
+                    type="button"
+                    className="input-eye-btn"
+                    onClick={() => setIsTaxIdRevealed(prev => !prev)}
+                    aria-label={isTaxIdRevealed ? 'ซ่อนเลขประจำตัวผู้เสียภาษี' : 'แสดงเลขประจำตัวผู้เสียภาษี'}
+                    title={isTaxIdRevealed ? 'ซ่อนเลข' : 'แสดงเลข'}
+                  >
+                    {isTaxIdRevealed ? '👁️' : '👁️‍🗨️'}
+                  </button>
                 </div>
+                {profile.taxId ? (
+                  <span className="field-hint-privacy">
+                    รหัสที่กำบัง: <code>{maskTaxId(profile.taxId, false)}</code>
+                  </span>
+                ) : null}
                 {profileErrors.taxId && (
                   <span className="field-error-msg">⚠️ {profileErrors.taxId}</span>
                 )}

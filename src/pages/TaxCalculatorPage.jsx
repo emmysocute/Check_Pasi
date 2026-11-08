@@ -5,6 +5,7 @@ import WelcomeBanner from '../components/WelcomeBanner';
 import IncomeSection from '../components/IncomeSection';
 import DeductionSection from '../components/DeductionSection';
 import ResultPanel from '../components/ResultPanel';
+import PreFilingSheetModal from '../components/PreFilingSheetModal';
 import Toast from '../components/Toast';
 import useToast from '../hooks/useToast';
 import api from '../utils/api';
@@ -75,6 +76,12 @@ function TaxCalculatorPage() {
     if (location.state?.loadRecord) {
       return mapRecordToFormData(location.state.loadRecord);
     }
+    if (location.state?.prefillSalary) {
+      return {
+        ...DEFAULT_STATE,
+        monthlyIncome: Number(location.state.prefillSalary) || 0,
+      };
+    }
     if (location.state?.fromTracker && location.state?.prefill) {
       const p = location.state.prefill;
       return {
@@ -104,6 +111,7 @@ function TaxCalculatorPage() {
   });
   const [hasCalculated, setHasCalculated] = useState(true);
   const [showResetModal, setShowResetModal] = useState(false);
+  const [showPreFilingModal, setShowPreFilingModal] = useState(false);
   const { toasts, showToast, dismissToast } = useToast();
   const { user } = useAuth();
 
@@ -317,7 +325,11 @@ function TaxCalculatorPage() {
       </div>
 
       <div id="tax-result-section" className="result-panel-wrapper">
-        <ResultPanel result={taxResult} visible={hasCalculated} />
+        <ResultPanel
+          result={taxResult}
+          visible={hasCalculated}
+          onOpenPreFilingSheet={() => setShowPreFilingModal(true)}
+        />
       </div>
 
       {/* Floating Quick Jump Bar สำหรับมือถือ */}
@@ -374,6 +386,14 @@ function TaxCalculatorPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* ภ.ง.ด. 90/91 Pre-Filing Cheat Sheet Modal */}
+      {showPreFilingModal && (
+        <PreFilingSheetModal
+          result={taxResult}
+          onClose={() => setShowPreFilingModal(false)}
+        />
       )}
     </div>
   );

@@ -32,6 +32,41 @@ export const MONTH_SHORT_TH = [
   'ธ.ค.',
 ];
 
+export const QUARTERS = [
+  { id: 'ALL', label: 'ทั้งปี (12 เดือน)', shortLabel: 'ทั้งปี', months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] },
+  { id: 'Q1', label: 'ไตรมาส 1 (ม.ค. - มี.ค.)', shortLabel: 'Q1', months: [1, 2, 3] },
+  { id: 'Q2', label: 'ไตรมาส 2 (เม.ย. - มิ.ย.)', shortLabel: 'Q2', months: [4, 5, 6] },
+  { id: 'Q3', label: 'ไตรมาส 3 (ก.ค. - ก.ย.)', shortLabel: 'Q3', months: [7, 8, 9] },
+  { id: 'Q4', label: 'ไตรมาส 4 (ต.ค. - ธ.ค.)', shortLabel: 'Q4', months: [10, 11, 12] },
+];
+
+/**
+ * Filters the 12-month records to those matching a selected quarter.
+ * @param {Array} records 
+ * @param {string} quarterId 
+ * @returns {Array}
+ */
+export function filterRecordsByQuarter(records = [], quarterId = 'ALL') {
+  if (quarterId === 'ALL') return records;
+  const q = QUARTERS.find(q => q.id === quarterId);
+  if (!q) return records;
+  return records.filter(r => q.months.includes(r.month));
+}
+
+/**
+ * Calculates subtotal summaries per quarter.
+ * @param {Array} records 
+ * @returns {Object}
+ */
+export function calculateQuarterSummaries(records = []) {
+  const summaries = {};
+  ['Q1', 'Q2', 'Q3', 'Q4'].forEach(qId => {
+    const qRecords = filterRecordsByQuarter(records, qId);
+    summaries[qId] = calculateMonthlyTotals(qRecords);
+  });
+  return summaries;
+}
+
 export function createDefaultMonthlyRecords() {
   return Array.from({ length: 12 }, (_, i) => ({
     month: i + 1,

@@ -24,10 +24,9 @@ function Topbar({ onToggleMenu = () => {}, isMenuOpen = false }) {
           <span className="hamburger-line"></span>
         </button>
 
-        <div className="logo-mini">💰</div>
-        <span className="topbar-brand-title">TaxMe</span>
+        <span className="topbar-brand-title">Check Pasi</span>
         <span className="topbar-separator">•</span>
-        <span className="topbar-tagline">คำนวณภาษีง่าย ๆ สำหรับคุณ</span>
+        <span className="topbar-tagline">ระบบคำนวณภาษีเงินได้บุคคลธรรมดา</span>
       </div>
 
       <div className="topbar-right">

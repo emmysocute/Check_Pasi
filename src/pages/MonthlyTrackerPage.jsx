@@ -12,7 +12,11 @@ import {
   calculateMonthlyTotals,
   calculateQuick3Percent,
   estimateTrackerRefund,
+  QUARTERS,
+  filterRecordsByQuarter,
+  calculateQuarterSummaries,
 } from '../utils/monthlyTracker';
+import { generateMonthlyTrackerCSV, downloadCSV } from '../utils/exportUtils';
 
 const TAX_YEARS = [
   { ce: 2026, be: 2569, label: 'ปีภาษี 2569 (2026)' },
@@ -32,6 +36,7 @@ function MonthlyTrackerPage() {
     showSocialSecurity: false,
     showNote: false,
   });
+  const [activeQuarter, setActiveQuarter] = useState('ALL');
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -132,6 +137,23 @@ function MonthlyTrackerPage() {
   const totals = useMemo(() => {
     return calculateMonthlyTotals(records);
   }, [records]);
+
+  // Quarter summaries and filtered rows
+  const quarterSummaries = useMemo(() => {
+    return calculateQuarterSummaries(records);
+  }, [records]);
+
+  const displayedRecords = useMemo(() => {
+    return filterRecordsByQuarter(records, activeQuarter);
+  }, [records, activeQuarter]);
+
+  // Export 12-month records to CSV
+  const handleExportCSV = useCallback(() => {
+    const beYear = selectedYear + 543;
+    const csv = generateMonthlyTrackerCSV(records, beYear);
+    downloadCSV(`check-pasi-freelance-${beYear}.csv`, csv);
+    showToast(`ดาวน์โหลดสรุปรายได้ปีภาษี ${beYear} (CSV/Excel) สำเร็จ`, 'success');
+  }, [records, selectedYear, showToast]);
 
   // Estimated refund callout
   const estimatedRefund = useMemo(() => {
@@ -270,6 +292,41 @@ function MonthlyTrackerPage() {
         </div>
       </div>
 
+      {/* Quarter Tab Bar & Export */}
+      <div className="tracker-quarter-bar">
+        <div className="tracker-quarter-tabs" role="tablist" aria-label="เลือกมุมมองไตรมาส">
+          {QUARTERS.map((q) => {
+            const isSelected = activeQuarter === q.id;
+            const subtotal = q.id === 'ALL' ? totals.totalIncome : (quarterSummaries[q.id]?.totalIncome || 0);
+            return (
+              <button
+                key={q.id}
+                type="button"
+                role="tab"
+                id={`tab-quarter-${q.id}`}
+                aria-selected={isSelected}
+                className={`quarter-tab-btn ${isSelected ? 'active' : ''}`}
+                onClick={() => setActiveQuarter(q.id)}
+              >
+                <span className="quarter-tab-label">{q.label}</span>
+                <span className={`quarter-tab-badge ${subtotal > 0 ? 'has-income' : ''}`}>
+                  {subtotal > 0 ? `฿${subtotal.toLocaleString('th-TH')}` : '0 บ.'}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        <button
+          type="button"
+          className="btn btn-outline btn-sm tracker-export-btn"
+          onClick={handleExportCSV}
+          title="ดาวน์โหลดสรุป 12 เดือนเป็นไฟล์ CSV เพื่อเปิดใน Excel"
+        >
+          📥 ดาวน์โหลด Excel / CSV
+        </button>
+      </div>
+
       {/* 12-Month Table / Grid */}
       <div className="tracker-table-card glass-card">
         <div className="table-responsive-wrapper">
@@ -285,7 +342,8 @@ function MonthlyTrackerPage() {
               </tr>
             </thead>
             <tbody>
-              {records.map((rec, index) => {
+              {displayedRecords.map((rec) => {
+                const index = rec.month - 1;
                 const monthName = MONTH_NAMES_TH[index];
                 const monthShort = MONTH_SHORT_TH[index];
 
@@ -488,6 +546,16 @@ function MonthlyTrackerPage() {
 
         {/* Action Buttons */}
         <div className="tracker-summary-actions">
+          <button
+            type="button"
+            className="btn btn-outline"
+            onClick={handleExportCSV}
+            title="ดาวน์โหลดสรุป 12 เดือนเป็นไฟล์ CSV เพื่อเปิดใน Excel"
+            id="btn-export-csv"
+          >
+            📥 ดาวน์โหลด Excel
+          </button>
+
           <button
             type="button"
             className="btn btn-outline"

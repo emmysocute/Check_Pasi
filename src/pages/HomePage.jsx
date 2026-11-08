@@ -1,13 +1,19 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect, useMemo } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../utils/api';
+import { calculateTax } from '../utils/taxEngine';
+import { formatNumberWithCommas, parseFormattedNumber, blockInvalidChars } from '../utils/numberInput';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 function HomePage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(Boolean(user));
+  
+  // Interactive Quick Calculator state for Landing Page
+  const [quickSalary, setQuickSalary] = useState(30000);
 
   useEffect(() => {
     if (!user) return;
@@ -29,37 +35,179 @@ function HomePage() {
 
   const fmt = (n) => Number(n ?? 0).toLocaleString('th-TH');
 
-  if (user && loading) return <div style={{ padding: '24px' }}>กำลังโหลดข้อมูล...</div>;
+  // Quick estimation for landing page demo (Good React #03 Derived State)
+  const quickEstimate = useMemo(() => {
+    return calculateTax({
+      monthlyIncome: quickSalary,
+      freelanceIncome: 0,
+      withholdingTax: 0,
+      personalAllowance: 60000,
+    });
+  }, [quickSalary]);
 
-  if (!user) {
+  const handleStartWithSalary = () => {
+    navigate('/calculator', { state: { prefillSalary: quickSalary } });
+  };
+
+  if (user && loading) {
     return (
-      <div className="home-container" style={{ textAlign: 'center' }}>
-        <div className="welcome-banner animate-in">
-          <div className="welcome-text" style={{ width: '100%' }}>
-            <h2>ยินดีต้อนรับสู่ TaxMe</h2>
-            <p style={{ margin: '0 auto' }}>
-              เข้าสู่ระบบเพื่อดูสถิติและประวัติการคำนวณภาษีของคุณ
-            </p>
-          </div>
-        </div>
+      <div className="home-container" style={{ padding: '40px 24px', textAlign: 'center' }}>
+        <p style={{ color: 'var(--gray-500)' }}>กำลังโหลดข้อมูลสถิติ...</p>
       </div>
     );
   }
 
+  // ===== PUBLIC LANDING PAGE (When not logged in) =====
+  if (!user) {
+    return (
+      <div className="home-container landing-container">
+        {/* Hero Section */}
+        <section className="landing-hero animate-in">
+          <div className="landing-badge">
+            <span className="badge-sparkle" aria-hidden="true">✨</span>
+            <span>ระบบคำนวณและวางแผนภาษี ปีภาษี 2569</span>
+          </div>
+
+          <h1 className="landing-title">
+            วางแผนภาษีเงินได้บุคคลธรรมดา
+            <br />
+            <span className="highlight-text">ให้เป็นเรื่องง่ายและคุ้มค่าที่สุด</span>
+          </h1>
+
+          <p className="landing-desc">
+            คำนวณภาษีแม่นยำตามเกณฑ์กรมสรรพากรไทย รองรับทั้งเงินเดือนประจำและรายได้ฟรีแลนซ์
+            พร้อมจัดหมวดหมู่ลดหย่อน 4 กลุ่มมาตรฐาน ภ.ง.ด. 90/91 เช็กสิทธิ์ครบ ไม่ตกหล่น
+          </p>
+
+          <div className="landing-cta-group">
+            <Link to="/calculator" className="btn btn-primary btn-lg">
+              <span>เริ่มคำนวณภาษีเต็มรูปแบบ (ฟรี) 🚀</span>
+            </Link>
+            <Link to="/tracker" className="btn btn-outline btn-lg">
+              <span>บันทึกรายได้ฟรีแลนซ์ 12 เดือน 📅</span>
+            </Link>
+          </div>
+        </section>
+
+        {/* Interactive Quick Calculator Demo Widget */}
+        <section className="quick-calc-section animate-in-delay-1">
+          <div className="quick-calc-card">
+            <div className="quick-calc-header">
+              <div className="quick-calc-icon" aria-hidden="true">⚡</div>
+              <div>
+                <h2 className="quick-calc-title">ทดลองคำนวณภาษีเบื้องต้นทันที</h2>
+                <p className="quick-calc-subtitle">ใส่เงินเดือนของคุณเพื่อดูประมาณการภาษีและเงินได้สุทธิ</p>
+              </div>
+            </div>
+
+            <div className="quick-calc-body">
+              <div className="quick-calc-input-group">
+                <label className="form-label" htmlFor="quick-salary-input">
+                  เงินเดือนประจำของคุณ
+                </label>
+                <div className="input-wrapper">
+                  <span className="input-prefix" aria-hidden="true">฿</span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    id="quick-salary-input"
+                    value={formatNumberWithCommas(quickSalary)}
+                    onChange={(e) => setQuickSalary(parseFormattedNumber(e.target.value))}
+                    onKeyDown={blockInvalidChars}
+                    placeholder="0"
+                  />
+                  <span className="input-suffix">บาท / เดือน</span>
+                </div>
+              </div>
+
+              <div className="quick-calc-result-grid">
+                <div className="quick-result-item">
+                  <span className="result-label">รายได้ทั้งปี (x12)</span>
+                  <strong className="result-val">{fmt(quickEstimate.annualSalary)} บาท</strong>
+                </div>
+                <div className="quick-result-item">
+                  <span className="result-label">หักค่าใช้จ่าย + ลดหย่อนส่วนตัว</span>
+                  <strong className="result-val text-green">- {fmt(quickEstimate.expenseDeduction + 60000)} บาท</strong>
+                </div>
+                <div className="quick-result-item">
+                  <span className="result-label">เงินได้สุทธิพึงประเมิน</span>
+                  <strong className="result-val">{fmt(quickEstimate.netIncome)} บาท</strong>
+                </div>
+                <div className="quick-result-item highlight">
+                  <span className="result-label">ภาษีประมาณการ (ก่อนลดหย่อนอื่น)</span>
+                  <strong className="result-val text-primary">{fmt(quickEstimate.tax)} บาท</strong>
+                </div>
+              </div>
+
+              <div className="quick-calc-footer">
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={handleStartWithSalary}
+                >
+                  <span>นำยอดนี้ไปวางแผนลดหย่อนต่อ (เช็กประกัน, กองทุน, ครอบครัว) ➡️</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 3 Core Highlights */}
+        <section className="landing-features animate-in-delay-2">
+          <div className="feature-grid">
+            <div className="feature-card">
+              <div className="feature-icon" aria-hidden="true">⚖️</div>
+              <h3 className="feature-title">แม่นยำตามเกณฑ์สรรพากร 2569</h3>
+              <p className="feature-desc">
+                คิดอัตราภาษีก้าวหน้า 8 ขั้นบันไดอย่างถูกต้อง พร้อมระบบเปรียบเทียบภาษีเหมา 0.5% (ม.48(2)) สำหรับผู้มีรายได้ฟรีแลนซ์เกิน 1.2 แสนบาท
+              </p>
+            </div>
+
+            <div className="feature-card">
+              <div className="feature-icon" aria-hidden="true">📋</div>
+              <h3 className="feature-title">โครงสร้างลดหย่อน 4 หมวด ภ.ง.ด.</h3>
+              <p className="feature-desc">
+                จัดหมวดหมู่ ตนเอง/ครอบครัว, ประกัน/การออม, ที่อยู่อาศัย, และเงินบริจาค ตามแบบยื่นจริงของกรมสรรพากร ช่วยเตือนสิทธิ์ครบถ้วน
+              </p>
+            </div>
+
+            <div className="feature-card">
+              <div className="feature-icon" aria-hidden="true">💼</div>
+              <h3 className="feature-title">บันทึกรายได้ฟรีแลนซ์ 12 เดือน</h3>
+              <p className="feature-desc">
+                สำหรับคนทำงานอิสระ มีปุ่มลัดคำนวณหัก ณ ที่จ่าย 3% สะสมยอดรายเดือน และส่งยอดไปคำนวณภาษีประจำปีได้ในคลิกเดียว
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Security / Trust Assurance */}
+        <section className="landing-trust-bar">
+          <span className="trust-icon" aria-hidden="true">🔒</span>
+          <span>ข้อมูลการคำนวณปลอดภัย ไม่มีการส่งต่อให้บุคคลภายนอก ใช้งานฟรี 100%</span>
+        </section>
+      </div>
+    );
+  }
+
+  // ===== LOGGED-IN DASHBOARD (When user has no history yet) =====
   if (history.length === 0) {
     return (
-      <div className="home-container" style={{ textAlign: 'center' }}>
+      <div className="home-container" style={{ textAlign: 'center', padding: '40px 24px' }}>
         <div className="welcome-banner animate-in">
           <div className="welcome-text" style={{ width: '100%' }}>
             <h2>ยินดีต้อนรับ, {user.display_name || user.email}</h2>
-            <p style={{ margin: '0 auto 16px' }}>คุณยังไม่มีประวัติการคำนวณภาษี</p>
-            <Link to="/calculator" className="btn btn-primary">เริ่มคำนวณภาษีกันเลย!</Link>
+            <p style={{ margin: '0 auto 16px' }}>คุณยังไม่มีประวัติการคำนวณภาษีที่บันทึกไว้</p>
+            <Link to="/calculator" className="btn btn-primary btn-lg">
+              เริ่มคำนวณและบันทึกประวัติภาษีกันเลย 🚀
+            </Link>
           </div>
         </div>
       </div>
     );
   }
 
+  // ===== LOGGED-IN DASHBOARD (With History) =====
   const latest = history[0];
   const annualIncome = Number(latest.annual_income) || 0;
   const expenseAndDeduction = Number(latest.total_deduction) + Number(latest.expense_deduction || 0);
@@ -71,7 +219,7 @@ function HomePage() {
   const chartData = [
     { name: 'เงินได้สุทธิคงเหลือหลังภาษี', value: takeHomeIncome, color: '#1a6ae0' },
     { name: 'หักค่าใช้จ่าย & ค่าลดหย่อน', value: expenseAndDeduction, color: '#12b76a' },
-    { name: 'ภาษีที่คำนวณได้', value: taxAmount, color: '#f04438' }
+    { name: 'ภาษีที่คำนวณได้', value: taxAmount, color: '#f59e0b' }
   ];
 
   return (
@@ -82,8 +230,7 @@ function HomePage() {
           <p>สรุปข้อมูลจากการคำนวณครั้งล่าสุด (ปีภาษี 2569)</p>
         </div>
         <div className="welcome-badge">
-          <div className="welcome-badge-icon">📊</div>
-          <div className="welcome-badge-text">STATS</div>
+          <div className="welcome-badge-text">ปีภาษี 2569</div>
         </div>
       </div>
 
@@ -121,7 +268,7 @@ function HomePage() {
             )}
           </div>
 
-          {/* สรุปสถานะภาษีสุทธิ */}
+          {/* สรุปสถานะภาษีสุทธิ (Calm palette) */}
           {withholdingTax > 0 && netBalance < 0 ? (
             <div className="home-refund-card">
               <div className="home-refund-badge">🎉 ได้รับเงินคืนภาษีสุทธิ (Tax Refund)</div>
@@ -132,8 +279,8 @@ function HomePage() {
             </div>
           ) : withholdingTax > 0 && netBalance > 0 ? (
             <div className="home-payable-card">
-              <div className="home-payable-badge">⚠️ ภาษีที่ต้องชำระเพิ่มเติม</div>
-              <div className="home-payable-label">ยอดภาษีที่ต้องนำส่งเพิ่มหลังหัก ณ ที่จ่าย</div>
+              <div className="home-payable-badge">📋 ยอดภาษีที่ต้องชำระเพิ่มเติม</div>
+              <div className="home-payable-label">ยอดภาษีที่ต้องนำส่งเพิ่มหลังหัก ณ ที่จ่ายแล้ว</div>
               <div className="home-payable-amount">
                 {fmt(netBalance)} <span className="home-payable-unit">บาท</span>
               </div>

@@ -208,3 +208,103 @@ export function calculateTaxFromFormData(formData = {}) {
 
   return calculateTax(params);
 }
+
+/**
+ * Simulates the tax reduction impact of additional deductions (e.g. SSF, RMF, ThaiESG, or insurance).
+ * Supports base input as taxResult object, params object, or formData object.
+ *
+ * @param {Object} input - Calculation params, formData, or existing calculateTax result
+ * @param {number} additionalAmount - Amount of additional deduction in THB
+ * @returns {Object} Simulation analysis with tax saved and effective rate
+ */
+export function simulateTaxSavings(input = {}, additionalAmount = 0) {
+  const sanitizedAdd = sanitizeNumber(additionalAmount);
+
+  let baseResult;
+  if (input && typeof input.netIncome === 'number' && typeof input.finalTax === 'number') {
+    baseResult = input;
+  } else if (input && (input.monthlyIncome !== undefined || input.freelanceIncome !== undefined)) {
+    if (input.personalAllowance && typeof input.personalAllowance === 'object') {
+      baseResult = calculateTaxFromFormData(input);
+    } else {
+      baseResult = calculateTax(input);
+    }
+  } else {
+    baseResult = calculateTax({});
+  }
+
+  if (sanitizedAdd <= 0 || baseResult.netIncome <= 0 || baseResult.finalTax <= 0) {
+    return {
+      additionalAmount: sanitizedAdd,
+      baseTax: baseResult.finalTax,
+      newTax: baseResult.finalTax,
+      taxSaved: 0,
+      effectiveSavingRate: 0,
+      marginalRate: baseResult.marginalRate,
+      newMarginalRate: baseResult.marginalRate,
+      baseNetIncome: baseResult.netIncome,
+      newNetIncome: baseResult.netIncome,
+      baseStatus: baseResult.status,
+      newStatus: baseResult.status,
+      baseBalance: baseResult.netBalance,
+      newBalance: baseResult.netBalance,
+      withholdingTax: baseResult.withholdingTax,
+    };
+  }
+
+  const newNetIncome = Math.max(0, baseResult.netIncome - sanitizedAdd);
+
+  let newBracketTax = 0;
+  let remainingNet = newNetIncome;
+  let newMarginalRate = 0;
+
+  TAX_BRACKETS.forEach((bracket) => {
+    if (remainingNet > 0) {
+      const bracketRange = bracket.max - bracket.min;
+      const taxableInBracket = Math.min(remainingNet, bracketRange);
+      newBracketTax += taxableInBracket * bracket.rate;
+      remainingNet -= taxableInBracket;
+
+      if (taxableInBracket > 0 && bracket.rate > newMarginalRate) {
+        newMarginalRate = bracket.rate;
+      }
+    }
+  });
+
+  const roundedNewBracketTax = Math.round(newBracketTax);
+
+  let newFinalTax = roundedNewBracketTax;
+  if (baseResult.taxMethod === 'flat_rate') {
+    if (baseResult.flatRateTax > roundedNewBracketTax && baseResult.flatRateTax > 5000) {
+      newFinalTax = baseResult.flatRateTax;
+    }
+  }
+
+  const taxSaved = Math.max(0, baseResult.finalTax - newFinalTax);
+  const effectiveSavingRate = sanitizedAdd > 0 ? Number(((taxSaved / sanitizedAdd) * 100).toFixed(1)) : 0;
+
+  const newBalance = newFinalTax - baseResult.withholdingTax;
+  let newStatus = 'zero';
+  if (newBalance < 0) {
+    newStatus = 'refund';
+  } else if (newBalance > 0) {
+    newStatus = 'payable';
+  }
+
+  return {
+    additionalAmount: sanitizedAdd,
+    baseTax: baseResult.finalTax,
+    newTax: newFinalTax,
+    taxSaved,
+    effectiveSavingRate,
+    marginalRate: baseResult.marginalRate,
+    newMarginalRate,
+    baseNetIncome: baseResult.netIncome,
+    newNetIncome,
+    baseStatus: baseResult.status,
+    newStatus,
+    baseBalance: baseResult.netBalance,
+    newBalance,
+    withholdingTax: baseResult.withholdingTax,
+  };
+}

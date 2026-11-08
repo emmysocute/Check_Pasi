@@ -1,4 +1,4 @@
-import { blockInvalidChars, sanitizeNumericInput } from '../utils/numberInput';
+import { blockInvalidChars, parseFormattedNumber, formatNumberWithCommas } from '../utils/numberInput';
 
 function IncomeSection({ 
   monthlyIncome, 
@@ -9,20 +9,15 @@ function IncomeSection({
   onWithholdingChange 
 }) {
   const handleIncomeChange = (e) => {
-    onIncomeChange(sanitizeNumericInput(e.target.value));
+    onIncomeChange(parseFormattedNumber(e.target.value));
   };
 
   const handleFreelanceChange = (e) => {
-    onFreelanceChange(sanitizeNumericInput(e.target.value));
+    onFreelanceChange(parseFormattedNumber(e.target.value));
   };
 
   const handleWithholdingChange = (e) => {
-    onWithholdingChange(sanitizeNumericInput(e.target.value));
-  };
-
-  const formatPreview = (num) => {
-    if (!num || num <= 0) return null;
-    return `(${Number(num).toLocaleString('th-TH')} บาท)`;
+    onWithholdingChange(parseFormattedNumber(e.target.value));
   };
 
   return (
@@ -34,71 +29,71 @@ function IncomeSection({
       <div className="section-body">
         <div className="form-row">
           <div className="form-group">
-            <label className="form-label">
-              รายได้ต่อเดือน {formatPreview(monthlyIncome) && <span style={{ fontSize: '11px', color: 'var(--primary-600)', fontWeight: 500 }}>{formatPreview(monthlyIncome)}</span>}
+            <label className="form-label" htmlFor="monthly-income">
+              รายได้ต่อเดือน (เงินเดือนประจำ)
             </label>
             <div className="input-wrapper">
-              <span className="input-prefix">฿</span>
+              <span className="input-prefix" aria-hidden="true">฿</span>
               <input
-                type="number"
+                type="text"
+                inputMode="numeric"
                 id="monthly-income"
-                value={monthlyIncome === 0 ? '' : monthlyIncome}
+                value={formatNumberWithCommas(monthlyIncome)}
                 onChange={handleIncomeChange}
                 onKeyDown={blockInvalidChars}
                 placeholder="0"
-                min="0"
-                step="any"
+                autoComplete="off"
               />
               <span className="input-suffix">บาท</span>
             </div>
-            <div style={{ fontSize: '11.5px', color: 'var(--gray-500)', marginTop: '4px' }}>
+            <div className="input-hint-text">
               สำหรับเงินเดือนประจำ (ระบบจะนำไปคำนวณ x12 เดือนให้อัตโนมัติ)
             </div>
           </div>
           <div className="form-group">
-            <label className="form-label">
-              รายได้ทั้งปี (ฟรีแลนซ์ / ยอดสะสมรายเดือน) {formatPreview(freelanceIncome) && <span style={{ fontSize: '11px', color: 'var(--primary-600)', fontWeight: 500 }}>{formatPreview(freelanceIncome)}</span>}
+            <label className="form-label" htmlFor="freelance-income">
+              รายได้ทั้งปี (ฟรีแลนซ์ / ยอดสะสมรายเดือน)
             </label>
             <div className="input-wrapper">
-              <span className="input-prefix">฿</span>
+              <span className="input-prefix" aria-hidden="true">฿</span>
               <input
-                type="number"
+                type="text"
+                inputMode="numeric"
                 id="freelance-income"
-                value={freelanceIncome === 0 ? '' : freelanceIncome}
+                value={formatNumberWithCommas(freelanceIncome)}
                 onChange={handleFreelanceChange}
                 onKeyDown={blockInvalidChars}
                 placeholder="0"
-                min="0"
-                step="any"
+                autoComplete="off"
               />
               <span className="input-suffix">บาท</span>
             </div>
-            <div style={{ fontSize: '11.5px', color: 'var(--gray-500)', marginTop: '4px' }}>
+            <div className="input-hint-text">
               ยอดรวมทั้งปี (ไม่ต้องคูณ 12) เช่น รายได้ฟรีแลนซ์ หรือยอดจากระบบบันทึกรายเดือน
             </div>
           </div>
         </div>
 
-        <div className="form-row" style={{ marginTop: '12px' }}>
+        <div className="form-row" style={{ marginTop: '14px' }}>
           <div className="form-group" style={{ width: '100%' }}>
-            <label className="form-label">
-              ภาษีหัก ณ ที่จ่ายสะสม (ถ้ามี) {formatPreview(withholdingTax) && <span style={{ fontSize: '11px', color: 'var(--primary-600)', fontWeight: 500 }}>{formatPreview(withholdingTax)}</span>}
+            <label className="form-label" htmlFor="withholding-tax">
+              ภาษีหัก ณ ที่จ่ายสะสม (ถ้ามี)
             </label>
             <div className="input-wrapper">
-              <span className="input-prefix">฿</span>
+              <span className="input-prefix" aria-hidden="true">฿</span>
               <input
-                type="number"
+                type="text"
+                inputMode="numeric"
                 id="withholding-tax"
-                value={withholdingTax === 0 ? '' : withholdingTax}
+                value={formatNumberWithCommas(withholdingTax)}
                 onChange={handleWithholdingChange}
                 onKeyDown={blockInvalidChars}
                 placeholder="0"
-                min="0"
-                step="any"
+                autoComplete="off"
               />
               <span className="input-suffix">บาท</span>
             </div>
-            <div style={{ fontSize: '11.5px', color: 'var(--gray-500)', marginTop: '4px' }}>
+            <div className="input-hint-text">
               ℹ️ ภาษีที่ถูกหักไว้ล่วงหน้าระหว่างปี เช่น ตามหนังสือรับรองการหักภาษี ณ ที่จ่าย (ใบ 50 ทวิ)
             </div>
           </div>

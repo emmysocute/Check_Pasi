@@ -46,8 +46,7 @@ function Sidebar({ isOpen = false, onClose = () => {} }) {
       <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
         <div className="sidebar-logo">
           <div className="sidebar-logo-brand">
-            <div className="logo-icon">💰</div>
-            <span className="logo-text">TaxMe</span>
+            <span className="logo-text">Check Pasi</span>
           </div>
           <button 
             className="sidebar-close-btn" 
@@ -60,7 +59,7 @@ function Sidebar({ isOpen = false, onClose = () => {} }) {
         </div>
 
         <nav className="sidebar-nav">
-          {navItems.map((item, i) => {
+          {navItems.map((item) => {
             // Hide protected items if not logged in
             if (item.protected && !user) return null;
             
@@ -69,7 +68,7 @@ function Sidebar({ isOpen = false, onClose = () => {} }) {
                              
             return (
               <Link
-                key={i}
+                key={item.path}
                 to={item.path}
                 onClick={onClose}
                 className={`nav-item ${isActive ? 'active' : ''}`}
@@ -84,7 +83,7 @@ function Sidebar({ isOpen = false, onClose = () => {} }) {
 
         <div className="illustration-container">
           <div className="illustration-box">
-            <div className="illustration-character">🧑‍💼</div>
+            <div className="illustration-character">📊</div>
             <div className="illustration-text">
               <p>วางแผนภาษี</p>
               <p>ให้เป็นเรื่องง่าย</p>
@@ -94,7 +93,7 @@ function Sidebar({ isOpen = false, onClose = () => {} }) {
         </div>
 
         <div className="sidebar-tagline">
-          <p>TaxMe © 2569</p>
+          <p>Check Pasi © 2569</p>
         </div>
       </aside>
     </>
