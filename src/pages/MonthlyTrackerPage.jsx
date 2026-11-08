@@ -15,6 +15,7 @@ import {
   Sliders,
   Check,
   Plus,
+  Zap,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../utils/api';
@@ -442,7 +443,8 @@ function MonthlyTrackerPage() {
                             title="คำนวณ 3% อัตโนมัติจากรายได้เดือนนี้"
                             id={`btn-3pct-${rec.month}`}
                           >
-                            ⚡ 3%
+                            <Zap size={11} />
+                            <span>3%</span>
                           </button>
                         </div>
                       </td>

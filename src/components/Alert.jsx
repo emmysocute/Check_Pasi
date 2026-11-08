@@ -1,4 +1,5 @@
 import React from 'react';
+import { X } from 'lucide-react';
 
 function Alert({ type = 'error', message, onClose }) {
   if (!message) return null;
@@ -39,11 +40,14 @@ function Alert({ type = 'error', message, onClose }) {
             cursor: 'pointer',
             color: 'inherit',
             opacity: 0.6,
-            marginLeft: '8px'
+            marginLeft: '8px',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center'
           }}
           aria-label="Close"
         >
-          ✕
+          <X size={15} />
         </button>
       )}
     </div>

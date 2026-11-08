@@ -81,6 +81,16 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* ===== Base Links Reset ===== */
+a,
+a:visited,
+a:hover,
+a:focus,
+a:active {
+  text-decoration: none;
+  color: inherit;
+}
+
 /* ===== Scrollbar ===== */
 ::-webkit-scrollbar {
   width: 6px;
@@ -443,6 +453,11 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.topbar-auth-btns a,
+.topbar-auth-btns a:hover {
+  text-decoration: none !important;
 }
 
 .btn-sm {
@@ -1105,7 +1120,10 @@ body {
   padding: 16px 28px 24px;
 }
 
-.btn {
+.btn,
+.btn:visited,
+a.btn,
+button.btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1119,6 +1137,20 @@ body {
   transition: all var(--transition-fast);
   border: none;
   outline: none;
+  text-decoration: none !important;
+}
+
+.btn:hover,
+.btn:focus,
+.btn:active,
+.btn:visited,
+.btn *,
+.btn span,
+a.btn *,
+a.btn:hover,
+a.btn:focus,
+a.btn:active {
+  text-decoration: none !important;
 }
 
 .btn-outline {
@@ -1550,6 +1582,13 @@ body {
   justify-content: center;
   gap: 14px;
   flex-wrap: wrap;
+}
+
+.landing-cta-group a,
+.landing-cta-group .btn,
+.landing-cta-group a *,
+.landing-cta-group .btn * {
+  text-decoration: none !important;
 }
 
 .btn-lg {

@@ -93,11 +93,11 @@ function HomePage() {
           </p>
 
           <div className="landing-cta-group">
-            <Link to="/calculator" className="btn btn-primary btn-lg">
+            <Link to="/calculator" className="btn btn-primary btn-lg" style={{ textDecoration: 'none' }}>
               <span>เริ่มคำนวณภาษีเต็มรูปแบบ (ฟรี)</span>
               <ArrowRight size={16} />
             </Link>
-            <Link to="/monthly-tracker" className="btn btn-outline btn-lg">
+            <Link to="/monthly-tracker" className="btn btn-outline btn-lg" style={{ textDecoration: 'none' }}>
               <CalendarDays size={16} />
               <span>บันทึกรายได้ฟรีแลนซ์ 12 เดือน</span>
             </Link>
@@ -224,7 +224,7 @@ function HomePage() {
           <div className="welcome-text" style={{ width: '100%' }}>
             <h2>ยินดีต้อนรับ, {user.display_name || user.email}</h2>
             <p style={{ margin: '0 auto 16px' }}>คุณยังไม่มีประวัติการคำนวณภาษีที่บันทึกไว้</p>
-            <Link to="/calculator" className="btn btn-primary btn-lg">
+            <Link to="/calculator" className="btn btn-primary btn-lg" style={{ textDecoration: 'none' }}>
               <span>เริ่มคำนวณและบันทึกประวัติภาษี</span>
               <ArrowRight size={16} />
             </Link>
@@ -328,7 +328,7 @@ function HomePage() {
           )}
           
           <div style={{ marginTop: '20px', textAlign: 'center' }}>
-            <Link to="/calculator" className="btn btn-primary" style={{ width: '100%' }}>
+            <Link to="/calculator" className="btn btn-primary" style={{ width: '100%', textDecoration: 'none' }}>
               <span>ไปหน้าคำนวณภาษี</span>
               <ArrowRight size={16} />
             </Link>

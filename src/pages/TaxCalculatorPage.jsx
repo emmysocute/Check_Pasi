@@ -1,7 +1,7 @@
 /* oxlint-disable react/set-state-in-effect */
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Download, BarChart3, RotateCcw } from 'lucide-react';
+import { Download, BarChart3, RotateCcw, X } from 'lucide-react';
 import WelcomeBanner from '../components/WelcomeBanner';
 import IncomeSection from '../components/IncomeSection';
 import DeductionSection from '../components/DeductionSection';
@@ -283,8 +283,9 @@ function TaxCalculatorPage() {
               className="imported-tracker-close"
               onClick={() => setTrackerImportInfo(null)}
               title="ปิดการแจ้งเตือน"
+              aria-label="ปิดการแจ้งเตือน"
             >
-              ✕
+              <X size={14} />
             </button>
           </div>
         )}

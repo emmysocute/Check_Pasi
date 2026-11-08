@@ -12,6 +12,7 @@ import {
   Info,
   Sliders,
   Layers,
+  Star,
 } from 'lucide-react';
 import { simulateTaxSavings } from '../utils/taxEngine';
 
@@ -268,7 +269,12 @@ function ResultPanel({ result, visible, onOpenPreFilingSheet }) {
                             >
                               <td>
                                 {b.label}
-                                {isMarginal && <span className="marginal-star-tag">★ สูงสุด</span>}
+                                {isMarginal && (
+                                  <span className="marginal-star-tag">
+                                    <Star size={10} fill="currentColor" />
+                                    <span>สูงสุด</span>
+                                  </span>
+                                )}
                               </td>
                               <td className="text-right">
                                 <span className={`rate-chip ${b.rate === 0 ? 'zero' : b.rate <= 0.1 ? 'low' : b.rate <= 0.2 ? 'mid' : 'high'}`}>

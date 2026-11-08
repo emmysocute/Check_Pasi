@@ -62,10 +62,10 @@ function Topbar({ onToggleMenu = () => {}, isMenuOpen = false }) {
           </div>
         ) : (
           <div className="topbar-auth-btns">
-            <Link to="/login" className="btn btn-outline btn-sm">
+            <Link to="/login" className="btn btn-outline btn-sm" style={{ textDecoration: 'none' }}>
               เข้าสู่ระบบ
             </Link>
-            <Link to="/register" className="btn btn-primary btn-sm">
+            <Link to="/register" className="btn btn-primary btn-sm" style={{ textDecoration: 'none' }}>
               สมัครสมาชิก
             </Link>
           </div>

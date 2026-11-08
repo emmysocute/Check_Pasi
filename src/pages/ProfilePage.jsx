@@ -5,6 +5,7 @@ import {
   Eye,
   EyeOff,
   KeyRound,
+  AlertCircle,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../utils/api';
@@ -242,7 +243,10 @@ function ProfilePage() {
                 />
               </div>
               {profileErrors.displayName && (
-                <span className="field-error-msg">⚠️ {profileErrors.displayName}</span>
+                <span className="field-error-msg">
+                  <AlertCircle size={13} />
+                  <span>{profileErrors.displayName}</span>
+                </span>
               )}
             </div>
 
@@ -287,7 +291,10 @@ function ProfilePage() {
                   />
                 </div>
                 {profileErrors.phone && (
-                  <span className="field-error-msg">⚠️ {profileErrors.phone}</span>
+                  <span className="field-error-msg">
+                    <AlertCircle size={13} />
+                    <span>{profileErrors.phone}</span>
+                  </span>
                 )}
               </div>
               <div className="form-group">
@@ -328,7 +335,10 @@ function ProfilePage() {
                   </span>
                 ) : null}
                 {profileErrors.taxId && (
-                  <span className="field-error-msg">⚠️ {profileErrors.taxId}</span>
+                  <span className="field-error-msg">
+                    <AlertCircle size={13} />
+                    <span>{profileErrors.taxId}</span>
+                  </span>
                 )}
               </div>
             </div>
@@ -360,7 +370,10 @@ function ProfilePage() {
                 />
               </div>
               {profileErrors.address && (
-                <span className="field-error-msg">⚠️ {profileErrors.address}</span>
+                <span className="field-error-msg">
+                  <AlertCircle size={13} />
+                  <span>{profileErrors.address}</span>
+                </span>
               )}
             </div>
 
@@ -405,7 +418,10 @@ function ProfilePage() {
                 />
               </div>
               {passwordErrors.currentPassword && (
-                <span className="field-error-msg">⚠️ {passwordErrors.currentPassword}</span>
+                <span className="field-error-msg">
+                  <AlertCircle size={13} />
+                  <span>{passwordErrors.currentPassword}</span>
+                </span>
               )}
             </div>
 
@@ -422,7 +438,10 @@ function ProfilePage() {
                   />
                 </div>
                 {passwordErrors.newPassword && (
-                  <span className="field-error-msg">⚠️ {passwordErrors.newPassword}</span>
+                  <span className="field-error-msg">
+                    <AlertCircle size={13} />
+                    <span>{passwordErrors.newPassword}</span>
+                  </span>
                 )}
               </div>
 
@@ -438,7 +457,10 @@ function ProfilePage() {
                   />
                 </div>
                 {passwordErrors.confirmPassword && (
-                  <span className="field-error-msg">⚠️ {passwordErrors.confirmPassword}</span>
+                  <span className="field-error-msg">
+                    <AlertCircle size={13} />
+                    <span>{passwordErrors.confirmPassword}</span>
+                  </span>
                 )}
               </div>
             </div>

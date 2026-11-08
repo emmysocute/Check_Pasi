@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { AlertCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import Alert from '../components/Alert';
 import { isValidEmail } from '../utils/validation';
@@ -86,7 +87,10 @@ function LoginPage() {
               />
             </div>
             {fieldErrors.email && (
-              <span className="field-error-msg">⚠️ {fieldErrors.email}</span>
+              <span className="field-error-msg">
+                <AlertCircle size={13} />
+                <span>{fieldErrors.email}</span>
+              </span>
             )}
           </div>
 
@@ -101,7 +105,10 @@ function LoginPage() {
               />
             </div>
             {fieldErrors.password && (
-              <span className="field-error-msg">⚠️ {fieldErrors.password}</span>
+              <span className="field-error-msg">
+                <AlertCircle size={13} />
+                <span>{fieldErrors.password}</span>
+              </span>
             )}
           </div>
 

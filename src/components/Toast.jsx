@@ -1,4 +1,5 @@
 import React from 'react';
+import { CheckCircle2, AlertCircle, AlertTriangle, Info, X } from 'lucide-react';
 
 function Toast({ toasts = [], onDismiss = () => {} }) {
   if (!toasts || toasts.length === 0) return null;
@@ -8,10 +9,10 @@ function Toast({ toasts = [], onDismiss = () => {} }) {
       {toasts.map((toast) => (
         <div key={toast.id} className={`toast-item ${toast.type || 'info'} animate-slide-in`}>
           <div className="toast-icon">
-            {toast.type === 'success' && '✅'}
-            {toast.type === 'error' && '❌'}
-            {toast.type === 'info' && 'ℹ️'}
-            {toast.type === 'warning' && '⚠️'}
+            {toast.type === 'success' && <CheckCircle2 size={16} />}
+            {toast.type === 'error' && <AlertCircle size={16} />}
+            {toast.type === 'info' && <Info size={16} />}
+            {toast.type === 'warning' && <AlertTriangle size={16} />}
           </div>
           <div className="toast-message">{toast.message}</div>
           <button
@@ -20,7 +21,7 @@ function Toast({ toasts = [], onDismiss = () => {} }) {
             onClick={() => onDismiss(toast.id)}
             aria-label="ปิดการแจ้งเตือน"
           >
-            ✕
+            <X size={14} />
           </button>
         </div>
       ))}
