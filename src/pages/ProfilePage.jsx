@@ -6,6 +6,8 @@ import {
   EyeOff,
   KeyRound,
   AlertCircle,
+  Mail,
+  Lock,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../utils/api';
@@ -13,11 +15,12 @@ import Alert from '../components/Alert';
 import { maskTaxId } from '../utils/privacy';
 
 function ProfilePage() {
-  const { updateUser } = useAuth();
+  const { user, updateUser } = useAuth();
   const [isTaxIdRevealed, setIsTaxIdRevealed] = useState(false);
 
   // Profile Information State
   const [profile, setProfile] = useState({
+    email: '',
     displayName: '',
     firstName: '',
     lastName: '',
@@ -58,6 +61,7 @@ function ProfilePage() {
         const res = await api.get('/user/profile');
         if (res.data) {
           setProfile({
+            email: res.data.email || user?.email || '',
             displayName: res.data.display_name || '',
             firstName: res.data.first_name || '',
             lastName: res.data.last_name || '',
@@ -71,7 +75,7 @@ function ProfilePage() {
       }
     };
     fetchProfile();
-  }, []);
+  }, [user?.email]);
 
   const handleProfileChange = (e) => {
     const { name, value } = e.target;
@@ -231,23 +235,59 @@ function ProfilePage() {
           )}
 
           <form noValidate onSubmit={handleProfileSubmit}>
-            <div className="form-group" style={{ marginBottom: '16px' }}>
-              <label className="form-label">ชื่อที่แสดง (Display Name) <span style={{ color: '#ef4444' }}>*</span></label>
-              <div className={`input-wrapper ${profileErrors.displayName ? 'has-error' : ''}`}>
-                <input
-                  type="text"
-                  name="displayName"
-                  value={profile.displayName}
-                  onChange={handleProfileChange}
-                  placeholder="เช่น Emmy หรือ สมชาย"
-                />
+            {/* แถวที่ 1: อีเมลบัญชี (Read-only) และ ชื่อที่แสดง */}
+            <div className="form-grid-2" style={{ marginBottom: '16px' }}>
+              <div className="form-group">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <label htmlFor="profile-email" className="form-label" style={{ marginBottom: 0 }}>
+                    อีเมลบัญชี (Email)
+                  </label>
+                  <span className="readonly-badge">
+                    <Lock size={11} />
+                    <span>ไม่สามารถแก้ไขได้</span>
+                  </span>
+                </div>
+                <div className="input-wrapper input-readonly">
+                  <Mail size={16} className="input-leading-icon" />
+                  <input
+                    id="profile-email"
+                    type="email"
+                    name="email"
+                    value={profile.email || user?.email || ''}
+                    readOnly
+                    disabled
+                    aria-readonly="true"
+                    title="อีเมลผูกกับบัญชีผู้ใช้ ไม่สามารถเปลี่ยนได้"
+                  />
+                </div>
+                <span className="field-hint">อีเมลหลักที่ใช้เข้าสู่ระบบ TaxMe</span>
               </div>
-              {profileErrors.displayName && (
-                <span className="field-error-msg">
-                  <AlertCircle size={13} />
-                  <span>{profileErrors.displayName}</span>
-                </span>
-              )}
+
+              <div className="form-group">
+                <div style={{ marginBottom: '8px' }}>
+                  <label htmlFor="profile-display-name" className="form-label" style={{ marginBottom: 0 }}>
+                    ชื่อที่แสดง (Display Name) <span style={{ color: '#ef4444' }}>*</span>
+                  </label>
+                </div>
+                <div className={`input-wrapper ${profileErrors.displayName ? 'has-error' : ''}`}>
+                  <input
+                    id="profile-display-name"
+                    type="text"
+                    name="displayName"
+                    value={profile.displayName}
+                    onChange={handleProfileChange}
+                    placeholder="เช่น Emmy หรือ สมชาย"
+                  />
+                </div>
+                {profileErrors.displayName ? (
+                  <span className="field-error-msg">
+                    <AlertCircle size={13} />
+                    <span>{profileErrors.displayName}</span>
+                  </span>
+                ) : (
+                  <span className="field-hint">ชื่อที่ปรากฏในแถบเมนูและมุมขวาบน</span>
+                )}
+              </div>
             </div>
 
             <div className="form-grid-2" style={{ marginBottom: '16px' }}>
