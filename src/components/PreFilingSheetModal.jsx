@@ -105,7 +105,7 @@ function PreFilingSheetModal({ result, onClose }) {
             {/* ตอนที่ 1: รายได้และค่าใช้จ่าย */}
             <section className="prefiling-section" aria-labelledby="section-income-title">
               <div className="prefiling-section-header">
-                <span className="section-number">ตอนที่ 1</span>
+                <span className="prefiling-part-badge">ตอนที่ 1</span>
                 <h3 id="section-income-title">รายการเงินได้พึงประเมินและค่าใช้จ่าย</h3>
               </div>
               <table className="prefiling-table">
@@ -143,7 +143,7 @@ function PreFilingSheetModal({ result, onClose }) {
             {/* ตอนที่ 2: ค่าลดหย่อน 4 หมวดสรรพากร */}
             <section className="prefiling-section" aria-labelledby="section-deductions-title">
               <div className="prefiling-section-header">
-                <span className="section-number">ตอนที่ 2</span>
+                <span className="prefiling-part-badge">ตอนที่ 2</span>
                 <h3 id="section-deductions-title">รายการหักลดหย่อนภาษี 4 หมวด (ภ.ง.ด. 90/91)</h3>
               </div>
               <table className="prefiling-table">
@@ -229,7 +229,7 @@ function PreFilingSheetModal({ result, onClose }) {
             {/* ตอนที่ 3: สรุปยอดภาษีสุทธิและเครดิตภาษี */}
             <section className="prefiling-section highlight-box" aria-labelledby="section-summary-title">
               <div className="prefiling-section-header">
-                <span className="section-number">ตอนที่ 3</span>
+                <span className="prefiling-part-badge">ตอนที่ 3</span>
                 <h3 id="section-summary-title">การคำนวณภาษีสุทธิและภาษีหัก ณ ที่จ่าย</h3>
               </div>
               <table className="prefiling-table">

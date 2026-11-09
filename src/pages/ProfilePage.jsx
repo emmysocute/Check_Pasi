@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   User,
   ShieldCheck,
@@ -12,11 +12,13 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import api from '../utils/api';
 import Alert from '../components/Alert';
-import { maskTaxId } from '../utils/privacy';
+import { maskTaxId, formatTaxId } from '../utils/privacy';
 
 function ProfilePage() {
   const { user, updateUser } = useAuth();
   const [isTaxIdRevealed, setIsTaxIdRevealed] = useState(false);
+  const [isTaxIdFocused, setIsTaxIdFocused] = useState(false);
+  const addressTextareaRef = useRef(null);
 
   // Profile Information State
   const [profile, setProfile] = useState({
@@ -76,6 +78,22 @@ function ProfilePage() {
     };
     fetchProfile();
   }, [user?.email]);
+
+  // Auto-grow textarea for Address without manual resize handle
+  useEffect(() => {
+    if (addressTextareaRef.current) {
+      addressTextareaRef.current.style.height = 'auto';
+      addressTextareaRef.current.style.height = `${Math.max(68, addressTextareaRef.current.scrollHeight)}px`;
+    }
+  }, [profile.address]);
+
+  const getTaxIdInputValue = () => {
+    if (!profile.taxId) return '';
+    if (isTaxIdFocused || isTaxIdRevealed) {
+      return formatTaxId(profile.taxId);
+    }
+    return maskTaxId(profile.taxId, false);
+  };
 
   const handleProfileChange = (e) => {
     const { name, value } = e.target;
@@ -330,11 +348,13 @@ function ProfilePage() {
                     maxLength={12}
                   />
                 </div>
-                {profileErrors.phone && (
+                {profileErrors.phone ? (
                   <span className="field-error-msg">
                     <AlertCircle size={13} />
                     <span>{profileErrors.phone}</span>
                   </span>
+                ) : (
+                  <span className="field-hint">เบอร์โทรสำหรับติดต่อและรับแจ้งเตือน</span>
                 )}
               </div>
               <div className="form-group">
@@ -342,22 +362,25 @@ function ProfilePage() {
                   <label htmlFor="profile-tax-id" className="form-label" style={{ marginBottom: 0 }}>
                     เลขประจำตัวผู้เสียภาษี (Tax ID)
                   </label>
-                  <span className="privacy-badge">
+                  <span className="privacy-badge" title="คุ้มครองข้อมูลส่วนบุคคลตาม พ.ร.บ. PDPA">
                     <ShieldCheck size={12} />
-                    <span>ปกป้องข้อมูล (PDPA)</span>
+                    <span>PDPA</span>
                   </span>
                 </div>
                 <div className={`input-wrapper ${profileErrors.taxId ? 'has-error' : ''} has-action-btn`}>
                   <input
                     id="profile-tax-id"
-                    type={isTaxIdRevealed ? 'text' : 'password'}
+                    type="text"
                     name="taxId"
-                    value={profile.taxId}
+                    value={getTaxIdInputValue()}
                     onChange={handleProfileChange}
-                    placeholder="เลขประจำตัว 13 หลัก"
-                    maxLength={13}
+                    onFocus={() => setIsTaxIdFocused(true)}
+                    onBlur={() => setIsTaxIdFocused(false)}
+                    placeholder="X-XXXX-XXXXX-XX-X"
+                    maxLength={17}
                     autoComplete="off"
                     spellCheck="false"
+                    style={{ fontFamily: 'monospace', letterSpacing: '0.04em' }}
                   />
                   <button
                     type="button"
@@ -369,16 +392,13 @@ function ProfilePage() {
                     {isTaxIdRevealed ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
-                {profile.taxId ? (
-                  <span className="field-hint-privacy">
-                    รหัสที่กำบัง: <code>{maskTaxId(profile.taxId, false)}</code>
-                  </span>
-                ) : null}
-                {profileErrors.taxId && (
+                {profileErrors.taxId ? (
                   <span className="field-error-msg">
                     <AlertCircle size={13} />
                     <span>{profileErrors.taxId}</span>
                   </span>
+                ) : (
+                  <span className="field-hint">ระบบกำบังเลข 5 หลักตรงกลางเพื่อความปลอดภัย</span>
                 )}
               </div>
             </div>
@@ -392,20 +412,24 @@ function ProfilePage() {
               </div>
               <div className={`input-wrapper ${profileErrors.address ? 'has-error' : ''}`} style={{ height: 'auto', padding: '10px 14px' }}>
                 <textarea
+                  ref={addressTextareaRef}
                   name="address"
                   value={profile.address}
                   onChange={handleProfileChange}
-                  rows="3"
+                  rows={2}
                   maxLength={500}
                   placeholder="ที่อยู่ บ้านเลขที่ ซอย ถนน ตำบล อำเภอ จังหวัด รหัสไปรษณีย์"
                   style={{
                     width: '100%',
+                    minHeight: '68px',
                     border: 'none',
                     background: 'transparent',
-                    resize: 'vertical',
+                    resize: 'none',
                     outline: 'none',
                     fontFamily: 'inherit',
-                    fontSize: '14px'
+                    fontSize: '14px',
+                    lineHeight: '1.5',
+                    overflow: 'hidden'
                   }}
                 />
               </div>
