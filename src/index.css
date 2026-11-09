@@ -1927,24 +1927,25 @@ a.btn-primary *,
 .history-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 14px;
-  min-width: 580px;
+  font-size: 13.5px;
 }
 
 .history-table th {
-  padding: 16px 20px;
+  padding: 12px 14px;
   background: var(--gray-50);
   border-bottom: 1px solid var(--gray-200);
   font-weight: 600;
+  font-size: 13px;
   color: var(--gray-700);
   text-align: left;
   white-space: nowrap;
 }
 
 .history-table td {
-  padding: 16px 20px;
+  padding: 12px 14px;
   border-bottom: 1px solid var(--gray-100);
   vertical-align: middle;
+  font-variant-numeric: tabular-nums;
 }
 
 .history-date-cell {
@@ -1952,9 +1953,24 @@ a.btn-primary *,
   white-space: nowrap;
 }
 
+.history-date-main {
+  font-weight: 600;
+  color: var(--gray-800);
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+.history-date-sub {
+  font-size: 11.5px;
+  color: var(--gray-500);
+  white-space: nowrap;
+  margin-top: 2px;
+}
+
 .history-num-cell {
   font-weight: 500;
   white-space: nowrap;
+  color: var(--gray-800);
 }
 
 .history-tax-cell {
@@ -1963,16 +1979,25 @@ a.btn-primary *,
   white-space: nowrap;
 }
 
+.history-actions-cell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
 .history-action-delete {
   background: none;
   border: 1px solid var(--gray-200);
-  padding: 5px 12px;
+  padding: 4px 8px;
   border-radius: var(--radius-sm);
   color: var(--red-500);
   font-weight: 500;
   cursor: pointer;
-  font-size: 12.5px;
+  font-size: 12px;
   transition: all var(--transition-fast);
+  white-space: nowrap;
 }
 
 .history-action-delete:hover {

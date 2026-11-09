@@ -53,9 +53,26 @@ function HistoryPage() {
   };
 
   const fmt = (n) => Number(n ?? 0).toLocaleString('th-TH');
-  const formatDate = (dateStr) => new Date(dateStr).toLocaleDateString('th-TH', { 
-    year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' 
-  });
+
+  const formatDateParts = (dateStr) => {
+    const d = new Date(dateStr);
+    const dateFormatted = d.toLocaleDateString('th-TH', { 
+      day: 'numeric', month: 'short', year: 'numeric' 
+    });
+    const timeFormatted = d.toLocaleTimeString('th-TH', { 
+      hour: '2-digit', minute: '2-digit' 
+    });
+    return { dateFormatted, timeFormatted };
+  };
+
+  const getAnnualIncome = (record) => {
+    const annual = Number(record.annual_income) || 0;
+    if (annual > 0) return annual;
+    const fromMonthlyAndFreelance = (Number(record.monthly_income || 0) * 12) + Number(record.freelance_income || 0);
+    if (fromMonthlyAndFreelance > 0) return fromMonthlyAndFreelance;
+    const deductions = Number(record.total_deduction || 0) + Number(record.expense_deduction || 0);
+    return Number(record.net_income || 0) + deductions;
+  };
 
   const renderStatusBadge = (record) => {
     const tax = Number(record.tax_amount) || 0;
@@ -109,44 +126,65 @@ function HistoryPage() {
               <table className="history-table">
                 <thead>
                   <tr>
-                    <th>วันที่คำนวณ</th>
-                    <th>รายได้ทั้งปี</th>
-                    <th>หักค่าใช้จ่าย & ลดหย่อน</th>
-                    <th>ภาษีคำนวณ</th>
-                    <th>หัก ณ ที่จ่าย</th>
-                    <th>สถานะสุทธิ</th>
-                    <th style={{ textAlign: 'center' }}>จัดการ</th>
+                    <th style={{ width: '15%' }}>วันที่คำนวณ</th>
+                    <th style={{ textAlign: 'right', width: '14%' }}>รายได้ทั้งปี</th>
+                    <th style={{ textAlign: 'right', width: '16%' }}>หักค่าใช้จ่าย & ลดหย่อน</th>
+                    <th style={{ textAlign: 'right', width: '14%' }}>ภาษีคำนวณ</th>
+                    <th style={{ textAlign: 'right', width: '13%' }}>หัก ณ ที่จ่าย</th>
+                    <th style={{ textAlign: 'center', width: '14%' }}>สถานะสุทธิ</th>
+                    <th style={{ textAlign: 'center', width: '14%' }}>จัดการ</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {history.map((record) => (
-                    <tr key={record.id}>
-                      <td className="history-date-cell">{formatDate(record.calculated_at)}</td>
-                      <td className="history-num-cell">{fmt(record.annual_income)} ฿</td>
-                      <td className="history-num-cell">{fmt(Number(record.total_deduction) + Number(record.expense_deduction || 0))} ฿</td>
-                      <td className="history-tax-cell">{fmt(record.tax_amount)} ฿</td>
-                      <td className="history-num-cell" style={{ color: Number(record.withholding_tax) > 0 ? 'var(--primary-600)' : 'var(--gray-400)' }}>
-                        {Number(record.withholding_tax) > 0 ? `${fmt(record.withholding_tax)} ฿` : '-'}
-                      </td>
-                      <td>{renderStatusBadge(record)}</td>
-                      <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
-                        <button 
-                          onClick={() => handleLoadRecord(record)}
-                          className="history-action-load"
-                          title="นำข้อมูลนี้ไปคำนวณในฟอร์ม"
-                        >
-                          ใช้ข้อมูลนี้
-                        </button>
-                        <button 
-                          onClick={() => setDeleteCandidate(record.id)}
-                          className="history-action-delete"
-                          title="ลบรายการนี้"
-                        >
-                          ลบ
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                  {history.map((record) => {
+                    const { dateFormatted, timeFormatted } = formatDateParts(record.calculated_at);
+                    const annualIncome = getAnnualIncome(record);
+                    const deductions = Number(record.total_deduction) + Number(record.expense_deduction || 0);
+                    const tax = Number(record.tax_amount) || 0;
+                    const wht = Number(record.withholding_tax) || 0;
+
+                    return (
+                      <tr key={record.id}>
+                        <td className="history-date-cell">
+                          <div className="history-date-main">{dateFormatted}</div>
+                          <div className="history-date-sub">{timeFormatted} น.</div>
+                        </td>
+                        <td className="history-num-cell" style={{ textAlign: 'right' }}>
+                          {fmt(annualIncome)} ฿
+                        </td>
+                        <td className="history-num-cell" style={{ textAlign: 'right' }}>
+                          {fmt(deductions)} ฿
+                        </td>
+                        <td className="history-tax-cell" style={{ textAlign: 'right' }}>
+                          {fmt(tax)} ฿
+                        </td>
+                        <td className="history-num-cell" style={{ textAlign: 'right', color: wht > 0 ? 'var(--primary-600)' : 'var(--gray-400)' }}>
+                          {wht > 0 ? `${fmt(wht)} ฿` : '-'}
+                        </td>
+                        <td style={{ textAlign: 'center' }}>
+                          {renderStatusBadge(record)}
+                        </td>
+                        <td style={{ textAlign: 'center' }}>
+                          <div className="history-actions-cell">
+                            <button 
+                              onClick={() => handleLoadRecord(record)}
+                              className="history-action-load"
+                              title="นำข้อมูลนี้ไปคำนวณในฟอร์ม"
+                            >
+                              ใช้ข้อมูลนี้
+                            </button>
+                            <button 
+                              onClick={() => setDeleteCandidate(record.id)}
+                              className="history-action-delete"
+                              title="ลบรายการนี้"
+                            >
+                              ลบ
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -154,44 +192,47 @@ function HistoryPage() {
 
           {/* มุมมอง Adaptive Card View สำหรับจอมือถือ (< 768px) */}
           <div className="history-mobile-cards">
-            {history.map((record) => (
-              <div key={record.id} className="history-card-item form-card animate-in">
-                <div className="history-card-top">
-                  <div className="history-card-date">
-                    <span className="date-icon"><Calendar size={13} /></span>
-                    <span>{formatDate(record.calculated_at)}</span>
+            {history.map((record) => {
+              const { dateFormatted, timeFormatted } = formatDateParts(record.calculated_at);
+              const annualIncome = getAnnualIncome(record);
+              return (
+                <div key={record.id} className="history-card-item form-card animate-in">
+                  <div className="history-card-top">
+                    <div className="history-card-date">
+                      <span className="date-icon"><Calendar size={13} /></span>
+                      <span>{dateFormatted} • {timeFormatted} น.</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <button 
+                        onClick={() => handleLoadRecord(record)}
+                        className="history-card-load-btn"
+                        title="นำข้อมูลนี้ไปคำนวณในฟอร์ม"
+                      >
+                        ใช้ข้อมูลนี้
+                      </button>
+                      <button 
+                        onClick={() => setDeleteCandidate(record.id)}
+                        className="history-card-delete-btn"
+                        title="ลบรายการ"
+                      >
+                        ลบ
+                      </button>
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <button 
-                      onClick={() => handleLoadRecord(record)}
-                      className="history-card-load-btn"
-                      title="นำข้อมูลนี้ไปคำนวณในฟอร์ม"
-                    >
-                      ใช้ข้อมูลนี้
-                    </button>
-                    <button 
-                      onClick={() => setDeleteCandidate(record.id)}
-                      className="history-card-delete-btn"
-                      title="ลบรายการ"
-                    >
-                      ลบ
-                    </button>
-                  </div>
-                </div>
 
-                <div className="history-card-details">
-                  <div className="history-card-row">
-                    <span className="label">รายได้ทั้งปี:</span>
-                    <span className="value">{fmt(record.annual_income)} บาท</span>
-                  </div>
-                  <div className="history-card-row">
-                    <span className="label">หักค่าใช้จ่าย & ลดหย่อน:</span>
-                    <span className="value">{fmt(Number(record.total_deduction) + Number(record.expense_deduction || 0))} บาท</span>
-                  </div>
-                  <div className="history-card-row">
-                    <span className="label">ภาษีคำนวณ:</span>
-                    <span className="value-tax">{fmt(record.tax_amount)} บาท</span>
-                  </div>
+                  <div className="history-card-details">
+                    <div className="history-card-row">
+                      <span className="label">รายได้ทั้งปี:</span>
+                      <span className="value">{fmt(annualIncome)} บาท</span>
+                    </div>
+                    <div className="history-card-row">
+                      <span className="label">หักค่าใช้จ่าย & ลดหย่อน:</span>
+                      <span className="value">{fmt(Number(record.total_deduction) + Number(record.expense_deduction || 0))} บาท</span>
+                    </div>
+                    <div className="history-card-row">
+                      <span className="label">ภาษีคำนวณ:</span>
+                      <span className="value-tax">{fmt(record.tax_amount)} บาท</span>
+                    </div>
                   {Number(record.withholding_tax) > 0 && (
                     <div className="history-card-row">
                       <span className="label">หัก ณ ที่จ่าย:</span>
@@ -206,8 +247,9 @@ function HistoryPage() {
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
+            );
+          })}
+        </div>
         </>
       )}
 
