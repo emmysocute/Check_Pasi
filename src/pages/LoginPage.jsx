@@ -67,7 +67,7 @@ function LoginPage() {
     <div className="auth-container">
       <div className="form-card auth-card">
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-          <h2 style={{ fontSize: '24px', fontWeight: '700', color: 'var(--gray-800)', marginBottom: '6px' }}>เข้าสู่ระบบ Check Pasi</h2>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', color: 'var(--gray-800)', marginBottom: '6px' }}>เข้าสู่ระบบ TaxMe</h2>
           <p style={{ fontSize: '13px', color: 'var(--gray-500)' }}>ระบบคำนวณและวางแผนภาษีเงินได้บุคคลธรรมดา</p>
         </div>
         

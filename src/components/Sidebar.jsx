@@ -59,7 +59,7 @@ function Sidebar({ isOpen = false, onClose = () => {} }) {
             <span className="logo-accent-mark">
               <Sparkles size={16} strokeWidth={2.5} />
             </span>
-            <span className="logo-text">Check Pasi</span>
+            <span className="logo-text">TaxMe</span>
           </Link>
           <button
             type="button"
@@ -108,7 +108,7 @@ function Sidebar({ isOpen = false, onClose = () => {} }) {
             ระบบคำนวณมาตรฐาน ภ.ง.ด. 90/91
           </p>
           <div className="sidebar-tagline">
-            <span>Check Pasi © 2569</span>
+            <span>TaxMe © 2569</span>
           </div>
         </div>
       </aside>

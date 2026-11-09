@@ -82,7 +82,7 @@ function PreFilingSheetModal({ result, onClose }) {
             <div className="prefiling-brand">
               <span className="prefiling-brand-badge">
                 <ShieldCheck size={13} />
-                <span>Check Pasi — แผ่นเตรียมยื่นภาษี</span>
+                <span>TaxMe — แผ่นเตรียมยื่นภาษี</span>
               </span>
               <h2 id="prefiling-modal-title" className="prefiling-title">
                 สรุปข้อมูลเตรียมยื่นแบบภาษีเงินได้บุคคลธรรมดา
@@ -293,7 +293,7 @@ function PreFilingSheetModal({ result, onClose }) {
               ด้วย Digital ID หรือเลขประจำตัวประชาชน และนำตัวเลขแต่ละช่องที่สรุปไว้ในเอกสารนี้ไปกรอกตามหมวด จะช่วยให้ยื่นแบบได้รวดเร็ว แม่นยำ และไม่ตกหล่น
             </div>
             <div className="prefiling-print-meta">
-              <span>จัดทำโดยระบบ Check Pasi | วันที่พิมพ์: {new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+              <span>จัดทำโดยระบบ TaxMe | วันที่พิมพ์: {new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
             </div>
           </footer>
         </div>

@@ -76,7 +76,7 @@ function RegisterPage() {
     <div className="auth-container">
       <div className="form-card auth-card">
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-          <h2 style={{ fontSize: '24px', fontWeight: '700', color: 'var(--gray-800)', marginBottom: '6px' }}>สมัครสมาชิก Check Pasi</h2>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', color: 'var(--gray-800)', marginBottom: '6px' }}>สมัครสมาชิก TaxMe</h2>
           <p style={{ fontSize: '13px', color: 'var(--gray-500)' }}>เริ่มต้นวางแผนภาษีง่าย ๆ และปลอดภัย</p>
         </div>
 

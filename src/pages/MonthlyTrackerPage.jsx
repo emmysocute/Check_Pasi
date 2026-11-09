@@ -168,7 +168,7 @@ function MonthlyTrackerPage() {
   const handleExportCSV = useCallback(() => {
     const beYear = selectedYear + 543;
     const csv = generateMonthlyTrackerCSV(records, beYear);
-    downloadCSV(`check-pasi-freelance-${beYear}.csv`, csv);
+    downloadCSV(`taxme-freelance-${beYear}.csv`, csv);
     showToast(`ดาวน์โหลดสรุปรายได้ปีภาษี ${beYear} (CSV/Excel) สำเร็จ`, 'success');
   }, [records, selectedYear, showToast]);
 
