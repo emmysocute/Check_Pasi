@@ -143,6 +143,7 @@ export function calculateTax(params = {}) {
     annualSalary,
     freelanceIncome: freelance,
     sumIncome,
+    annualIncome: sumIncome,
     expenseDeduction,
     itemizedDeductions: {
       personal,

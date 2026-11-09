@@ -237,7 +237,7 @@ function TaxCalculatorPage() {
         donationGeneral: formData.donationGeneral.enabled ? Math.max(0, Number(formData.donationGeneral.amount) || 0) : 0,
         donation: taxResult.itemizedDeductions?.donation || 0,
         taxMethod: taxResult.taxMethod || 'bracket',
-        annualIncome: taxResult.annualIncome,
+        annualIncome: taxResult.annualIncome ?? taxResult.sumIncome ?? (Number(formData.monthlyIncome || 0) * 12 + Number(formData.freelanceIncome || 0)),
         expenseDeduction: taxResult.expenseDeduction,
         totalDeduction: taxResult.totalDeduction,
         netIncome: taxResult.netIncome,
