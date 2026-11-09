@@ -643,6 +643,21 @@ a:active {
   gap: 6px;
 }
 
+.form-label-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 24px;
+  height: 24px;
+  box-sizing: border-box;
+  margin-bottom: 2px;
+}
+
+.form-label-header .form-label {
+  margin: 0 !important;
+  line-height: 1.2;
+}
+
 .form-label {
   font-size: 13px;
   font-weight: 500;
@@ -760,10 +775,12 @@ a:active {
   font-weight: 700;
   color: #1e40af;
   background: #eff6ff;
-  padding: 2px 7px;
+  padding: 2px 8px;
   border-radius: var(--radius-sm);
   border: 1px solid #bfdbfe;
   line-height: 1.2;
+  box-sizing: border-box;
+  height: 22px;
 }
 
 .field-hint-privacy {
@@ -793,6 +810,9 @@ a:active {
   padding: 2px 8px;
   border-radius: 9999px;
   border: 1px solid var(--gray-200);
+  line-height: 1.2;
+  box-sizing: border-box;
+  height: 22px;
 }
 
 .input-wrapper.input-readonly {

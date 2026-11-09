@@ -256,8 +256,8 @@ function ProfilePage() {
             {/* แถวที่ 1: อีเมลบัญชี (Read-only) และ ชื่อที่แสดง */}
             <div className="form-grid-2" style={{ marginBottom: '16px' }}>
               <div className="form-group">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                  <label htmlFor="profile-email" className="form-label" style={{ marginBottom: 0 }}>
+                <div className="form-label-header">
+                  <label htmlFor="profile-email" className="form-label">
                     อีเมลบัญชี (Email)
                   </label>
                   <span className="readonly-badge">
@@ -282,8 +282,8 @@ function ProfilePage() {
               </div>
 
               <div className="form-group">
-                <div style={{ marginBottom: '8px' }}>
-                  <label htmlFor="profile-display-name" className="form-label" style={{ marginBottom: 0 }}>
+                <div className="form-label-header">
+                  <label htmlFor="profile-display-name" className="form-label">
                     ชื่อที่แสดง (Display Name) <span style={{ color: '#ef4444' }}>*</span>
                   </label>
                 </div>
@@ -310,9 +310,14 @@ function ProfilePage() {
 
             <div className="form-grid-2" style={{ marginBottom: '16px' }}>
               <div className="form-group">
-                <label className="form-label">ชื่อจริง (First Name)</label>
+                <div className="form-label-header">
+                  <label htmlFor="profile-first-name" className="form-label">
+                    ชื่อจริง (First Name)
+                  </label>
+                </div>
                 <div className="input-wrapper">
                   <input
+                    id="profile-first-name"
                     type="text"
                     name="firstName"
                     value={profile.firstName}
@@ -322,9 +327,14 @@ function ProfilePage() {
                 </div>
               </div>
               <div className="form-group">
-                <label className="form-label">นามสกุล (Last Name)</label>
+                <div className="form-label-header">
+                  <label htmlFor="profile-last-name" className="form-label">
+                    นามสกุล (Last Name)
+                  </label>
+                </div>
                 <div className="input-wrapper">
                   <input
+                    id="profile-last-name"
                     type="text"
                     name="lastName"
                     value={profile.lastName}
@@ -337,9 +347,14 @@ function ProfilePage() {
 
             <div className="form-grid-2" style={{ marginBottom: '16px' }}>
               <div className="form-group">
-                <label className="form-label">เบอร์โทรศัพท์</label>
+                <div className="form-label-header">
+                  <label htmlFor="profile-phone" className="form-label">
+                    เบอร์โทรศัพท์
+                  </label>
+                </div>
                 <div className={`input-wrapper ${profileErrors.phone ? 'has-error' : ''}`}>
                   <input
+                    id="profile-phone"
                     type="tel"
                     name="phone"
                     value={profile.phone}
@@ -358,8 +373,8 @@ function ProfilePage() {
                 )}
               </div>
               <div className="form-group">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                  <label htmlFor="profile-tax-id" className="form-label" style={{ marginBottom: 0 }}>
+                <div className="form-label-header">
+                  <label htmlFor="profile-tax-id" className="form-label">
                     เลขประจำตัวผู้เสียภาษี (Tax ID)
                   </label>
                   <span className="privacy-badge" title="คุ้มครองข้อมูลส่วนบุคคลตาม พ.ร.บ. PDPA">
@@ -404,14 +419,15 @@ function ProfilePage() {
             </div>
 
             <div className="form-group" style={{ marginBottom: '24px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                <label className="form-label" style={{ marginBottom: 0 }}>ที่อยู่สำหรับออกเอกสาร</label>
+              <div className="form-label-header">
+                <label htmlFor="profile-address" className="form-label">ที่อยู่สำหรับออกเอกสาร</label>
                 <span style={{ fontSize: '12px', color: '#64748b' }}>
                   {profile.address.length}/500 ตัวอักษร
                 </span>
               </div>
               <div className={`input-wrapper ${profileErrors.address ? 'has-error' : ''}`} style={{ height: 'auto', padding: '10px 14px' }}>
                 <textarea
+                  id="profile-address"
                   ref={addressTextareaRef}
                   name="address"
                   value={profile.address}
@@ -471,9 +487,14 @@ function ProfilePage() {
 
           <form noValidate onSubmit={handlePasswordSubmit}>
             <div className="form-group" style={{ marginBottom: '16px' }}>
-              <label className="form-label">รหัสผ่านปัจจุบัน <span style={{ color: '#ef4444' }}>*</span></label>
+              <div className="form-label-header">
+                <label htmlFor="currentPassword" className="form-label">
+                  รหัสผ่านปัจจุบัน <span style={{ color: '#ef4444' }}>*</span>
+                </label>
+              </div>
               <div className={`input-wrapper ${passwordErrors.currentPassword ? 'has-error' : ''}`}>
                 <input
+                  id="currentPassword"
                   type="password"
                   name="currentPassword"
                   value={passwords.currentPassword}
@@ -491,9 +512,14 @@ function ProfilePage() {
 
             <div className="form-grid-2" style={{ marginBottom: '24px' }}>
               <div className="form-group">
-                <label className="form-label">รหัสผ่านใหม่ <span style={{ color: '#ef4444' }}>*</span></label>
+                <div className="form-label-header">
+                  <label htmlFor="newPassword" className="form-label">
+                    รหัสผ่านใหม่ <span style={{ color: '#ef4444' }}>*</span>
+                  </label>
+                </div>
                 <div className={`input-wrapper ${passwordErrors.newPassword ? 'has-error' : ''}`}>
                   <input
+                    id="newPassword"
                     type="password"
                     name="newPassword"
                     value={passwords.newPassword}
@@ -510,9 +536,14 @@ function ProfilePage() {
               </div>
 
               <div className="form-group">
-                <label className="form-label">ยืนยันรหัสผ่านใหม่ <span style={{ color: '#ef4444' }}>*</span></label>
+                <div className="form-label-header">
+                  <label htmlFor="confirmPassword" className="form-label">
+                    ยืนยันรหัสผ่านใหม่ <span style={{ color: '#ef4444' }}>*</span>
+                  </label>
+                </div>
                 <div className={`input-wrapper ${passwordErrors.confirmPassword ? 'has-error' : ''}`}>
                   <input
+                    id="confirmPassword"
                     type="password"
                     name="confirmPassword"
                     value={passwords.confirmPassword}
