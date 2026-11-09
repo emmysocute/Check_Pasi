@@ -6,6 +6,7 @@ import {
   HeartHandshake,
   AlertCircle,
   ArrowRight,
+  ArrowLeft,
   CheckCircle2,
   Check,
 } from 'lucide-react';
@@ -161,6 +162,7 @@ function DeductionSection({
   }, [activeTab]);
 
   const currentTabIndex = DEDUCTION_TABS.findIndex((t) => t.id === activeTab);
+  const prevTabInfo = currentTabIndex > 0 ? DEDUCTION_TABS[currentTabIndex - 1] : null;
   const nextTabInfo = currentTabIndex < DEDUCTION_TABS.length - 1 ? DEDUCTION_TABS[currentTabIndex + 1] : null;
 
   return (
@@ -398,6 +400,19 @@ function DeductionSection({
 
           {/* ===== Tab Footer Navigation ===== */}
           <div className="deduction-tab-footer">
+            {prevTabInfo ? (
+              <button
+                type="button"
+                className="btn btn-outline btn-prev-tab"
+                onClick={() => setActiveTab(prevTabInfo.id)}
+              >
+                <ArrowLeft size={15} className="prev-arrow" aria-hidden="true" />
+                <span>ย้อนกลับ: หมวด{prevTabInfo.label}</span>
+              </button>
+            ) : (
+              <div />
+            )}
+
             {nextTabInfo ? (
               <button
                 type="button"
