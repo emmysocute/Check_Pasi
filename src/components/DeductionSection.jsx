@@ -571,15 +571,27 @@ function DeductionSection({
                           value={formatNumberWithCommas(item.amount)}
                           onChange={(e) => {
                             const parsed = parseFormattedNumber(e.target.value);
-                            const cap = STATUTORY_INPUT_CAPS[d.key];
-                            if (cap !== undefined && parsed > cap) {
+                            let cap = STATUTORY_INPUT_CAPS[d.key];
+                            if (d.key === 'donationEducation' && maxDonationCap !== Infinity) {
+                              cap = Math.floor(maxDonationCap / 2);
+                            } else if (d.key === 'donationGeneral' && maxDonationCap !== Infinity) {
+                              cap = maxDonationCap;
+                            }
+
+                            if (cap !== undefined && cap > 0 && parsed > cap) {
                               handleAmountChange(d.key, cap);
                             } else {
                               handleAmountChange(d.key, parsed);
                             }
                           }}
                           onBlur={() => {
-                            const cap = STATUTORY_INPUT_CAPS[d.key];
+                            let cap = STATUTORY_INPUT_CAPS[d.key];
+                            if (d.key === 'donationEducation' && maxDonationCap !== Infinity) {
+                              cap = Math.floor(maxDonationCap / 2);
+                            } else if (d.key === 'donationGeneral' && maxDonationCap !== Infinity) {
+                              cap = maxDonationCap;
+                            }
+
                             const current = Number(item.amount) || 0;
                             if (cap !== undefined && current > cap) {
                               handleAmountChange(d.key, cap);
@@ -599,6 +611,30 @@ function DeductionSection({
                           ✓ <strong>จำกัดตามกฎหมายสรรพากร:</strong> ปรับเป็นยอดลดหย่อนสูงสุด {STATUTORY_INPUT_CAPS[d.key].toLocaleString('th-TH')} บาท/ปี เรียบร้อยแล้ว
                         </div>
                       )}
+
+                      {d.key === 'donationEducation' && item.enabled && maxDonationCap !== Infinity && (
+                        Number(item.amount) >= Math.floor(maxDonationCap / 2) && maxDonationCap > 0 ? (
+                          <div className="statutory-cap-pill is-capped">
+                            ✓ <strong>จำกัดตามเพดาน 10%:</strong> ปรับเป็นยอดบริจาคสูงสุด {Math.floor(maxDonationCap / 2).toLocaleString('th-TH')} บาท (ลดหย่อน 2 เท่า = {maxDonationCap.toLocaleString('th-TH')} บาท) เรียบร้อยแล้ว
+                          </div>
+                        ) : maxDonationCap === 0 && Number(item.amount) === 0 ? (
+                          <div className="statutory-cap-pill is-capped">
+                            ✓ <strong>เพดานสิทธิบริจาคปัจจุบันเป็น 0 บาท:</strong> เนื่องจากเงินได้สุทธิขั้นต้นเป็น 0 บาท (ไม่มีภาษีที่ต้องลดหย่อน)
+                          </div>
+                        ) : null
+                      )}
+
+                      {d.key === 'donationGeneral' && item.enabled && maxDonationCap !== Infinity && (
+                        Number(item.amount) >= maxDonationCap && maxDonationCap > 0 ? (
+                          <div className="statutory-cap-pill is-capped">
+                            ✓ <strong>จำกัดตามเพดาน 10%:</strong> ปรับเป็นยอดบริจาคสูงสุด {maxDonationCap.toLocaleString('th-TH')} บาท เรียบร้อยแล้ว
+                          </div>
+                        ) : maxDonationCap === 0 && Number(item.amount) === 0 ? (
+                          <div className="statutory-cap-pill is-capped">
+                            ✓ <strong>เพดานสิทธิบริจาคปัจจุบันเป็น 0 บาท:</strong> เนื่องจากเงินได้สุทธิขั้นต้นเป็น 0 บาท (ไม่มีภาษีที่ต้องลดหย่อน)
+                          </div>
+                        ) : null
+                      )}
                     </>
                   )}
 
@@ -616,46 +652,83 @@ function DeductionSection({
               );
             })}
 
-            {/* Donation Ceiling Callout inside donation tab */}
+            {/* Donation Summary Card & Ceiling Callout inside donation tab */}
             {activeTab === 'donation' && (
-              <div className="donation-status-card">
-                <div className="donation-status-header">
-                  <div className="donation-cap-label">
-                    <span>เพดานบริจาคสูงสุด 10% ของเงินได้สุทธิขั้นต้น:</span>
-                    <strong>{maxDonationCap === Infinity ? 'รอการคำนวณ' : `${Number(maxDonationCap).toLocaleString('th-TH')} บาท`}</strong>
+              <div className="donation-status-container">
+                <div className="donation-summary-card">
+                  <div className="donation-summary-left">
+                    <div className="donation-summary-label">
+                      <Lock size={13} />
+                      <span>ยอดรวมลดหย่อนเงินบริจาค (คำนวณตามเพดาน 10%)</span>
+                    </div>
+                    <div className="donation-summary-details">
+                      {maxDonationCap > 0 ? (
+                        <span>
+                          เพดานสูงสุด 10%: <strong>฿{Number(maxDonationCap).toLocaleString('th-TH')} บาท</strong>
+                          {rawDonationClaim > 0 && ` • สิทธิที่ระบุ ฿${Number(rawDonationClaim).toLocaleString('th-TH')} บาท`}
+                        </span>
+                      ) : (
+                        <span>
+                          เพดานสิทธิลดหย่อนบริจาค: <strong>0 บาท</strong> (เงินได้สุทธิขั้นต้นเป็น 0 บาท)
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <div className="donation-actual-label">
-                    <span>ยอดหักลดหย่อนที่ใช้ได้จริง:</span>
-                    <strong className="text-emerald">{Number(actualDonationDeduction).toLocaleString('th-TH')} บาท</strong>
+                  <div className="donation-summary-amount">
+                    ฿{Number(actualDonationDeduction).toLocaleString('th-TH')} บาท
                   </div>
-                </div>
-                <div className="donation-status-note">
-                  คำนวณจากเพดานไม่เกิน 10% ของเงินได้พึงประเมินหลังหักค่าใช้จ่ายและค่าลดหย่อนอื่นทั้งหมด
                 </div>
 
                 {maxDonationCap === 0 && (
-                  <div className="donation-status-note" style={{ color: '#64748b', marginTop: '6px' }}>
-                    💡 <em>หมายเหตุ: เพดานบริจาคจะคำนวณจาก 10% ของเงินได้สุทธิขั้นต้น หากยังไม่ได้ระบุรายได้ในส่วนที่ 1 เพดานจะเป็น 0 บาท เมื่อกรอกเงินได้แล้ว ระบบจะคำนวณสิทธิให้อัตโนมัติ</em>
+                  <div className="donation-status-note">
+                    💡 <em>หมายเหตุ: ตามประมวลรัษฎากร สิทธิลดหย่อนเงินบริจาคจะคำนวณจากเพดานไม่เกิน 10% ของเงินได้พึงประเมินหลังหักค่าใช้จ่ายและค่าลดหย่อนอื่นทั้งหมด หากยังไม่ได้ระบุรายได้ในส่วนที่ 1 เพดานจะเป็น 0 บาท เมื่อกรอกเงินได้แล้ว ระบบจะคำนวณสิทธิให้อัตโนมัติ</em>
                   </div>
                 )}
 
                 {rawDonationClaim > maxDonationCap && maxDonationCap > 0 && (
                   <div className="donation-ceiling-warning" id="donation-cap-warning">
                     <AlertCircle size={16} className="warning-icon" />
-                    <div>
-                      <strong>ยอดบริจาคเกินสิทธิสูงสุด:</strong> คุณระบุยอดบริจาค (รวมสิทธิ 2 เท่า) จำนวน{' '}
-                      {Number(rawDonationClaim).toLocaleString('th-TH')} บาท ซึ่งเกินเพดาน 10% — ระบบจะนำไปลดหย่อนภาษีให้ตามเพดานจริงที่{' '}
-                      <strong>{Number(actualDonationDeduction).toLocaleString('th-TH')} บาท</strong>{' '}
-                      <span className="donation-warning-note">(คุณยังสามารถกรอกตัวเลขตามใบเสร็จจริงได้ตามปกติ)</span>
+                    <div style={{ flex: 1 }}>
+                      <strong>ยอดบริจาคเกินสิทธิสูงสุด 10%:</strong> คุณระบุยอดบริจาครวมสิทธิ {Number(rawDonationClaim).toLocaleString('th-TH')} บาท ซึ่งเกินเพดานสรรพากร ระบบนำไปหักลดหย่อนจริงที่ <strong>{Number(actualDonationDeduction).toLocaleString('th-TH')} บาท</strong>
+                      <div style={{ marginTop: '6px' }}>
+                        <button
+                          type="button"
+                          className="btn btn-outline"
+                          style={{ fontSize: '11.5px', padding: '3px 10px', height: '26px', background: '#fff' }}
+                          onClick={() => {
+                            if (formData.donationEducation?.enabled) {
+                              handleAmountChange('donationEducation', Math.floor(maxDonationCap / 2));
+                              handleAmountChange('donationGeneral', 0);
+                            } else {
+                              handleAmountChange('donationGeneral', maxDonationCap);
+                            }
+                          }}
+                        >
+                          ⚡ ปรับตัวเลขให้พอดีเพดานสูงสุด (฿{Number(maxDonationCap).toLocaleString('th-TH')} บาท)
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )}
 
-                {maxDonationCap === 0 && rawDonationClaim > 0 && (
+                {maxDonationCap === 0 && (Number(formData.donationEducation?.amount) > 0 || Number(formData.donationGeneral?.amount) > 0) && (
                   <div className="donation-ceiling-warning" id="donation-zero-cap-warning">
                     <AlertCircle size={16} className="warning-icon" />
-                    <div>
+                    <div style={{ flex: 1 }}>
                       <strong>ยังไม่มีฐานคำนวณภาษี:</strong> เนื่องจากเงินได้หลังหักค่าใช้จ่ายและค่าลดหย่อนอื่นเป็น 0 บาท สิทธิลดหย่อนเงินบริจาคในปีนี้จึงเป็น 0 บาท
+                      <div style={{ marginTop: '6px' }}>
+                        <button
+                          type="button"
+                          className="btn btn-outline"
+                          style={{ fontSize: '11.5px', padding: '3px 10px', height: '26px', background: '#fff' }}
+                          onClick={() => {
+                            handleAmountChange('donationEducation', 0);
+                            handleAmountChange('donationGeneral', 0);
+                          }}
+                        >
+                          ⚡ ปรับตัวเลขบริจาคเป็น 0 บาท ตามเพดานจริง
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )}
