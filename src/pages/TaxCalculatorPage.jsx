@@ -303,6 +303,7 @@ function TaxCalculatorPage() {
           <DeductionSection
             formData={formData}
             onToggle={(field, val) => updateDeduction(field, 'enabled', val)}
+            onChange={(field, val) => updateDeduction(field, 'amount', val)}
             onAmountChange={(field, val) => updateDeduction(field, 'amount', val)}
             onParentToggle={updateParentAllowance}
             maxDonationCap={taxResult.maxDonationCap}

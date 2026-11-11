@@ -124,6 +124,7 @@ function DeductionSection({
   formData, 
   onToggle, 
   onChange, 
+  onAmountChange,
   onParentToggle, 
   parentBreakdown,
   rawDonationClaim = 0,
@@ -131,6 +132,16 @@ function DeductionSection({
   actualDonationDeduction = 0,
 }) {
   const [activeTab, setActiveTab] = useState('family');
+
+  const handleAmountChange = onChange || onAmountChange || (() => {});
+
+  const effectiveParentBreakdown = useMemo(() => {
+    if (parentBreakdown) return parentBreakdown;
+    const p = formData?.parentAllowance;
+    if (!p) return { count: 0, total: 0 };
+    const count = (p.ownFather ? 1 : 0) + (p.ownMother ? 1 : 0) + (p.spouseFather ? 1 : 0) + (p.spouseMother ? 1 : 0);
+    return { count, total: count * 30000 };
+  }, [parentBreakdown, formData?.parentAllowance]);
 
   const tabTotals = useMemo(() => {
     const totals = {
@@ -144,7 +155,7 @@ function DeductionSection({
       const item = formData[d.key];
       if (item && item.enabled) {
         if (d.key === 'parentAllowance') {
-          totals.family += parentBreakdown ? parentBreakdown.total : (Number(item.amount) || 0);
+          totals.family += effectiveParentBreakdown.total;
         } else if (d.tab === 'donation') {
           // Handled via actualDonationDeduction passed from parent engine
         } else {
@@ -155,7 +166,7 @@ function DeductionSection({
 
     totals.donation = actualDonationDeduction || 0;
     return totals;
-  }, [formData, parentBreakdown, actualDonationDeduction]);
+  }, [formData, effectiveParentBreakdown, actualDonationDeduction]);
 
   const filteredDeductions = useMemo(() => {
     return ALL_DEDUCTIONS.filter((d) => d.tab === activeTab);
@@ -325,7 +336,7 @@ function DeductionSection({
                         inputMode="numeric"
                         id={`input-${d.key}`}
                         value={formatNumberWithCommas(item.amount)}
-                        onChange={(e) => onChange(d.key, parseFormattedNumber(e.target.value))}
+                        onChange={(e) => handleAmountChange(d.key, parseFormattedNumber(e.target.value))}
                         onKeyDown={blockInvalidChars}
                         disabled={!item.enabled}
                         placeholder="0"
@@ -336,10 +347,10 @@ function DeductionSection({
                     </div>
                   )}
 
-                  {isParentItem && item.enabled && parentBreakdown && (
+                  {isParentItem && item.enabled && effectiveParentBreakdown.count > 0 && (
                     <div className="parent-summary-bar">
-                      <span>รวมสิทธิบิดามารดา ({parentBreakdown.count} ท่าน):</span>
-                      <strong>{parentBreakdown.total.toLocaleString('th-TH')} บาท</strong>
+                      <span>รวมสิทธิบิดามารดา ({effectiveParentBreakdown.count} ท่าน):</span>
+                      <strong>{effectiveParentBreakdown.total.toLocaleString('th-TH')} บาท</strong>
                     </div>
                   )}
 
@@ -373,6 +384,12 @@ function DeductionSection({
                 <div className="donation-status-note">
                   คำนวณจากเพดานไม่เกิน 10% ของเงินได้พึงประเมินหลังหักค่าใช้จ่ายและค่าลดหย่อนอื่นทั้งหมด
                 </div>
+
+                {maxDonationCap === 0 && (
+                  <div className="donation-status-note" style={{ color: '#64748b', marginTop: '6px' }}>
+                    💡 <em>หมายเหตุ: เพดานบริจาคจะคำนวณจาก 10% ของเงินได้สุทธิขั้นต้น หากยังไม่ได้ระบุรายได้ในส่วนที่ 1 เพดานจะเป็น 0 บาท เมื่อกรอกเงินได้แล้ว ระบบจะคำนวณสิทธิให้อัตโนมัติ</em>
+                  </div>
+                )}
 
                 {rawDonationClaim > maxDonationCap && maxDonationCap > 0 && (
                   <div className="donation-ceiling-warning" id="donation-cap-warning">

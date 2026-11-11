@@ -387,6 +387,67 @@ test('Scenario 16: simulateTaxSavings transforms tax payable into tax refund', (
   assert.equal(sim.newBalance, -1500);
 });
 
+test('Scenario 17: calculateTaxFromFormData handles all user deductions and statutory caps accurately', () => {
+  // Monthly salary 100,000 = 1,200,000/yr.
+  // Expense deduction: 100,000 (50% max 100,000).
+  // Deductions:
+  // - personal: 60,000
+  // - spouse: 60,000
+  // - child: 30,000
+  // - parents (4 people): 120,000
+  // - social security: 9,000
+  // - insurance: 50,000
+  // - investment fund: 100,000
+  // - home loan interest: 80,000
+  // Pre-donation total = 509,000 THB.
+  // Remaining before donation = 1,200,000 - 100,000 - 509,000 = 591,000 THB.
+  // Donation 10% cap = 59,100 THB.
+  // Education donation (2x) = 10,000 * 2 = 20,000. General donation (1x) = 5,000.
+  // Total eligible donation = 25,000 <= 59,100 -> full 25,000 deducted.
+  // Total deduction = 509,000 + 25,000 = 534,000 THB.
+  // Net taxable income = 1,200,000 - 100,000 - 534,000 = 566,000 THB.
+  // Tax = 0 + 7,500 + 20,000 + (66,000 * 0.15 = 9,900) = 37,400 THB.
+  const res = calculateTaxFromFormData({
+    monthlyIncome: 100000,
+    freelanceIncome: 0,
+    withholdingTax: 10000,
+    personalAllowance: { enabled: true, amount: 60000 },
+    spouseAllowance: { enabled: true, amount: 60000 },
+    childAllowance: { enabled: true, amount: 30000 },
+    parentAllowance: { 
+      enabled: true, 
+      ownFather: true, 
+      ownMother: true, 
+      spouseFather: true, 
+      spouseMother: true 
+    },
+    socialSecurity: { enabled: true, amount: 9000 },
+    insurance: { enabled: true, amount: 50000 },
+    investmentFund: { enabled: true, amount: 100000 },
+    homeLoanInterest: { enabled: true, amount: 80000 },
+    donationEducation: { enabled: true, amount: 10000 },
+    donationGeneral: { enabled: true, amount: 5000 }
+  });
+
+  assert.equal(res.sumIncome, 1200000);
+  assert.equal(res.expenseDeduction, 100000);
+  assert.equal(res.itemizedDeductions.personal, 60000);
+  assert.equal(res.itemizedDeductions.spouse, 60000);
+  assert.equal(res.itemizedDeductions.child, 30000);
+  assert.equal(res.itemizedDeductions.parentAllowance, 120000);
+  assert.equal(res.itemizedDeductions.socialSecurity, 9000);
+  assert.equal(res.itemizedDeductions.insurance, 50000);
+  assert.equal(res.itemizedDeductions.investmentFund, 100000);
+  assert.equal(res.itemizedDeductions.homeLoanInterest, 80000);
+  assert.equal(res.itemizedDeductions.donation, 25000);
+  assert.equal(res.totalDeduction, 534000);
+  assert.equal(res.netIncome, 566000);
+  assert.equal(res.finalTax, 37400);
+  assert.equal(res.withholdingTax, 10000);
+  assert.equal(res.payableAmount, 27400);
+  assert.equal(res.status, 'payable');
+});
+
 
 
 
