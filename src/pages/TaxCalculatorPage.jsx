@@ -204,6 +204,23 @@ function TaxCalculatorPage() {
       const current = prev[field] || {};
       const updated = { ...current, [key]: value };
 
+      if (key === 'amount') {
+        const STATUTORY_FIELD_CAPS = {
+          socialSecurity: 9000,
+          insurance: 100000,
+          homeLoanInterest: 100000,
+          investmentFund: 500000,
+          spouseAllowance: 60000,
+          personalAllowance: 60000,
+        };
+        const cap = STATUTORY_FIELD_CAPS[field];
+        if (cap !== undefined) {
+          updated.amount = Math.min(Math.max(0, Number(value) || 0), cap);
+        } else {
+          updated.amount = Math.max(0, Number(value) || 0);
+        }
+      }
+
       if (key === 'enabled') {
         if (field === 'spouseAllowance') {
           updated.amount = value ? 60000 : 0;

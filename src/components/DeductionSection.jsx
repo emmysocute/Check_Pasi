@@ -15,6 +15,13 @@ import {
 } from 'lucide-react';
 import { blockInvalidChars, parseFormattedNumber, formatNumberWithCommas } from '../utils/numberInput';
 
+const STATUTORY_INPUT_CAPS = {
+  socialSecurity: 9000,
+  insurance: 100000,
+  homeLoanInterest: 100000,
+  investmentFund: 500000,
+};
+
 const DEDUCTION_TABS = [
   { id: 'family', label: 'ตนเองและครอบครัว', icon: Users },
   { id: 'insuranceSavings', label: 'ประกันและการออม', icon: ShieldCheck },
@@ -521,17 +528,36 @@ function DeductionSection({
                             <span className="parent-check-sub">+30,000 บ.</span>
                           </span>
                         </label>
+
+                        {/* Prominent Parent Summary Card */}
+                        <div className="parent-summary-card">
+                          <div className="parent-summary-left">
+                            <div className="parent-summary-label">
+                              <Lock size={13} />
+                              <span>ยอดรวมลดหย่อนบิดามารดา (คำนวณอัตโนมัติ)</span>
+                            </div>
+                            <div className="parent-summary-details">
+                              {effectiveParentBreakdown.count > 0 ? (
+                                <span>
+                                  เลือกแล้ว {effectiveParentBreakdown.count} ท่าน 
+                                  (ตนเอง {(item.ownFather ? 1 : 0) + (item.ownMother ? 1 : 0)} ท่าน, คู่สมรส {(item.spouseFather ? 1 : 0) + (item.spouseMother ? 1 : 0)} ท่าน)
+                                </span>
+                              ) : (
+                                <span>ยังไม่ได้เลือกใช้สิทธิบิดามารดา (0 ท่าน)</span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="parent-summary-amount">
+                            ฿{effectiveParentBreakdown.total.toLocaleString('th-TH')} บาท
+                          </div>
+                        </div>
                       </div>
                     ) : (
-                      <div className="input-wrapper disabled">
-                        <input
-                          type="text"
-                          value="0"
-                          disabled
-                          readOnly
-                          aria-label="ค่าอุปการะเลี้ยงดูบิดามารดา ปิดการใช้งาน"
-                        />
-                        <span className="input-suffix">บาท</span>
+                      <div className="statutory-amount-box">
+                        <span className="statutory-amount-val" style={{ color: 'var(--gray-400)' }}>฿0</span>
+                        <span className="statutory-amount-suffix" style={{ color: 'var(--gray-500)' }}>
+                          บาท (ปิดการใช้งาน — เปิดสวิตช์ด้านบนเพื่อระบุบิดามารดาที่ใช้สิทธิ)
+                        </span>
                       </div>
                     )
                   ) : (
@@ -543,7 +569,22 @@ function DeductionSection({
                           inputMode="numeric"
                           id={`input-${d.key}`}
                           value={formatNumberWithCommas(item.amount)}
-                          onChange={(e) => handleAmountChange(d.key, parseFormattedNumber(e.target.value))}
+                          onChange={(e) => {
+                            const parsed = parseFormattedNumber(e.target.value);
+                            const cap = STATUTORY_INPUT_CAPS[d.key];
+                            if (cap !== undefined && parsed > cap) {
+                              handleAmountChange(d.key, cap);
+                            } else {
+                              handleAmountChange(d.key, parsed);
+                            }
+                          }}
+                          onBlur={() => {
+                            const cap = STATUTORY_INPUT_CAPS[d.key];
+                            const current = Number(item.amount) || 0;
+                            if (cap !== undefined && current > cap) {
+                              handleAmountChange(d.key, cap);
+                            }
+                          }}
                           onKeyDown={blockInvalidChars}
                           disabled={!item.enabled}
                           placeholder="0"
@@ -553,34 +594,12 @@ function DeductionSection({
                         <span className="input-suffix">บาท</span>
                       </div>
 
-                      {d.key === 'socialSecurity' && item.enabled && Number(item.amount) > 9000 && (
-                        <div className="statutory-cap-pill">
-                          💡 <strong>จำกัดตามกฎหมาย:</strong> ผู้ประกันตน ม.33 หักได้สูงสุดไม่เกิน 9,000 บาท/ปี (ระบบใช้สิทธิ 9,000 บ. ในการคำนวณ)
-                        </div>
-                      )}
-                      {d.key === 'insurance' && item.enabled && Number(item.amount) > 100000 && (
-                        <div className="statutory-cap-pill">
-                          💡 <strong>จำกัดตามกฎหมาย:</strong> เบี้ยประกันชีวิตและสุขภาพตนเองหักได้สูงสุดไม่เกิน 100,000 บาท (ระบบใช้สิทธิ 100,000 บ. ในการคำนวณ)
-                        </div>
-                      )}
-                      {d.key === 'homeLoanInterest' && item.enabled && Number(item.amount) > 100000 && (
-                        <div className="statutory-cap-pill">
-                          💡 <strong>จำกัดตามกฎหมาย:</strong> ดอกเบี้ยเงินกู้ยืมเพื่อที่อยู่อาศัยหักได้สูงสุดไม่เกิน 100,000 บาท (ระบบใช้สิทธิ 100,000 บ. ในการคำนวณ)
-                        </div>
-                      )}
-                      {d.key === 'investmentFund' && item.enabled && Number(item.amount) > 500000 && (
-                        <div className="statutory-cap-pill">
-                          💡 <strong>จำกัดตามกฎหมาย:</strong> กองทุนเกษียณรวมกันหักได้สูงสุดไม่เกิน 500,000 บาท (ระบบใช้สิทธิ 500,000 บ. ในการคำนวณ)
+                      {STATUTORY_INPUT_CAPS[d.key] && item.enabled && Number(item.amount) >= STATUTORY_INPUT_CAPS[d.key] && (
+                        <div className="statutory-cap-pill is-capped">
+                          ✓ <strong>จำกัดตามกฎหมายสรรพากร:</strong> ปรับเป็นยอดลดหย่อนสูงสุด {STATUTORY_INPUT_CAPS[d.key].toLocaleString('th-TH')} บาท/ปี เรียบร้อยแล้ว
                         </div>
                       )}
                     </>
-                  )}
-
-                  {isParentItem && item.enabled && effectiveParentBreakdown.count > 0 && (
-                    <div className="parent-summary-bar">
-                      <span>รวมสิทธิบิดามารดา ({effectiveParentBreakdown.count} ท่าน):</span>
-                      <strong>{effectiveParentBreakdown.total.toLocaleString('th-TH')} บาท</strong>
-                    </div>
                   )}
 
                   {d.hint && (
