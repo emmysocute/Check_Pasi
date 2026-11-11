@@ -161,10 +161,10 @@ function TaxCalculatorPage() {
       const current = prev[field] || {};
       const updated = { ...current, [key]: value };
 
-      if (key === 'enabled' && value === true && (!current.amount || current.amount === 0)) {
+      if (key === 'enabled') {
         if (field === 'spouseAllowance') {
-          updated.amount = 60000;
-        } else if (field === 'socialSecurity') {
+          updated.amount = value ? 60000 : 0;
+        } else if (field === 'socialSecurity' && value === true && (!current.amount || current.amount === 0)) {
           updated.amount = 9000;
         }
       }
@@ -306,6 +306,7 @@ function TaxCalculatorPage() {
             onChange={(field, val) => updateDeduction(field, 'amount', val)}
             onAmountChange={(field, val) => updateDeduction(field, 'amount', val)}
             onParentToggle={updateParentAllowance}
+            itemizedDeductions={taxResult.itemizedDeductions}
             maxDonationCap={taxResult.maxDonationCap}
             rawDonationClaim={taxResult.rawDonationClaim}
             actualDonationDeduction={taxResult.itemizedDeductions?.donation || 0}

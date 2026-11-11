@@ -127,6 +127,7 @@ function DeductionSection({
   onAmountChange,
   onParentToggle, 
   parentBreakdown,
+  itemizedDeductions,
   rawDonationClaim = 0,
   maxDonationCap = Infinity,
   actualDonationDeduction = 0,
@@ -144,6 +145,20 @@ function DeductionSection({
   }, [parentBreakdown, formData?.parentAllowance]);
 
   const tabTotals = useMemo(() => {
+    if (itemizedDeductions) {
+      return {
+        family: (itemizedDeductions.personal || 0) + 
+                (itemizedDeductions.spouse || 0) + 
+                (itemizedDeductions.child || 0) + 
+                (itemizedDeductions.parentAllowance || 0),
+        insuranceSavings: (itemizedDeductions.insurance || 0) + 
+                          (itemizedDeductions.socialSecurity || 0) + 
+                          (itemizedDeductions.investmentFund || 0),
+        property: itemizedDeductions.homeLoanInterest || 0,
+        donation: itemizedDeductions.donation || 0,
+      };
+    }
+
     const totals = {
       family: 0,
       insuranceSavings: 0,
@@ -156,6 +171,8 @@ function DeductionSection({
       if (item && item.enabled) {
         if (d.key === 'parentAllowance') {
           totals.family += effectiveParentBreakdown.total;
+        } else if (d.key === 'personalAllowance' || d.key === 'spouseAllowance') {
+          totals.family += 60000;
         } else if (d.tab === 'donation') {
           // Handled via actualDonationDeduction passed from parent engine
         } else {
@@ -166,7 +183,7 @@ function DeductionSection({
 
     totals.donation = actualDonationDeduction || 0;
     return totals;
-  }, [formData, effectiveParentBreakdown, actualDonationDeduction]);
+  }, [itemizedDeductions, formData, effectiveParentBreakdown, actualDonationDeduction]);
 
   const filteredDeductions = useMemo(() => {
     return ALL_DEDUCTIONS.filter((d) => d.tab === activeTab);
@@ -261,6 +278,25 @@ function DeductionSection({
                       <span className="statutory-amount-val">60,000</span>
                       <span className="statutory-amount-suffix">บาท (หักลบรายได้อัตโนมัติ)</span>
                     </div>
+                  ) : d.key === 'spouseAllowance' ? (
+                    item.enabled ? (
+                      <div className="statutory-amount-box">
+                        <span className="statutory-amount-val">60,000</span>
+                        <span className="statutory-amount-suffix">บาท (สิทธิเหมาจ่ายตามกฎหมาย ม.47(1)(ข))</span>
+                      </div>
+                    ) : (
+                      <div className="input-wrapper disabled">
+                        <span className="input-prefix" aria-hidden="true">฿</span>
+                        <input
+                          type="text"
+                          value="0"
+                          disabled
+                          readOnly
+                          aria-label="ลดหย่อนคู่สมรส ปิดการใช้งาน"
+                        />
+                        <span className="input-suffix">บาท</span>
+                      </div>
+                    )
                   ) : isParentItem ? (
                     item.enabled ? (
                       <div className="parent-checkbox-container">
@@ -329,22 +365,82 @@ function DeductionSection({
                       </div>
                     )
                   ) : (
-                    <div className={`input-wrapper ${!item.enabled ? 'disabled' : ''}`}>
-                      <span className="input-prefix" aria-hidden="true">฿</span>
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        id={`input-${d.key}`}
-                        value={formatNumberWithCommas(item.amount)}
-                        onChange={(e) => handleAmountChange(d.key, parseFormattedNumber(e.target.value))}
-                        onKeyDown={blockInvalidChars}
-                        disabled={!item.enabled}
-                        placeholder="0"
-                        autoComplete="off"
-                        aria-label={`จำนวนเงิน ${d.label}`}
-                      />
-                      <span className="input-suffix">บาท</span>
-                    </div>
+                    <>
+                      <div className={`input-wrapper ${!item.enabled ? 'disabled' : ''}`}>
+                        <span className="input-prefix" aria-hidden="true">฿</span>
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          id={`input-${d.key}`}
+                          value={formatNumberWithCommas(item.amount)}
+                          onChange={(e) => handleAmountChange(d.key, parseFormattedNumber(e.target.value))}
+                          onKeyDown={blockInvalidChars}
+                          disabled={!item.enabled}
+                          placeholder="0"
+                          autoComplete="off"
+                          aria-label={`จำนวนเงิน ${d.label}`}
+                        />
+                        <span className="input-suffix">บาท</span>
+                      </div>
+
+                      {d.key === 'childAllowance' && item.enabled && (
+                        <div className="quick-child-chips" style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '6px' }}>
+                          <button
+                            type="button"
+                            className="btn btn-outline"
+                            style={{ padding: '2px 8px', fontSize: '11px', height: '24px' }}
+                            onClick={() => handleAmountChange('childAllowance', 30000)}
+                          >
+                            1 คน (30,000 บ.)
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-outline"
+                            style={{ padding: '2px 8px', fontSize: '11px', height: '24px' }}
+                            onClick={() => handleAmountChange('childAllowance', 60000)}
+                          >
+                            2 คน (60,000 บ.)
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-outline"
+                            style={{ padding: '2px 8px', fontSize: '11px', height: '24px' }}
+                            onClick={() => handleAmountChange('childAllowance', 90000)}
+                          >
+                            2 คน (หลังปี 61) (90,000 บ.)
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-outline"
+                            style={{ padding: '2px 8px', fontSize: '11px', height: '24px' }}
+                            onClick={() => handleAmountChange('childAllowance', 120000)}
+                          >
+                            3 คน (120,000 บ.)
+                          </button>
+                        </div>
+                      )}
+
+                      {d.key === 'socialSecurity' && item.enabled && Number(item.amount) > 9000 && (
+                        <div className="statutory-cap-pill">
+                          💡 <strong>จำกัดตามกฎหมาย:</strong> ผู้ประกันตน ม.33 หักได้สูงสุดไม่เกิน 9,000 บาท/ปี (ระบบใช้สิทธิ 9,000 บ. ในการคำนวณ)
+                        </div>
+                      )}
+                      {d.key === 'insurance' && item.enabled && Number(item.amount) > 100000 && (
+                        <div className="statutory-cap-pill">
+                          💡 <strong>จำกัดตามกฎหมาย:</strong> เบี้ยประกันชีวิตและสุขภาพตนเองหักได้สูงสุดไม่เกิน 100,000 บาท (ระบบใช้สิทธิ 100,000 บ. ในการคำนวณ)
+                        </div>
+                      )}
+                      {d.key === 'homeLoanInterest' && item.enabled && Number(item.amount) > 100000 && (
+                        <div className="statutory-cap-pill">
+                          💡 <strong>จำกัดตามกฎหมาย:</strong> ดอกเบี้ยเงินกู้ยืมเพื่อที่อยู่อาศัยหักได้สูงสุดไม่เกิน 100,000 บาท (ระบบใช้สิทธิ 100,000 บ. ในการคำนวณ)
+                        </div>
+                      )}
+                      {d.key === 'investmentFund' && item.enabled && Number(item.amount) > 500000 && (
+                        <div className="statutory-cap-pill">
+                          💡 <strong>จำกัดตามกฎหมาย:</strong> กองทุนเกษียณรวมกันหักได้สูงสุดไม่เกิน 500,000 บาท (ระบบใช้สิทธิ 500,000 บ. ในการคำนวณ)
+                        </div>
+                      )}
+                    </>
                   )}
 
                   {isParentItem && item.enabled && effectiveParentBreakdown.count > 0 && (

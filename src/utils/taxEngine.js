@@ -39,7 +39,7 @@ export function calculateTax(params = {}) {
   // 2. Personal and Family Allowances
   const personal = sanitizeNumber(params.personalAllowance, 60000);
   const spouse = sanitizeNumber(params.spouseAllowance, 60000);
-  const child = sanitizeNumber(params.childAllowance);
+  const child = Math.min(sanitizeNumber(params.childAllowance), 600000);
 
   // 3. Insurance & Social Security
   // Life & Health Insurance combined cap: 100,000 THB
