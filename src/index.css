@@ -3201,7 +3201,8 @@ a.btn-primary *,
 
 /* ===== Deduction Grid Desktop/Tablet Span ===== */
 @media (min-width: 768px) {
-  .deduction-item.parent-allowance-item {
+  .deduction-item.parent-allowance-item,
+  .deduction-item.child-allowance-item {
     grid-column: 1 / -1;
   }
 }
@@ -3314,7 +3315,7 @@ a.btn-primary *,
 .child-stepper-container {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   background: var(--gray-50);
   border: 1px solid var(--gray-200);
   border-radius: var(--radius-md);
@@ -3322,57 +3323,68 @@ a.btn-primary *,
   margin-top: 4px;
 }
 
-.child-stepper-row {
+.child-stepper-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.child-stepper-card {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   justify-content: space-between;
-  padding: 10px 12px;
+  padding: 12px;
   background: #ffffff;
   border: 1px solid var(--gray-200);
   border-radius: var(--radius-sm);
   transition: all 0.15s ease;
-  gap: 12px;
+  min-height: 106px;
 }
 
-.child-stepper-row:hover {
+.child-stepper-card:hover {
   border-color: var(--primary-300);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
-.child-stepper-info {
+.child-stepper-card-header {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  flex: 1;
-  min-width: 0;
 }
 
 .child-stepper-title {
   font-size: 13px;
   font-weight: 500;
   color: var(--gray-800);
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  line-height: 1.35;
 }
 
 .child-stepper-rate {
   font-size: 11.5px;
   color: var(--gray-500);
+  margin-top: 2px;
+}
+
+.child-stepper-card-body {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  gap: 8px;
 }
 
 .child-stepper-controls {
   display: flex;
   align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
+  gap: 6px;
 }
 
 .stepper-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--gray-300);
   background: #ffffff;
@@ -3389,7 +3401,7 @@ a.btn-primary *,
 }
 
 .stepper-btn:disabled {
-  opacity: 0.4;
+  opacity: 0.35;
   cursor: not-allowed;
   background: var(--gray-100);
   border-color: var(--gray-200);
@@ -3400,7 +3412,7 @@ a.btn-primary *,
   display: flex;
   align-items: baseline;
   justify-content: center;
-  min-width: 44px;
+  min-width: 38px;
   text-align: center;
 }
 
@@ -3408,18 +3420,18 @@ a.btn-primary *,
   font-size: 15px;
   font-weight: 600;
   color: var(--gray-900);
-  min-width: 20px;
+  min-width: 18px;
   text-align: center;
 }
 
 .stepper-unit {
-  font-size: 12px;
+  font-size: 11.5px;
   color: var(--gray-500);
   margin-left: 2px;
 }
 
 .child-subtotal-badge {
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--primary-600);
   background: var(--primary-50);
@@ -3427,8 +3439,6 @@ a.btn-primary *,
   padding: 3px 8px;
   border-radius: var(--radius-full);
   white-space: nowrap;
-  min-width: 68px;
-  text-align: right;
 }
 
 .child-warning-note {
@@ -3445,11 +3455,10 @@ a.btn-primary *,
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 14px;
+  padding: 10px 16px;
   background: #f0fdf4;
   border: 1px solid #86efac;
   border-radius: var(--radius-sm);
-  margin-top: 2px;
   box-shadow: 0 1px 2px rgba(16, 185, 129, 0.05);
 }
 
@@ -3481,15 +3490,22 @@ a.btn-primary *,
   white-space: nowrap;
 }
 
-@media (max-width: 479px) {
-  .child-stepper-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
+.child-allowance-item .deduction-hints {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 4px 16px;
+  margin-top: 10px;
+}
+
+@media (max-width: 899px) {
+  .child-stepper-grid {
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
   }
-  .child-stepper-controls {
-    width: 100%;
-    justify-content: space-between;
+}
+
+@media (max-width: 599px) {
+  .child-stepper-grid {
+    grid-template-columns: 1fr;
   }
   .child-summary-card {
     flex-direction: column;
