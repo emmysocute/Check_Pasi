@@ -20,7 +20,13 @@ const DEFAULT_STATE = {
   employmentType: 'salary',
   personalAllowance: { enabled: true, amount: 60000 },
   spouseAllowance: { enabled: false, amount: 0 },
-  childAllowance: { enabled: false, amount: 0 },
+  childAllowance: { 
+    enabled: false, 
+    countBefore2561: 0, 
+    countAfter2561: 0, 
+    countAdopted: 0, 
+    amount: 0 
+  },
   insurance: { enabled: false, amount: 0 },
   socialSecurity: { enabled: false, amount: 0 },
   investmentFund: { enabled: false, amount: 0 },
@@ -37,6 +43,40 @@ const DEFAULT_STATE = {
   donationGeneral: { enabled: false, amount: 0 },
 };
 
+function deduceChildCounts(childAllowanceAmount) {
+  const amt = Number(childAllowanceAmount) || 0;
+  if (amt <= 0) {
+    return { countBefore2561: 0, countAfter2561: 0, countAdopted: 0, amount: 0 };
+  }
+  let countBefore2561 = 0;
+  let countAfter2561 = 0;
+  const countAdopted = 0;
+
+  if (amt === 30000) {
+    countBefore2561 = 1;
+  } else if (amt === 60000) {
+    countBefore2561 = 2;
+  } else if (amt === 90000) {
+    countBefore2561 = 1;
+    countAfter2561 = 1;
+  } else if (amt === 120000) {
+    countBefore2561 = 2;
+    countAfter2561 = 1;
+  } else if (amt === 150000) {
+    countBefore2561 = 1;
+    countAfter2561 = 2;
+  } else {
+    countBefore2561 = Math.floor(amt / 30000);
+  }
+
+  return {
+    countBefore2561,
+    countAfter2561,
+    countAdopted,
+    amount: amt,
+  };
+}
+
 function mapRecordToFormData(record) {
   if (!record) return DEFAULT_STATE;
   return {
@@ -46,7 +86,10 @@ function mapRecordToFormData(record) {
     employmentType: record.employment_type || 'salary',
     personalAllowance: { enabled: Number(record.personal_allowance) > 0, amount: Number(record.personal_allowance) || 60000 },
     spouseAllowance: { enabled: Number(record.spouse_allowance) > 0, amount: Number(record.spouse_allowance) || 60000 },
-    childAllowance: { enabled: Number(record.child_allowance) > 0, amount: Number(record.child_allowance) || 0 },
+    childAllowance: { 
+      enabled: Number(record.child_allowance) > 0, 
+      ...deduceChildCounts(record.child_allowance) 
+    },
     insurance: { enabled: Number(record.insurance) > 0, amount: Math.min(Number(record.insurance) || 0, 100000) },
     socialSecurity: { enabled: Number(record.social_security) > 0, amount: Math.min(Number(record.social_security) || 0, 9000) },
     investmentFund: { enabled: Number(record.investment_fund) > 0, amount: Number(record.investment_fund) || 0 },
@@ -164,6 +207,22 @@ function TaxCalculatorPage() {
       if (key === 'enabled') {
         if (field === 'spouseAllowance') {
           updated.amount = value ? 60000 : 0;
+        } else if (field === 'childAllowance') {
+          if (value) {
+            const b = current.countBefore2561 ?? 0;
+            const a = current.countAfter2561 ?? 0;
+            const ad = current.countAdopted ?? 0;
+            if (b === 0 && a === 0 && ad === 0) {
+              updated.countBefore2561 = 1;
+              updated.countAfter2561 = 0;
+              updated.countAdopted = 0;
+              updated.amount = 30000;
+            } else {
+              updated.amount = (b * 30000) + (a * 60000) + (ad * 30000);
+            }
+          } else {
+            updated.amount = 0;
+          }
         } else if (field === 'socialSecurity' && value === true && (!current.amount || current.amount === 0)) {
           updated.amount = 9000;
         }
@@ -172,6 +231,53 @@ function TaxCalculatorPage() {
       return {
         ...prev,
         [field]: updated
+      };
+    });
+  }, []);
+
+  const updateChildCount = useCallback((key, newCount) => {
+    setFormData(prev => {
+      const current = prev.childAllowance || {
+        enabled: true,
+        countBefore2561: 0,
+        countAfter2561: 0,
+        countAdopted: 0,
+        amount: 0,
+      };
+
+      let countBefore = current.countBefore2561 ?? 0;
+      let countAfter = current.countAfter2561 ?? 0;
+      let countAdopted = current.countAdopted ?? 0;
+
+      const sanitizedCount = Math.max(0, Number(newCount) || 0);
+
+      if (key === 'countBefore2561') {
+        countBefore = sanitizedCount;
+      } else if (key === 'countAfter2561') {
+        countAfter = sanitizedCount;
+      } else if (key === 'countAdopted') {
+        countAdopted = sanitizedCount;
+      }
+
+      // Legal constraint: adopted children max 3 total when combined with biological
+      const maxAdopted = Math.max(0, 3 - (countBefore + countAfter));
+      if (countAdopted > maxAdopted) {
+        countAdopted = maxAdopted;
+      }
+
+      const totalCount = countBefore + countAfter + countAdopted;
+      const amount = (countBefore * 30000) + (countAfter * 60000) + (countAdopted * 30000);
+
+      return {
+        ...prev,
+        childAllowance: {
+          ...current,
+          countBefore2561: countBefore,
+          countAfter2561: countAfter,
+          countAdopted,
+          amount,
+          enabled: totalCount > 0 ? true : current.enabled,
+        }
       };
     });
   }, []);
@@ -306,6 +412,7 @@ function TaxCalculatorPage() {
             onChange={(field, val) => updateDeduction(field, 'amount', val)}
             onAmountChange={(field, val) => updateDeduction(field, 'amount', val)}
             onParentToggle={updateParentAllowance}
+            onChildCountChange={updateChildCount}
             itemizedDeductions={taxResult.itemizedDeductions}
             maxDonationCap={taxResult.maxDonationCap}
             rawDonationClaim={taxResult.rawDonationClaim}

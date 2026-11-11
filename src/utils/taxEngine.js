@@ -191,13 +191,27 @@ export function calculateTaxFromFormData(formData = {}) {
     }
   }
 
+  let childAllowance = 0;
+  if (formData.childAllowance?.enabled) {
+    const c = formData.childAllowance;
+    if (c.countBefore2561 !== undefined || c.countAfter2561 !== undefined || c.countAdopted !== undefined) {
+      const b = Math.max(0, Number(c.countBefore2561) || 0);
+      const a = Math.max(0, Number(c.countAfter2561) || 0);
+      const ad = Math.max(0, Number(c.countAdopted) || 0);
+      const validAdopted = Math.min(ad, Math.max(0, 3 - (b + a)));
+      childAllowance = (b * 30000) + (a * 60000) + (validAdopted * 30000);
+    } else {
+      childAllowance = Math.max(0, Number(c.amount) || 0);
+    }
+  }
+
   const params = {
     monthlyIncome: formData.monthlyIncome || 0,
     freelanceIncome: formData.freelanceIncome || 0,
     withholdingTax: formData.withholdingTax || 0,
     personalAllowance: formData.personalAllowance?.enabled ? formData.personalAllowance.amount : 0,
     spouseAllowance: formData.spouseAllowance?.enabled ? formData.spouseAllowance.amount : 0,
-    childAllowance: formData.childAllowance?.enabled ? formData.childAllowance.amount : 0,
+    childAllowance,
     insurance: formData.insurance?.enabled ? formData.insurance.amount : 0,
     socialSecurity: formData.socialSecurity?.enabled ? formData.socialSecurity.amount : 0,
     investmentFund: formData.investmentFund?.enabled ? formData.investmentFund.amount : 0,

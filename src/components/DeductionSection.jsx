@@ -9,6 +9,9 @@ import {
   ArrowLeft,
   CheckCircle2,
   Check,
+  Minus,
+  Plus,
+  Lock,
 } from 'lucide-react';
 import { blockInvalidChars, parseFormattedNumber, formatNumberWithCommas } from '../utils/numberInput';
 
@@ -128,7 +131,8 @@ function DeductionSection({
   onToggle, 
   onChange, 
   onAmountChange,
-  onParentToggle, 
+  onParentToggle,
+  onChildCountChange,
   parentBreakdown,
   itemizedDeductions,
   rawDonationClaim = 0,
@@ -176,6 +180,12 @@ function DeductionSection({
           totals.family += effectiveParentBreakdown.total;
         } else if (d.key === 'personalAllowance' || d.key === 'spouseAllowance') {
           totals.family += 60000;
+        } else if (d.key === 'childAllowance') {
+          const b = Number(item.countBefore2561) || 0;
+          const a = Number(item.countAfter2561) || 0;
+          const ad = Number(item.countAdopted) || 0;
+          const computedChild = (b * 30000) + (a * 60000) + (ad * 30000);
+          totals.family += computedChild || Number(item.amount) || 0;
         } else if (d.tab === 'donation') {
           // Handled via actualDonationDeduction passed from parent engine
         } else {
@@ -300,6 +310,160 @@ function DeductionSection({
                         <span className="input-suffix">บาท</span>
                       </div>
                     )
+                  ) : d.key === 'childAllowance' ? (
+                    item.enabled ? (
+                      <div className="child-stepper-container">
+                        {/* 1. บุตรคนแรก / เกิดก่อนปี 2561 */}
+                        <div className="child-stepper-row">
+                          <div className="child-stepper-info">
+                            <span className="child-stepper-title">
+                              บุตรคนแรก หรือเกิดก่อนปี 2561
+                            </span>
+                            <span className="child-stepper-rate">
+                              ลดหย่อน 30,000 บาท / คน
+                            </span>
+                          </div>
+                          <div className="child-stepper-controls">
+                            <button
+                              type="button"
+                              className="stepper-btn"
+                              disabled={!item.countBefore2561 || item.countBefore2561 <= 0}
+                              onClick={() => onChildCountChange && onChildCountChange('countBefore2561', Math.max(0, (item.countBefore2561 || 0) - 1))}
+                              aria-label="ลดจำนวนบุตรคนแรกหรือเกิดก่อนปี 2561"
+                            >
+                              <Minus size={14} />
+                            </button>
+                            <div className="stepper-display">
+                              <span className="stepper-value">{item.countBefore2561 || 0}</span>
+                              <span className="stepper-unit">คน</span>
+                            </div>
+                            <button
+                              type="button"
+                              className="stepper-btn"
+                              onClick={() => onChildCountChange && onChildCountChange('countBefore2561', (item.countBefore2561 || 0) + 1)}
+                              aria-label="เพิ่มจำนวนบุตรคนแรกหรือเกิดก่อนปี 2561"
+                            >
+                              <Plus size={14} />
+                            </button>
+                            <span className="child-subtotal-badge">
+                              ฿{((item.countBefore2561 || 0) * 30000).toLocaleString('th-TH')}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* 2. บุตรคนที่ 2 เป็นต้นไป (เกิดปี 2561 ขึ้นไป) */}
+                        <div className="child-stepper-row">
+                          <div className="child-stepper-info">
+                            <span className="child-stepper-title">
+                              บุตรคนที่ 2 เป็นต้นไป (เกิดปี 2561 ขึ้นไป)
+                            </span>
+                            <span className="child-stepper-rate">
+                              ลดหย่อน 60,000 บาท / คน (ตาม ม.47(1)(ค))
+                            </span>
+                          </div>
+                          <div className="child-stepper-controls">
+                            <button
+                              type="button"
+                              className="stepper-btn"
+                              disabled={!item.countAfter2561 || item.countAfter2561 <= 0}
+                              onClick={() => onChildCountChange && onChildCountChange('countAfter2561', Math.max(0, (item.countAfter2561 || 0) - 1))}
+                              aria-label="ลดจำนวนบุตรคนที่ 2 ขึ้นไปเกิดปี 2561 ขึ้นไป"
+                            >
+                              <Minus size={14} />
+                            </button>
+                            <div className="stepper-display">
+                              <span className="stepper-value">{item.countAfter2561 || 0}</span>
+                              <span className="stepper-unit">คน</span>
+                            </div>
+                            <button
+                              type="button"
+                              className="stepper-btn"
+                              onClick={() => onChildCountChange && onChildCountChange('countAfter2561', (item.countAfter2561 || 0) + 1)}
+                              aria-label="เพิ่มจำนวนบุตรคนที่ 2 ขึ้นไปเกิดปี 2561 ขึ้นไป"
+                            >
+                              <Plus size={14} />
+                            </button>
+                            <span className="child-subtotal-badge">
+                              ฿{((item.countAfter2561 || 0) * 60000).toLocaleString('th-TH')}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* 3. บุตรบุญธรรม */}
+                        <div className="child-stepper-row">
+                          <div className="child-stepper-info">
+                            <span className="child-stepper-title">
+                              บุตรบุญธรรม
+                            </span>
+                            <span className="child-stepper-rate">
+                              ลดหย่อน 30,000 บาท / คน (สูงสุดไม่เกิน 3 คน)
+                            </span>
+                          </div>
+                          <div className="child-stepper-controls">
+                            <button
+                              type="button"
+                              className="stepper-btn"
+                              disabled={!item.countAdopted || item.countAdopted <= 0}
+                              onClick={() => onChildCountChange && onChildCountChange('countAdopted', Math.max(0, (item.countAdopted || 0) - 1))}
+                              aria-label="ลดจำนวนบุตรบุญธรรม"
+                            >
+                              <Minus size={14} />
+                            </button>
+                            <div className="stepper-display">
+                              <span className="stepper-value">{item.countAdopted || 0}</span>
+                              <span className="stepper-unit">คน</span>
+                            </div>
+                            <button
+                              type="button"
+                              className="stepper-btn"
+                              disabled={(item.countAdopted || 0) >= Math.max(0, 3 - ((item.countBefore2561 || 0) + (item.countAfter2561 || 0)))}
+                              onClick={() => onChildCountChange && onChildCountChange('countAdopted', (item.countAdopted || 0) + 1)}
+                              aria-label="เพิ่มจำนวนบุตรบุญธรรม"
+                            >
+                              <Plus size={14} />
+                            </button>
+                            <span className="child-subtotal-badge">
+                              ฿{((item.countAdopted || 0) * 30000).toLocaleString('th-TH')}
+                            </span>
+                          </div>
+                        </div>
+
+                        {((item.countBefore2561 || 0) + (item.countAfter2561 || 0)) >= 3 && (
+                          <div className="child-warning-note">
+                            ⚠️ มีบุตรชอบด้วยกฎหมายตั้งแต่ 3 คนขึ้นไปแล้ว จึงไม่สามารถนำบุตรบุญธรรมมาใช้สิทธิลดหย่อนได้ตามประมวลรัษฎากร
+                          </div>
+                        )}
+
+                        {/* Read-only summary card */}
+                        <div className="child-summary-card">
+                          <div className="child-summary-left">
+                            <div className="child-summary-label">
+                              <Lock size={13} />
+                              <span>ยอดรวมลดหย่อนบุตร (คำนวณอัตโนมัติ)</span>
+                            </div>
+                            <div className="child-summary-details">
+                              รวม {((item.countBefore2561 || 0) + (item.countAfter2561 || 0) + (item.countAdopted || 0))} คน 
+                              (บุตรชอบด้วยกฎหมาย {((item.countBefore2561 || 0) + (item.countAfter2561 || 0))} คน, บุตรบุญธรรม {item.countAdopted || 0} คน)
+                            </div>
+                          </div>
+                          <div className="child-summary-amount">
+                            ฿{(((item.countBefore2561 || 0) * 30000) + ((item.countAfter2561 || 0) * 60000) + ((item.countAdopted || 0) * 30000)).toLocaleString('th-TH')} บาท
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="input-wrapper disabled">
+                        <span className="input-prefix" aria-hidden="true">฿</span>
+                        <input
+                          type="text"
+                          value="0"
+                          disabled
+                          readOnly
+                          aria-label="ลดหย่อนบุตร ปิดการใช้งาน"
+                        />
+                        <span className="input-suffix">บาท</span>
+                      </div>
+                    )
                   ) : isParentItem ? (
                     item.enabled ? (
                       <div className="parent-checkbox-container">
@@ -385,43 +549,6 @@ function DeductionSection({
                         />
                         <span className="input-suffix">บาท</span>
                       </div>
-
-                      {d.key === 'childAllowance' && item.enabled && (
-                        <div className="quick-child-chips" style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '6px' }}>
-                          <button
-                            type="button"
-                            className="btn btn-outline"
-                            style={{ padding: '2px 8px', fontSize: '11px', height: '24px' }}
-                            onClick={() => handleAmountChange('childAllowance', 30000)}
-                          >
-                            1 คน (30,000 บ.)
-                          </button>
-                          <button
-                            type="button"
-                            className="btn btn-outline"
-                            style={{ padding: '2px 8px', fontSize: '11px', height: '24px' }}
-                            onClick={() => handleAmountChange('childAllowance', 60000)}
-                          >
-                            2 คน (60,000 บ.)
-                          </button>
-                          <button
-                            type="button"
-                            className="btn btn-outline"
-                            style={{ padding: '2px 8px', fontSize: '11px', height: '24px' }}
-                            onClick={() => handleAmountChange('childAllowance', 90000)}
-                          >
-                            2 คน (หลังปี 61) (90,000 บ.)
-                          </button>
-                          <button
-                            type="button"
-                            className="btn btn-outline"
-                            style={{ padding: '2px 8px', fontSize: '11px', height: '24px' }}
-                            onClick={() => handleAmountChange('childAllowance', 120000)}
-                          >
-                            3 คน (120,000 บ.)
-                          </button>
-                        </div>
-                      )}
 
                       {d.key === 'socialSecurity' && item.enabled && Number(item.amount) > 9000 && (
                         <div className="statutory-cap-pill">

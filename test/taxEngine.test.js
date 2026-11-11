@@ -448,6 +448,75 @@ test('Scenario 17: calculateTaxFromFormData handles all user deductions and stat
   assert.equal(res.status, 'payable');
 });
 
+test('Scenario 18: Child allowance calculates correctly based on statutory birth rules and child counts', () => {
+  // Case A: 1 child born before 2561 -> 30,000 THB
+  const resA = calculateTaxFromFormData({
+    monthlyIncome: 50000,
+    personalAllowance: { enabled: true, amount: 60000 },
+    childAllowance: {
+      enabled: true,
+      countBefore2561: 1,
+      countAfter2561: 0,
+      countAdopted: 0,
+    },
+  });
+  assert.equal(resA.itemizedDeductions.child, 30000);
+
+  // Case B: 1 child born before 2561 + 1 child born >= 2561 -> 30,000 + 60,000 = 90,000 THB
+  const resB = calculateTaxFromFormData({
+    monthlyIncome: 50000,
+    personalAllowance: { enabled: true, amount: 60000 },
+    childAllowance: {
+      enabled: true,
+      countBefore2561: 1,
+      countAfter2561: 1,
+      countAdopted: 0,
+    },
+  });
+  assert.equal(resB.itemizedDeductions.child, 90000);
+
+  // Case C: 1 child before 2561 + 1 child after 2561 + 1 adopted -> 30,000 + 60,000 + 30,000 = 120,000 THB
+  const resC = calculateTaxFromFormData({
+    monthlyIncome: 50000,
+    personalAllowance: { enabled: true, amount: 60000 },
+    childAllowance: {
+      enabled: true,
+      countBefore2561: 1,
+      countAfter2561: 1,
+      countAdopted: 1,
+    },
+  });
+  assert.equal(resC.itemizedDeductions.child, 120000);
+
+  // Case D: Biological children = 3 (2 before + 1 after) -> adopted is blocked (capped at 0)
+  // Total = 30k*2 + 60k*1 = 120,000 THB
+  const resD = calculateTaxFromFormData({
+    monthlyIncome: 50000,
+    personalAllowance: { enabled: true, amount: 60000 },
+    childAllowance: {
+      enabled: true,
+      countBefore2561: 2,
+      countAfter2561: 1,
+      countAdopted: 2, // Cannot be claimed because biological >= 3
+    },
+  });
+  assert.equal(resD.itemizedDeductions.child, 120000);
+
+  // Case E: Only adopted children, user enters 5 -> capped at 3 adopted (90,000 THB)
+  const resE = calculateTaxFromFormData({
+    monthlyIncome: 50000,
+    personalAllowance: { enabled: true, amount: 60000 },
+    childAllowance: {
+      enabled: true,
+      countBefore2561: 0,
+      countAfter2561: 0,
+      countAdopted: 5,
+    },
+  });
+  assert.equal(resE.itemizedDeductions.child, 90000);
+});
+
+
 
 
 

@@ -3310,6 +3310,197 @@ a.btn-primary *,
   animation: fadeIn 0.2s ease;
 }
 
+/* ===== Child Allowance Stepper & Read-Only Summary ===== */
+.child-stepper-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  margin-top: 4px;
+}
+
+.child-stepper-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: #ffffff;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  transition: all 0.15s ease;
+  gap: 12px;
+}
+
+.child-stepper-row:hover {
+  border-color: var(--primary-300);
+}
+
+.child-stepper-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.child-stepper-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--gray-800);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.child-stepper-rate {
+  font-size: 11.5px;
+  color: var(--gray-500);
+}
+
+.child-stepper-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.stepper-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--gray-300);
+  background: #ffffff;
+  color: var(--gray-700);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.stepper-btn:hover:not(:disabled) {
+  background: var(--primary-50);
+  border-color: var(--primary-500);
+  color: var(--primary-700);
+}
+
+.stepper-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: var(--gray-100);
+  border-color: var(--gray-200);
+  color: var(--gray-400);
+}
+
+.stepper-display {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  min-width: 44px;
+  text-align: center;
+}
+
+.stepper-value {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--gray-900);
+  min-width: 20px;
+  text-align: center;
+}
+
+.stepper-unit {
+  font-size: 12px;
+  color: var(--gray-500);
+  margin-left: 2px;
+}
+
+.child-subtotal-badge {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--primary-600);
+  background: var(--primary-50);
+  border: 1px solid var(--primary-100);
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+  min-width: 68px;
+  text-align: right;
+}
+
+.child-warning-note {
+  font-size: 11.5px;
+  color: #b45309;
+  background: #fef3c7;
+  border: 1px solid #fde68a;
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  line-height: 1.4;
+}
+
+.child-summary-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  border-radius: var(--radius-sm);
+  margin-top: 2px;
+  box-shadow: 0 1px 2px rgba(16, 185, 129, 0.05);
+}
+
+.child-summary-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.child-summary-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #166534;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.child-summary-details {
+  font-size: 11px;
+  color: #15803d;
+}
+
+.child-summary-amount {
+  font-size: 16px;
+  font-weight: 700;
+  color: #15803d;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+@media (max-width: 479px) {
+  .child-stepper-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .child-stepper-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .child-summary-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  .child-summary-amount {
+    align-self: flex-end;
+  }
+}
+
 .donation-double-badge {
   display: flex;
   align-items: center;
