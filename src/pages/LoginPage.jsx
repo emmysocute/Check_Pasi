@@ -83,7 +83,7 @@ function LoginPage() {
                 type="text"
                 value={email}
                 onChange={handleEmailChange}
-                placeholder="name@example.com"
+                placeholder="Emmy"
               />
             </div>
             {fieldErrors.email && (
